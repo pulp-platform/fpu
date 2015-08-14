@@ -9,7 +9,7 @@
 //                                                                            //
 // Create Date:    06/10/2014                                                 // 
 // Design Name:    FPU                                                        // 
-// Module Name:    fpnorm.sv                                                  //
+// Module Name:    fpu_norm.sv                                                //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
@@ -30,7 +30,7 @@
 
 `include "defines_fpu.sv"
 
-module fpnorm 
+module fpu_norm
   (
    //Input Operands
    input logic        [47:0] Mant_in_DI,
@@ -183,4 +183,4 @@ module fpnorm
    assign Rounded_SO = Mant_rounded_S;
    
          
-endmodule // fpnorm
+endmodule // fpu_norm

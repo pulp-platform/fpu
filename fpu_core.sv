@@ -272,7 +272,7 @@ module fpu_core
      end //always_comb begin
 
    
-   fpnorm normalizer
+   fpu_norm normalizer
      (
       .Mant_in_DI (Mant_prenorm_D),
       .Exp_in_DI (Exp_prenorm_D),
