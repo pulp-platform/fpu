@@ -1,0 +1,144 @@
+////////////////////////////////////////////////////////////////////////////////
+// Company:        IIS @ ETHZ - Federal Institute of Technology               //
+//                                                                            //
+// Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
+//                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
+//		                                                                        //
+// Additional contributions by:                                               //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+// Create Date:    26/10/2014                                                 // 
+// Design Name:    FPU                                                        // 
+// Module Name:    fpu.sv                                                     //
+// Project Name:   Private FPU                                                //
+// Language:       SystemVerilog                                              //
+//                                                                            //
+// Description:    Floating point unit with input and ouput registers         //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+// Revision:                                                                  //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+`include "defines_fpu.sv"
+
+module fpu
+  (
+   //Clock and reset
+   input logic 	       Clk_CI,
+   input logic 	       Rst_RBI,
+
+   //Input Operands
+   input logic [31:0]  Operand_a_DI,
+   input logic [31:0]  Operand_b_DI,
+   input logic [1:0]   RM_SI,    //Rounding Mode
+   input logic [3:0]   OP_SI,
+   input logic Enable_SI,
+
+   input logic Stall_SI,
+
+   output logic [31:0] Result_DO,
+   //Output-Flags
+   output logic        OF_SO,    //Overflow
+   output logic        UF_SO,    //Underflow
+   output logic        Zero_SO,  //Result zero
+   output logic        IX_SO,    //Result inexact
+   output logic        IV_SO,    //Result invalid
+   output logic        Inf_SO    //Infinity
+   );
+   
+   //Internal Operands
+   logic [31:0] Operand_a_D;
+   logic [31:0] Operand_b_D;
+
+   logic [1:0]  RM_S;
+   logic [3:0]  OP_S;  
+
+   logic        Stall_S;
+   
+   
+   //Input register
+
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
+     begin
+        if (~Rst_RBI)
+          begin
+             Operand_a_D <= '0;
+             Operand_b_D <= '0;
+             RM_S <= '0;
+	           OP_S <= '0;
+          end
+        else
+          begin
+             if(~Stall_SI)
+               begin
+                  Operand_a_D <= Operand_a_DI;
+                  Operand_b_D <= Operand_b_DI;
+                  RM_S <= RM_SI;
+	                OP_S <= OP_SI;
+               end // else: !if(~Stall_SI)
+          end // else: !if(~Rst_RBI)
+     end // always_ff @ (posedge Clk_CI, negedge Rst_RBI)
+            
+
+   /////////////////////////////////////////////////////////////////////////////
+   // FPU_core
+   /////////////////////////////////////////////////////////////////////////////
+   logic UF_S;
+   logic OF_S;
+   logic Zero_S;
+   logic IX_S;
+   logic IV_S;
+   logic Inf_S;
+
+   logic [31:0] Result_D;
+   
+   
+  fpu_core fpcore
+     (
+      .Clk_CI(Clk_CI),
+      .Rst_RBI(Rst_RBI),
+      .Enable_SI(Enable_SI),
+      
+      .Operand_a_DI(Operand_a_D),
+      .Operand_b_DI(Operand_b_D),
+      .RM_SI(RM_S),
+      .OP_SI(OP_S),
+      .Stall_SI(Stall_SI),
+      
+      .Result_DO(Result_D),
+      
+      .OF_SO(OF_S),
+      .UF_SO(UF_S),
+      .Zero_SO(Zero_S),
+      .IX_SO(IX_S),
+      .IV_SO(IV_S),
+      .Inf_SO(Inf_S)
+      );
+
+   /////////////////////////////////////////////////////////////////////////////
+   // Output assignments
+   /////////////////////////////////////////////////////////////////////////////
+
+   assign Result_DO = Result_D;
+      
+   assign OF_SO = OF_S;
+   assign UF_SO = UF_S;
+   assign Zero_SO = Zero_S;
+   assign IX_SO = IX_S;
+   assign IV_SO = IV_S;
+   assign Inf_SO =Inf_S;
+   
+  
+   
+   
+endmodule // fpu
