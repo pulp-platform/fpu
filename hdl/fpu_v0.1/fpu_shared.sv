@@ -27,26 +27,28 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+import fpu_defs::*;
+
 module fpu_shared
   #(
     parameter ADD_REGISTER = 1
     )
   (
-   input logic Clk_CI,
-   input logic Rst_RBI,
+   input logic     Clk_CI,
+   input logic     Rst_RBI,
    marx_apu_if.apu Interface
    );
    
 
-   logic [31:0] Operand_a_D;
-   logic [31:0] Operand_b_D;
-   logic [3:0]  Op_S;
-   logic [1:0]  RM_S;
+   logic [C_OP-1:0]  Operand_a_D;
+   logic [C_OP-1:0]  Operand_b_D;
+   logic [C_CMD-1:0] Op_S;
+   logic [C_RM-1:0]  RM_S;
    
-   logic        Valid_S;
-   logic [6:0]  Tag_D;
+   logic             Valid_S;
+   logic [C_TAG-1:0] Tag_D;
 
-   logic        Stall_S;
+   logic             Stall_S;
    
    assign Stall_S = Interface.req_us_s & ~Interface.ack_us_s;
    
@@ -58,13 +60,13 @@ module fpu_shared
    generate
       if (ADD_REGISTER == 1)
         begin
-           logic [31:0] Operand_a_DN;
-           logic [31:0] Operand_b_DN;
-           logic [1:0]  RM_SN;
-           logic [3:0]  Op_SN;
+           logic [C_OP-1:0]  Operand_a_DN;
+           logic [C_OP-1:0]  Operand_b_DN;
+           logic [C_RM-1:0]  RM_SN;
+           logic [C_CMD-1:0] Op_SN;
 
-           logic        Valid_SN;
-           logic [6:0]  Tag_DN;
+           logic             Valid_SN;
+           logic [C_TAG-1:0] Tag_DN;
 
            assign  Operand_a_DN = Stall_S ? Operand_a_D : Interface.arga_ds_d;
            assign  Operand_b_DN = Stall_S ? Operand_b_D : Interface.argb_ds_d;
@@ -92,9 +94,9 @@ module fpu_shared
                     
                  Valid_S     <= Valid_SN;
                  Tag_D       <= Tag_DN;
-              end // else: !if(~Rst_RBI)
-           end // always_ff @ (posedge Clk_CI, negedge Rst_RBI)
-        end // if (ADD_REGISTER == 1)
+              end
+           end
+        end
       else
         begin
            assign Operand_a_D  = Interface.arga_ds_d;
@@ -104,44 +106,44 @@ module fpu_shared
    
            assign Valid_S      = Interface.valid_ds_s;
            assign Tag_D        = Interface.tag_ds_d;
-        end // else: !if(ADD_REGISTER == 1)
+        end
    endgenerate
 
    /////////////////////////////////////////////////////////////////////////////
    // FPU core instance
    /////////////////////////////////////////////////////////////////////////////
 
-   logic [31:0] Result_D;
+   logic [C_OP-1:0]   Result_D;
    
-   logic [8:0]  Flags_S;
-   logic        UF_S;
-   logic        OF_S;
-   logic        Zero_S;
-   logic        IX_S;
-   logic        IV_S;
-   logic        Inf_S;
+   logic [C_FLAG-1:0] Flags_S;
+   logic              UF_S;
+   logic              OF_S;
+   logic              Zero_S;
+   logic              IX_S;
+   logic              IV_S;
+   logic              Inf_S;
    
    fpu_core core
      (
-      .Clk_CI          (Clk_CI),
-      .Rst_RBI         (Rst_RBI),
-      .Enable_SI       (Valid_S),
+      .Clk_CI       ( Clk_CI        ),
+      .Rst_RBI      ( Rst_RBI       ),
+      .Enable_SI    ( Valid_S       ),
       
-      .Operand_a_DI    (Operand_a_D),
-      .Operand_b_DI    (Operand_b_D),
-      .RM_SI           (RM_S),
-      .OP_SI           (Op_S),
+      .Operand_a_DI ( Operand_a_D   ),
+      .Operand_b_DI ( Operand_b_D   ),
+      .RM_SI        ( RM_S          ),
+      .OP_SI        ( Op_S          ),
       
-      .Stall_SI        (Stall_S),
+      .Stall_SI     ( Stall_S       ),
 
-      .Result_DO       (Result_D),
+      .Result_DO    ( Result_D      ),
 
-      .OF_SO           (OF_S),
-      .UF_SO           (UF_S),
-      .Zero_SO         (Zero_S),
-      .IX_SO           (IX_S),
-      .IV_SO           (IV_S),
-      .Inf_SO          (Inf_S)
+      .OF_SO        ( OF_S          ),
+      .UF_SO        ( UF_S          ),
+      .Zero_SO      ( Zero_S        ),
+      .IX_SO        ( IX_S          ),
+      .IV_SO        ( IV_S          ),
+      .Inf_SO       ( Inf_S         )
       );
    
 
@@ -149,10 +151,10 @@ module fpu_shared
    // Shim register for tag and valid
    /////////////////////////////////////////////////////////////////////////////   
 
-   logic        ValidDelayed_SP;
-   logic        ValidDelayed_SN;
-   logic [6:0]  TagDelayed_DP;
-   logic [6:0]  TagDelayed_DN;
+   logic              ValidDelayed_SP;
+   logic              ValidDelayed_SN;
+   logic [C_TAG-1:0]  TagDelayed_DP;
+   logic [C_TAG-1:0]  TagDelayed_DN;
 
    assign ValidDelayed_SN = Stall_S ? ValidDelayed_SP : Valid_S;
    assign TagDelayed_DN   = Stall_S ? TagDelayed_DP   : Tag_D;

@@ -29,21 +29,21 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-`include "defines_fpu.sv"
+import fpu_defs::*;
 
 module fpexc 
   (//Input
-   input logic [23:0] Mant_a_DI,
-   input logic [23:0] Mant_b_DI,
-   input logic [7:0]  Exp_a_DI,
-   input logic [7:0]  Exp_b_DI,
-   input logic        Sign_a_DI,
-   input logic        Sign_b_DI,
+   input logic [C_MANT:0]   Mant_a_DI,
+   input logic [C_MANT:0]   Mant_b_DI,
+   input logic [C_EXP-1:0]  Exp_a_DI,
+   input logic [C_EXP-1:0]  Exp_b_DI,
+   input logic              Sign_a_DI,
+   input logic              Sign_b_DI,
 
-   input logic [23:0] Mant_norm_DI,
-   input logic [7:0]  Exp_res_DI,
+   input logic [C_MANT:0]   Mant_norm_DI,
+   input logic [C_EXP-1:0]  Exp_res_DI,
 
-   input logic [3:0]  Op_SI,
+   input logic [C_CMD-1:0]  Op_SI,
 
    input logic Mant_rounded_SI,
    input logic Exp_OF_SI,
@@ -81,39 +81,39 @@ module fpexc
      
    logic        Mant_zero_S;
   
-   assign Inf_a_S = (Exp_a_DI == 8'hff);
-   assign Inf_b_S = (Exp_b_DI == 8'hff);
+   assign Inf_a_S = (Exp_a_DI == C_EXP_INF);
+   assign Inf_b_S = (Exp_b_DI == C_EXP_INF);
 
-   assign Zero_a_S = (Exp_a_DI == 8'h0) & (Mant_a_DI == 24'h0);
-   assign Zero_b_S = (Exp_b_DI == 8'h0) & (Mant_b_DI == 24'h0);
+   assign Zero_a_S = (Exp_a_DI == C_EXP_ZERO) & (Mant_a_DI == C_MANT_ZERO);
+   assign Zero_b_S = (Exp_b_DI == C_EXP_ZERO) & (Mant_b_DI == C_MANT_ZERO);
 
-   assign Mant_zero_S = Mant_norm_DI == 24'h0;
+   assign Mant_zero_S = Mant_norm_DI == C_MANT_ZERO;
    
    
    /////////////////////////////////////////////////////////////////////////////
    // flag assignments
    /////////////////////////////////////////////////////////////////////////////
    
-   assign OF_SO   = (Op_SI == `FP_OP_FTOI) ? OF_SI : (Exp_OF_SI & ~Mant_zero_S) | (~IV_SO & (Inf_a_S ^ Inf_b_S) & (Op_SI != `FP_OP_ITOF));
-   assign UF_SO   = (Op_SI == `FP_OP_FTOI) ? UF_SI : Exp_UF_SI & Mant_rounded_SI;
-   assign Zero_SO = (Op_SI == `FP_OP_FTOI) ? Zero_SI : (Mant_zero_S & ~IV_SO); 
-   assign IX_SO   = (Op_SI == `FP_OP_FTOI) ? IX_SI : Mant_rounded_SI | OF_SO; 
+   assign OF_SO   = (Op_SI == C_FPU_F2I_CMD) ? OF_SI : (Exp_OF_SI & ~Mant_zero_S) | (~IV_SO & (Inf_a_S ^ Inf_b_S) & (Op_SI != C_FPU_I2F_CMD));
+   assign UF_SO   = (Op_SI == C_FPU_F2I_CMD) ? UF_SI : Exp_UF_SI & Mant_rounded_SI;
+   assign Zero_SO = (Op_SI == C_FPU_F2I_CMD) ? Zero_SI : (Mant_zero_S & ~IV_SO); 
+   assign IX_SO   = (Op_SI == C_FPU_F2I_CMD) ? IX_SI : Mant_rounded_SI | OF_SO; 
 
    always_comb //check operation validity
      begin
         IV_SO = 1'b0;
         case (Op_SI)
-          `FP_OP_ADD, `FP_OP_SUB : //input logic already adjusts operands 
+          C_FPU_ADD_CMD, C_FPU_SUB_CMD : //input logic already adjusts operands 
             begin
                if ((Inf_a_S & Inf_b_S) & (Sign_a_DI ^ Sign_b_DI))
                  IV_SO = 1'b1;
             end
-          `FP_OP_MUL :
+          C_FPU_MUL_CMD :
             begin
             if ((Inf_a_S & Zero_b_S) | (Inf_b_S & Zero_a_S))
               IV_SO = 1'b1;
             end
-          `FP_OP_FTOI :
+          C_FPU_F2I_CMD :
             IV_SO = IV_SI;       
         endcase
      end
@@ -125,23 +125,23 @@ module fpexc
      begin
         Inf_temp_S = 1'b0;
         case(Op_SI)
-          `FP_OP_ADD, `FP_OP_SUB : //input logic already adjusts operands
+          C_FPU_ADD_CMD, C_FPU_SUB_CMD : //input logic already adjusts operands
             if ((Inf_a_S ^ Inf_b_S) | ((Inf_a_S & Inf_b_S) & ~(Sign_a_DI ^ Sign_b_DI)))
               Inf_temp_S = 1'b1;
-          `FP_OP_MUL :
+          C_FPU_MUL_CMD :
             if ((Inf_a_S & ~Zero_b_S) | (Inf_b_S & ~Zero_a_S))
               Inf_temp_S = 1'b1;
         endcase // case (Op_SI)
      end // always_comb begin
 
-   assign Inf_SO = (Op_SI == `FP_OP_FTOI) ? Inf_SI : Inf_temp_S | (Exp_OF_SI & ~Mant_zero_S);
+   assign Inf_SO = (Op_SI == C_FPU_F2I_CMD) ? Inf_SI : Inf_temp_S | (Exp_OF_SI & ~Mant_zero_S);
 
  
    /////////////////////////////////////////////////////////////////////////////
    // flags/signals for result manipulation
    /////////////////////////////////////////////////////////////////////////////
    
-   assign Exp_toZero_SO =(Op_SI == `FP_OP_ITOF) ? (Zero_a_S & ~Sign_a_DI) : Exp_UF_SI | (Mant_zero_S & ~Exp_toInf_SO);
+   assign Exp_toZero_SO =(Op_SI == C_FPU_I2F_CMD) ? (Zero_a_S & ~Sign_a_DI) : Exp_UF_SI | (Mant_zero_S & ~Exp_toInf_SO);
    assign Exp_toInf_SO = (OF_SO | IV_SO);
    assign Mant_toZero_SO = Inf_SO;
    

@@ -1,0 +1,13 @@
+src fpu_defs.sv
+src VHDLTools.vhd
+src firstone.vhd
+src fpexc.sv
+src fpu_norm.sv
+src fpu.sv
+src fpu_add.sv
+src fpu_core.sv
+src fpu_ftoi.sv
+src fpu_itof.sv
+src fpu_mult.sv
+src fpu_private.sv
+src fpu_shared.sv 

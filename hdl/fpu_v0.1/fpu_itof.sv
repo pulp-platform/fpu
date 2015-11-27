@@ -7,15 +7,15 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    06/10/2014                                                 // 
+// Create Date:    31/10/2014                                                 // 
 // Design Name:    FPU                                                        // 
-// Module Name:    fpmult.sv                                                  //
+// Module Name:    fpu_itof.sv                                                //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
-// Description:    Floating point multiplier                                  //
-//                 Calculates exponent and mantissa for                       //
-//                 Normalizer/Rounding stage                                  //
+// Description:    Integer to floating point converter                        //
+//                                                                            //
+//                                                                            //
 //                                                                            //
 // Revision:                                                                  //
 //                                                                            //
@@ -28,63 +28,64 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-module fpu_mult
+import fpu_defs::*;
+
+module fpu_itof
   (//Input
-   input logic Sign_a_DI,
-   input logic Sign_b_DI,
-   input logic [7:0] Exp_a_DI,
-   input logic [7:0] Exp_b_DI,
-   input logic [23:0] Mant_a_DI,
-   input logic [23:0] Mant_b_DI,
+   input logic [C_OP-1:0]                   Operand_a_DI,
 
    //Output
-   output logic Sign_prenorm_DO,
-   output logic signed [9:0] Exp_prenorm_DO,
-   output logic [47:0] Mant_prenorm_DO
+   output logic                             Sign_prenorm_DO,
+   output logic signed [C_EXP_PRENORM-1 :0] Exp_prenorm_DO,
+   output logic        [C_MANT_PRENORM-1:0] Mant_prenorm_DO
    );
 
-   //Operand components
-   logic        Sign_a_D;            
-   logic        Sign_b_D;
-   logic        Sign_prenorm_D;              
-   logic [7:0]  Exp_a_D;             
-   logic [7:0]  Exp_b_D;
-   logic [23:0] Mant_a_D;           
-   logic [23:0] Mant_b_D;
+   //Internal Operands
+   logic [C_OP-1:0]             Operand_a_D;
+   logic                        Sign_int_D;           
+   logic                        Sign_prenorm_D;                         
+   logic [C_MANT_INT-1:0]       Mant_int_D;                 //Integer number w/o sign-bit
+   logic [C_OP-1:0]             Temp_twos_to_unsigned_D;
+   logic [C_MANT_PRENORM-1:0]   Mant_prenorm_D;
+   
+   
+   //Hidden Bits
+   logic        Hb_a_D;
 
    //Exponent calculations
-   logic signed [9:0]  Exp_prenorm_D;       //signed exponent for normalizer
-      
-   //Multiplication
-   logic [47:0] Mant_prenorm_D;               
+   logic signed [C_EXP_PRENORM-1:0]  Exp_prenorm_D;       //signed exponent for normalizer
+                   
 
    /////////////////////////////////////////////////////////////////////////////
-   // Assign Inputs
+   // Assign Inputs/Disassemble Operands
    /////////////////////////////////////////////////////////////////////////////
-   assign Sign_a_D = Sign_a_DI;
-   assign Sign_b_D = Sign_b_DI;
-   assign Exp_a_D = Exp_a_DI;
-   assign Exp_b_D = Exp_b_DI;
-   assign Mant_a_D = Mant_a_DI;
-   assign Mant_b_D = Mant_b_DI;
-  
+
+   assign Operand_a_D = Operand_a_DI;
+
+   //Disassemble Operands
+   assign Sign_int_D  = Operand_a_D[C_OP-1];
+   assign Mant_int_D  = Operand_a_D[C_MANT_INT-1:0];
+   logic  Twos_to_unsigned_zero;
+   assign Temp_twos_to_unsigned_D = ~Operand_a_D + 1'b1;
+   assign Twos_to_unsigned_zero_D = ~(|Temp_twos_to_unsigned_D[C_MANT_INT-1:0]);
+
    /////////////////////////////////////////////////////////////////////////////
    // Output calculations
    /////////////////////////////////////////////////////////////////////////////
   
-   assign Sign_prenorm_D = Sign_a_D ^ Sign_b_D;           
+   assign Sign_prenorm_D = Sign_int_D;           
 
-   assign Exp_prenorm_D = signed'({2'b0,Exp_a_D}) + signed'({2'b0,Exp_b_D}) - signed'(10'd127);              
+   assign Exp_prenorm_D  = signed'({2'd0,C_UNKNOWN});
    
-   assign Mant_prenorm_D = Mant_a_D * Mant_b_D;
+   assign Mant_prenorm_D = Sign_int_D ? {Twos_to_unsigned_zero_D,Temp_twos_to_unsigned_D[C_MANT_INT-1:0], C_PADMANT} : {1'b0,Mant_int_D, C_PADMANT};
    
    /////////////////////////////////////////////////////////////////////////////
    // Output assignments
    /////////////////////////////////////////////////////////////////////////////
    
    assign Sign_prenorm_DO = Sign_prenorm_D;
-   assign Exp_prenorm_DO = Exp_prenorm_D;
+   assign Exp_prenorm_DO  = Exp_prenorm_D;
    assign Mant_prenorm_DO = Mant_prenorm_D;
       
-endmodule //fpu_mult
+endmodule //fpu_itof
    
