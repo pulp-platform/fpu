@@ -112,7 +112,7 @@ module fpu_norm
                         
    
    //adjust exponent
-   assign Exp_norm_D = Exp_in_DI - C_EXP_PRENORM'(signed'(Mant_leadingOne_D)) + 1 + Denormals_exp_add_D; 
+   assign Exp_norm_D = Exp_in_DI - (C_EXP_PRENORM)'(signed'(Mant_leadingOne_D)) + 1 + Denormals_exp_add_D; 
    //Explanation of the +1 since I'll probably forget:
    //we get numbers in the format xx.x...
    //but to make things easier we interpret them as
