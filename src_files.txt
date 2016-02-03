@@ -1,0 +1,24 @@
+fpu:
+  incdirs: [
+    .,
+  ]
+  files: [
+    hdl/fpu_v0.1/fpu_defs.sv,
+    hdl/fpu_v0.1/fpexc.sv,
+    hdl/fpu_v0.1/fpu_add.sv,
+    hdl/fpu_v0.1/fpu_core.sv,
+    hdl/fpu_v0.1/fpu_ftoi.sv,
+    hdl/fpu_v0.1/fpu_itof.sv,
+    hdl/fpu_v0.1/fpu_mult.sv,
+    hdl/fpu_v0.1/fpu_norm.sv,
+    hdl/fpu_v0.1/fpu_private.sv,
+    hdl/fpu_v0.1/fpu_shared.sv,
+    hdl/fpu_v0.1/fpu.sv,
+  ]
+
+fpu_vhdl:
+  vhdl: true,
+  files: [
+    hdl/fpu_v0.1/VHDLTools.vhd,
+    hdl/fpu_v0.1/firstone.vhd,
+  ]
