@@ -3,6 +3,8 @@ fpu:
     .,
   ]
   files: [
+    hdl/fpu_v0.1/VHDLTools.vhd,
+    hdl/fpu_v0.1/firstone.vhd,
     hdl/fpu_v0.1/fpu_defs.sv,
     hdl/fpu_v0.1/fpexc.sv,
     hdl/fpu_v0.1/fpu_add.sv,
@@ -14,11 +16,4 @@ fpu:
     hdl/fpu_v0.1/fpu_private.sv,
     hdl/fpu_v0.1/fpu_shared.sv,
     hdl/fpu_v0.1/fpu.sv,
-  ]
-
-fpu_vhdl:
-  vhdl: true,
-  files: [
-    hdl/fpu_v0.1/VHDLTools.vhd,
-    hdl/fpu_v0.1/firstone.vhd,
   ]
