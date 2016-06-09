@@ -8,8 +8,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    26/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    26/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpu.sv                                                     //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
@@ -40,7 +40,7 @@ module fpu
    //Input Operands
    input logic [C_OP-1:0]  Operand_a_DI,
    input logic [C_OP-1:0]  Operand_b_DI,
-   input logic [C_OP-1:0]  RM_SI,    //Rounding Mode
+   input logic [C_RM-1:0]  RM_SI,    //Rounding Mode
    input logic [C_CMD-1:0] OP_SI,
    input logic             Enable_SI,
 
@@ -55,17 +55,17 @@ module fpu
    output logic            IV_SO,    //Result invalid
    output logic            Inf_SO    //Infinity
    );
-   
+
    //Internal Operands
    logic [C_OP-1:0]        Operand_a_D;
    logic [C_OP-1:0]        Operand_b_D;
 
    logic [C_RM-1:0]        RM_S;
-   logic [C_CMD-1:0]       OP_S;  
+   logic [C_CMD-1:0]       OP_S;
 
    logic                   Stall_S;
-   
-   
+
+
    //Input register
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
@@ -85,10 +85,10 @@ module fpu
                   Operand_b_D <= Operand_b_DI;
                   RM_S        <= RM_SI;
 	                OP_S        <= OP_SI;
-               end 
-          end 
+               end
+          end
      end
-            
+
 
    /////////////////////////////////////////////////////////////////////////////
    // FPU_core
@@ -99,24 +99,24 @@ module fpu
    logic              IX_S;
    logic              IV_S;
    logic              Inf_S;
-                      
+
    logic [C_OP-1:0]   Result_D;
-   
-   
+
+
   fpu_core fpcore
      (
       .Clk_CI        ( Clk_CI       ),
       .Rst_RBI       ( Rst_RBI      ),
       .Enable_SI     ( Enable_SI    ),
-      
+
       .Operand_a_DI  ( Operand_a_D  ),
       .Operand_b_DI  ( Operand_b_D  ),
       .RM_SI         ( RM_S         ),
       .OP_SI         ( OP_S         ),
       .Stall_SI      ( Stall_SI     ),
-      
+
       .Result_DO     ( Result_D     ),
-      
+
       .OF_SO         ( OF_S         ),
       .UF_SO         ( UF_S         ),
       .Zero_SO       ( Zero_S       ),
@@ -130,15 +130,15 @@ module fpu
    /////////////////////////////////////////////////////////////////////////////
 
    assign Result_DO = Result_D;
-      
+
    assign OF_SO     = OF_S;
    assign UF_SO     = UF_S;
    assign Zero_SO   = Zero_S;
    assign IX_SO     = IX_S;
    assign IV_SO     = IV_S;
    assign Inf_SO    = Inf_S;
-   
-  
-   
-   
+
+
+
+
 endmodule // fpu
