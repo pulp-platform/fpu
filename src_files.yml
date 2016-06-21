@@ -15,5 +15,5 @@ fpu:
     hdl/fpu_v0.1/fpu_norm.sv,
     hdl/fpu_v0.1/fpu_private.sv,
     hdl/fpu_v0.1/fpu_shared.sv,
-    hdl/fpu_v0.1/fpu.sv,
+    hdl/fpu_v0.1/riscv_fpu.sv,
   ]
