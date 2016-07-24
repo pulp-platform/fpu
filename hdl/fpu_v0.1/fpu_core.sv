@@ -8,8 +8,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    26/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    26/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpu.sv                                                     //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
@@ -55,7 +55,7 @@ module fpu_core
    output logic            IV_SO,    //Result invalid
    output logic            Inf_SO    //Infinity
    );
-   
+
    //Internal Operands
    logic [C_OP-1:0] Operand_a_DP;
    logic [C_OP-1:0] Operand_a_DN;
@@ -68,15 +68,15 @@ module fpu_core
    logic [C_CMD-1:0]  OP_SN;
    logic              Enable_SP;
    logic              Enable_SN;
-   
-   
+
+
    assign Operand_a_DN = (Stall_SI) ? Operand_a_DP : Operand_a_DI;
-   assign Operand_b_DN = (Stall_SI) ? Operand_b_DP : Operand_b_DI;               
-   assign RM_SN        = (Stall_SI) ? RM_SP        : RM_SI;                             
+   assign Operand_b_DN = (Stall_SI) ? Operand_b_DP : Operand_b_DI;
+   assign RM_SN        = (Stall_SI) ? RM_SP        : RM_SI;
    assign OP_SN        = (Stall_SI) ? OP_SP        : OP_SI;
    assign Enable_SN    = (Stall_SI) ? Enable_SP    : Enable_SI;
-                             
-   
+
+
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin : InputRegister
         if (~Rst_RBI)
@@ -96,7 +96,7 @@ module fpu_core
              Enable_SP    <= Enable_SN;
           end
      end
-   
+
 
    //Operand components
    logic              Sign_a_D;
@@ -118,7 +118,7 @@ module fpu_core
    logic              Sign_norm_D;
    logic [C_EXP-1:0]  Exp_norm_D;
    logic [C_MANT:0]   Mant_norm_D;
-      
+
    //Output result
    logic [C_OP-1:0]   Result_D;
    logic              Sign_res_D;
@@ -134,10 +134,10 @@ module fpu_core
    assign Exp_b_D  = Operand_b_DP[C_OP-2:C_MANT];
    assign Mant_a_D = {Hb_a_D,Operand_a_DP[C_MANT-1:0]};
    assign Mant_b_D = {Hb_b_D,Operand_b_DP[C_MANT-1:0]};
-   
+
    assign Hb_a_D = | Exp_a_D; // hidden bit
    assign Hb_b_D = | Exp_b_D; // hidden bit
-   
+
    /////////////////////////////////////////////////////////////////////////////
    // Adder
    /////////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ module fpu_core
    logic                            EnableAdd_S;
 
    assign EnableAdd_S = Enable_SP & ((OP_SP == C_FPU_ADD_CMD)|(OP_SP == C_FPU_SUB_CMD));
-   
+
    fpu_add adder
      (
       .Sign_a_DI( EnableAdd_S ? Sign_a_D : '0 ),
@@ -171,8 +171,8 @@ module fpu_core
    logic                            EnableMult_S;
 
    assign EnableMult_S =  Enable_SP & (OP_SP == C_FPU_MUL_CMD);
-   
- 
+
+
    fpu_mult multiplier
      (
       .Sign_a_DI ( EnableMult_S ? Sign_a_D : '0 ),
@@ -217,9 +217,9 @@ module fpu_core
    logic              IV_ftoi_S;
    logic              Inf_ftoi_S;
    logic              EnableFTOI_S;
-   
+
    assign EnableFTOI_S = Enable_SP & (OP_SP == C_FPU_F2I_CMD);
-      
+
    fpu_ftoi fp2int
      (
       .Sign_a_DI ( EnableFTOI_S ? Sign_a_D : '0 ),
@@ -234,16 +234,16 @@ module fpu_core
       .IV_SO     ( IV_ftoi_S     ),
       .Inf_SO    ( Inf_ftoi_S    )
       );
-   
-   
+
+
    /////////////////////////////////////////////////////////////////////////////
    // Normalizer
-   ///////////////////////////////////////////////////////////////////////////// 
+   /////////////////////////////////////////////////////////////////////////////
 
    logic Mant_rounded_S;
    logic Exp_OF_S;
    logic Exp_UF_S;
-   
+
    always_comb
      begin
         Sign_norm_D    = '0;
@@ -271,7 +271,7 @@ module fpu_core
             endcase //case (OP_S)
      end //always_comb begin
 
-   
+
    fpu_norm normalizer
      (
       .Mant_in_DI  ( Mant_prenorm_D ),
@@ -280,7 +280,7 @@ module fpu_core
 
       .RM_SI       ( RM_SP          ),
       .OP_SI       ( OP_SP          ),
-      
+
       .Mant_res_DO ( Mant_norm_D    ),
       .Exp_res_DO  ( Exp_norm_D     ),
 
@@ -289,21 +289,21 @@ module fpu_core
       .Exp_UF_SO   ( Exp_UF_S       )
       );
 
-   
+
    /////////////////////////////////////////////////////////////////////////////
    // Exceptions/Flags
-   ///////////////////////////////////////////////////////////////////////////// 
+   /////////////////////////////////////////////////////////////////////////////
    logic UF_S;
    logic OF_S;
    logic Zero_S;
    logic IX_S;
    logic IV_S;
    logic Inf_S;
-   
+
    logic Exp_toZero_S;
    logic Exp_toInf_S;
    logic Mant_toZero_S;
-            
+
    fpexc except
      (
       .Mant_a_DI       ( Mant_a_D       ),
@@ -312,19 +312,19 @@ module fpu_core
       .Exp_b_DI        ( Exp_b_D        ),
       .Sign_a_DI       ( Sign_a_D       ),
       .Sign_b_DI       ( Sign_b_D       ),
-                                        
+
       .Mant_norm_DI    ( Mant_norm_D    ),
       .Exp_res_DI      ( Exp_norm_D     ),
-                                        
+
       .Op_SI           ( OP_SP          ),
-                                        
+
       .UF_SI           ( UF_ftoi_S      ),
       .OF_SI           ( OF_ftoi_S      ),
       .Zero_SI         ( Zero_ftoi_S    ),
       .IX_SI           ( IX_ftoi_S      ),
       .IV_SI           ( IV_ftoi_S      ),
       .Inf_SI          ( Inf_ftoi_S     ),
-      
+
       .Mant_rounded_SI ( Mant_rounded_S ),
       .Exp_OF_SI       ( Exp_OF_S       ),
       .Exp_UF_SI       ( Exp_UF_S       ),
@@ -340,12 +340,12 @@ module fpu_core
       .IV_SO           ( IV_S           ),
       .Inf_SO          ( Inf_S          )
       );
-               
-   
+
+
    /////////////////////////////////////////////////////////////////////////////
    // Output Assignments
    /////////////////////////////////////////////////////////////////////////////
-   
+
    assign Sign_res_D = Zero_S ? 1'b0 : Sign_norm_D;
    always_comb
      begin
@@ -366,6 +366,6 @@ module fpu_core
    assign IX_SO     = IX_S;
    assign IV_SO     = IV_S;
    assign Inf_SO    = Inf_S;
-        
-   
+
+
 endmodule // fpu

@@ -56,15 +56,35 @@ module riscv_fpu
    localparam CYCLES = 2;
 
    //Internal Operands
-   logic [C_OP-1:0]             Operand_a_D;
-   logic [C_OP-1:0]             Operand_b_D;
+   logic [C_OP-1:0]             operand_a_q;
+   logic [C_OP-1:0]             operand_b_q;
 
-   logic [C_RM-1:0]             RM_S;
-   logic [C_CMD-1:0]            OP_S;
+   logic [C_RM-1:0]             rounding_mode_q;
+   logic [C_CMD-1:0]            operator_q;
 
    logic [$clog2(CYCLES):0]     valid_count_q, valid_count_n;
 
-   logic                        Stall_S;
+   // input register
+   always_ff @(posedge clk, negedge rst_n)
+     begin
+        if (~rst_n)
+          begin
+             operand_a_q            <= '0;
+             operand_b_q            <= '0;
+             rounding_mode_q        <= '0;
+             operator_q             <= '0;
+          end
+        else
+          begin
+             if(~stall_i)
+               begin
+                  operand_a_q       <= operand_a_i;
+                  operand_b_q       <= operand_b_i;
+                  rounding_mode_q   <= rounding_mode_i;
+                  operator_q        <= operator_i;
+               end
+          end
+     end
 
    // result is valid if we waited 2 cycles
    assign result_valid_o = (valid_count_q == CYCLES - 1) ? 1'b1 : 1'b0;
@@ -113,10 +133,10 @@ module riscv_fpu
       .Rst_RBI       ( rst_n            ),
       .Enable_SI     ( enable_i         ),
 
-      .Operand_a_DI  ( operand_a_i      ),
-      .Operand_b_DI  ( operand_b_i      ),
-      .RM_SI         ( rounding_mode_i  ),
-      .OP_SI         ( operator_i       ),
+      .Operand_a_DI  ( operand_a_q      ),
+      .Operand_b_DI  ( operand_b_q      ),
+      .RM_SI         ( rounding_mode_q  ),
+      .OP_SI         ( operator_q       ),
       .Stall_SI      ( stall_i          ),
 
       .Result_DO     ( result_o         ),
