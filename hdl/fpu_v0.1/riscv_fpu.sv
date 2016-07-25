@@ -52,6 +52,7 @@ module riscv_fpu
    output logic            result_valid_o // result is valid
    );
 
+
    // Number of cycles the cpu needs
    localparam CYCLES = 2;
 
