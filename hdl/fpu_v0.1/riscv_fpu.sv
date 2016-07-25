@@ -53,7 +53,7 @@ module riscv_fpu
    );
 
 
-   // Number of cycles the cpu needs
+   // Number of cycles the fpu needs, after two cycles the output is valid
    localparam CYCLES = 2;
 
    //Internal Operands
@@ -65,27 +65,26 @@ module riscv_fpu
 
    logic [$clog2(CYCLES):0]     valid_count_q, valid_count_n;
 
-   // input register
-   always_ff @(posedge clk, negedge rst_n)
-     begin
-        if (~rst_n)
-          begin
-             operand_a_q            <= '0;
-             operand_b_q            <= '0;
-             rounding_mode_q        <= '0;
-             operator_q             <= '0;
-          end
-        else
-          begin
-             if(~stall_i)
-               begin
-                  operand_a_q       <= operand_a_i;
-                  operand_b_q       <= operand_b_i;
-                  rounding_mode_q   <= rounding_mode_i;
-                  operator_q        <= operator_i;
-               end
-          end
-     end
+   // always_ff @(posedge clk, negedge rst_n)
+     // begin
+        // if (~rst_n)
+          // begin
+             // operand_a_q            <= '0;
+             // operand_b_q            <= '0;
+             // rounding_mode_q        <= '0;
+             // operator_q             <= '0;
+          // end
+        // else
+          // begin
+             // if(~stall_i)
+               // begin
+                  // operand_a_q       <= operand_a_i;
+                  // operand_b_q       <= operand_b_i;
+                  // rounding_mode_q   <= rounding_mode_i;
+                  // operator_q        <= operator_i;
+               // end
+          // end
+     // end
 
    // result is valid if we waited 2 cycles
    assign result_valid_o = (valid_count_q == CYCLES - 1) ? 1'b1 : 1'b0;
@@ -134,10 +133,10 @@ module riscv_fpu
       .Rst_RBI       ( rst_n            ),
       .Enable_SI     ( enable_i         ),
 
-      .Operand_a_DI  ( operand_a_q      ),
-      .Operand_b_DI  ( operand_b_q      ),
-      .RM_SI         ( rounding_mode_q  ),
-      .OP_SI         ( operator_q       ),
+      .Operand_a_DI  ( operand_a_i      ),
+      .Operand_b_DI  ( operand_b_i      ),
+      .RM_SI         ( rounding_mode_i  ),
+      .OP_SI         ( operator_i       ),
       .Stall_SI      ( stall_i          ),
 
       .Result_DO     ( result_o         ),
