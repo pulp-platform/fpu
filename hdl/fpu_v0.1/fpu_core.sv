@@ -217,21 +217,21 @@ module fpu_core
           case (OP_SI)
             C_FPU_ADD_CMD,C_FPU_SUB_CMD:
               begin
-                 Sign_norm_D    = Sign_prenorm_add_D;
-                 Exp_prenorm_D  = Exp_prenorm_add_D;
-                 Mant_prenorm_D = Mant_prenorm_add_D;
+                 Sign_norm_D    <= Sign_prenorm_add_D;
+                 Exp_prenorm_D  <= Exp_prenorm_add_D;
+                 Mant_prenorm_D <= Mant_prenorm_add_D;
               end
             C_FPU_MUL_CMD:
               begin
-                 Sign_norm_D    = Sign_prenorm_mult_D;
-                 Exp_prenorm_D  = Exp_prenorm_mult_D;
-                 Mant_prenorm_D = Mant_prenorm_mult_D;
+                 Sign_norm_D    <= Sign_prenorm_mult_D;
+                 Exp_prenorm_D  <= Exp_prenorm_mult_D;
+                 Mant_prenorm_D <= Mant_prenorm_mult_D;
               end
             C_FPU_I2F_CMD:
               begin
-                 Sign_norm_D    = Sign_prenorm_itof_D;
-                 Exp_prenorm_D  = Exp_prenorm_itof_D;
-                 Mant_prenorm_D = Mant_prenorm_itof_D;
+                 Sign_norm_D    <= Sign_prenorm_itof_D;
+                 Exp_prenorm_D  <= Exp_prenorm_itof_D;
+                 Mant_prenorm_D <= Mant_prenorm_itof_D;
               end
               endcase //case (OP_S)
         end
