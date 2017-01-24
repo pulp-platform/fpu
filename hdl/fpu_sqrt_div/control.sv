@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
-// Engineers:      Lei Li                  //
+// Engineers:      Lei Li                  //lile@iis.ee.ethz.ch
 //                                                                            //
 // Additional contributions by:                                               //
 //                                                                            //
@@ -16,7 +16,7 @@
 // Description:    the control logic  of div and sqrt                                      //
 //                                                                          //
 //                                                                            //
-// Revision:    12/01/2017                                                              //
+// Revision:    19/01/2017                                                              //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -119,7 +119,7 @@ module control
 
    logic Div_start_dly_S;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Div_start_dly_SI signal
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Div_start_dly_S signal
      begin
         if(~Rst_RBI)
           begin
@@ -136,7 +136,7 @@ module control
     end 
    assign Div_start_dly_SO=Div_start_dly_S;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate enable_Start_SI signal
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Div_enable_SO signal
      begin
         if(~Rst_RBI)
           begin
@@ -179,7 +179,7 @@ module control
 
 //logic  Sqrt_enable_SO;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate enable_Start_SI signal
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Sqrt_enable_SO signal
      begin
         if(~Rst_RBI)
           begin
@@ -239,7 +239,7 @@ module control
 
 
 
-    always_ff @(posedge Clk_CI, negedge Rst_RBI) //Generate  Done_SO  they can share this Done_SO.
+    always_ff @(posedge Clk_CI, negedge Rst_RBI) //Generate  Done_SO,  they can share this Done_SO.
       begin
         if(~Rst_RBI)
           begin
@@ -280,7 +280,7 @@ module control
 
 
 
-   logic [C_MANT+1:0]                                            Sqrt_R0,Sqrt_R1,Sqrt_R2,Sqrt_R3,Sqrt_R4,R5;//partial remainder for each iteration
+   logic [C_MANT+1:0]                                            Sqrt_R0,Sqrt_R1,Sqrt_R2,Sqrt_R3,Sqrt_R4;//partial remainder for each iteration
 
    logic [3:0]                                                   Qcnt0, Q_cnt_cmp_0;
    logic [6:0]                                                   Qcnt1, Q_cnt_cmp_1;  
@@ -651,8 +651,7 @@ module control
 
    assign Exp_result_prenorm_DN  = (Div_start_dly_S | Sqrt_start_dly_S)?{{Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI}} + {Div_start_dly_S?128:63}}:Exp_result_prenorm_DP;
 
-//   assign exp_result_prenorm_DO =  exp_result_prenorm_tmp[C_EXP-1:0];
-   
+  
     always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
      begin
         if(~Rst_RBI)
@@ -675,4 +674,4 @@ module control
    
 //  
    
-endmodule // coperation of nrsa_div
+endmodule 
