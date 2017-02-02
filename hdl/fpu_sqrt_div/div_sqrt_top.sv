@@ -139,7 +139,7 @@ preprocess  precess_U0
 
 
   
- fpu_norm  fpu_norm_U0
+ fpu_divsqrt_norm  fpu_norm_U0
   (
    .Mant_in_DI            (Mant_z_D           ),
    .Exp_in_DI             (Exp_z_D            ),

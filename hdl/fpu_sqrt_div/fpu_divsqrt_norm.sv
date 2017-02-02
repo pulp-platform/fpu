@@ -30,7 +30,7 @@
 
 import fpu_defs::*;
 
-module fpu_norm
+module fpu_divsqrt_norm
   (
    //Input Operands
    input logic        [C_MANT_PRENORM-1:0] Mant_in_DI,

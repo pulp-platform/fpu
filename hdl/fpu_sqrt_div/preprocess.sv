@@ -105,12 +105,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           Operand_a_dly_DN = '0;
-           Operand_b_dly_DN = '0;
-         end
-       else if(Start_S) 
+       if(Start_S) 
          begin
            Operand_a_dly_DN = Operand_a_DI;
            Operand_b_dly_DN = Operand_b_DI;
@@ -148,11 +143,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           Sign_z_DN = '0;
-         end
-       else if(Div_start_SI)
+       if(Div_start_SI)
            Sign_z_DN = Sign_a_D ^ Sign_b_D;
        else if(Sqrt_start_SI)
            Sign_z_DN = Sign_a_D;
@@ -182,11 +173,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           RM_DN = '0;
-         end
-       else if(Start_S)
+       if(Start_S)
            RM_DN = RM_SI;
        else
            RM_DN = RM_DP; 
@@ -227,7 +214,7 @@ module preprocess
 
    logic [C_MANT:0]            Mant_a_norm_DN,Mant_a_norm_DP;
    
-   assign  Mant_a_norm_DN = Rst_RBI?(Start_S?(Mant_a_D<<(Mant_leadingOne_a)):Mant_a_norm_DP) :'0;
+   assign  Mant_a_norm_DN = Start_S?(Mant_a_D<<(Mant_leadingOne_a)):Mant_a_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -243,7 +230,7 @@ module preprocess
    
 
    logic [C_EXP:0]            Exp_a_norm_DN,Exp_a_norm_DP;
-   assign  Exp_a_norm_DN = Rst_RBI?(Start_S?(Exp_a_D-Mant_leadingOne_a+(|Mant_leadingOne_a)):Exp_a_norm_DP) :'0;
+   assign  Exp_a_norm_DN = Start_S?(Exp_a_D-Mant_leadingOne_a+(|Mant_leadingOne_a)):Exp_a_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -274,7 +261,7 @@ module preprocess
 
    logic [C_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;
    
-   assign  Mant_b_norm_DN = Rst_RBI?(Start_S?(Mant_b_D<<(Mant_leadingOne_b)):Mant_b_norm_DP) :'0;
+   assign  Mant_b_norm_DN = Start_S?(Mant_b_D<<(Mant_leadingOne_b)):Mant_b_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -290,7 +277,7 @@ module preprocess
    
 
    logic [C_EXP:0]            Exp_b_norm_DN,Exp_b_norm_DP;
-   assign  Exp_b_norm_DN = Rst_RBI?(Start_S?(Exp_b_D-Mant_leadingOne_b+(|Mant_leadingOne_b)):Exp_b_norm_DP) :'0;
+   assign  Exp_b_norm_DN = Start_S?(Exp_b_D-Mant_leadingOne_b+(|Mant_leadingOne_b)):Exp_b_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -333,12 +320,12 @@ module preprocess
    logic               NaN_a_SN,NaN_a_SP;
    logic               NaN_b_SN,NaN_b_SP;
 
-   assign Zero_a_SN = Rst_RBI?(Start_S?(Exp_a_prenorm_zero_S&&Mant_a_prenorm_zero_S):Zero_a_SP) :'0;
-   assign Zero_b_SN = Rst_RBI?(Start_S?(Exp_b_prenorm_zero_S&&Mant_b_prenorm_zero_S):Zero_b_SP) :'0;
-   assign Inf_a_SN = Rst_RBI?(Start_S?(Exp_a_prenorm_Inf_NaN_S&&Mant_a_prenorm_zero_S):Inf_a_SP) :'0;
-   assign Inf_b_SN = Rst_RBI?(Start_S?(Exp_b_prenorm_Inf_NaN_S&&Mant_b_prenorm_zero_S):Inf_b_SP) :'0;
-   assign NaN_a_SN = Rst_RBI?(Start_S?(Exp_a_prenorm_Inf_NaN_S&&(~Mant_a_prenorm_zero_S)):NaN_a_SP) :'0;
-   assign NaN_b_SN = Rst_RBI?(Start_S?(Exp_b_prenorm_Inf_NaN_S&&(~Mant_b_prenorm_zero_S)):NaN_b_SP) :'0;
+   assign Zero_a_SN = Start_S?(Exp_a_prenorm_zero_S&&Mant_a_prenorm_zero_S):Zero_a_SP;
+   assign Zero_b_SN = Start_S?(Exp_b_prenorm_zero_S&&Mant_b_prenorm_zero_S):Zero_b_SP;
+   assign Inf_a_SN = Start_S?(Exp_a_prenorm_Inf_NaN_S&&Mant_a_prenorm_zero_S):Inf_a_SP;
+   assign Inf_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&Mant_b_prenorm_zero_S):Inf_b_SP;
+   assign NaN_a_SN = Start_S?(Exp_a_prenorm_Inf_NaN_S&&(~Mant_a_prenorm_zero_S)):NaN_a_SP;
+   assign NaN_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&(~Mant_b_prenorm_zero_S)):NaN_b_SP;
 
     
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient

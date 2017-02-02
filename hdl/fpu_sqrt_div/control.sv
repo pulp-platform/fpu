@@ -271,10 +271,6 @@ module control
        else if(Start_SI)
          begin
            Ready_SO<=1'b0;       
-         end 
-       else
-         begin
-           Ready_SO<=Ready_SO;
          end
      end
 
