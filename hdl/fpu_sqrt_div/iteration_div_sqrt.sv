@@ -16,7 +16,7 @@
 // Description:    iteration unit for div and sqrt                                       //
 //                                                   t                        //
 //                                                                            //
-// Revision:          12/01/2017                                                        //
+// Revision:          07/02/2017                                                        //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -29,7 +29,7 @@
 
 
 
-import fpu_defs::*;
+import fpu_defs_div_sqrt::*;
 module iteration_div_sqrt
   (//Input
 

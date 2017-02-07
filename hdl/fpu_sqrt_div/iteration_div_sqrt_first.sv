@@ -29,7 +29,7 @@
 
 
 
-import fpu_defs::*;
+import fpu_defs_div_sqrt::*;
 module iteration_div_sqrt_first
   (//Input
 

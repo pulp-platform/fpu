@@ -9,7 +9,7 @@
 //                                                                            //
 // Create Date:    01/12/2016                                                 // 
 // Design Name:    div_sqrt                                                        // 
-// Module Name:    fpu_norm.sv                                                //
+// Module Name:    fpu_norm_div_sqrt.sv                                                //
 // Project Name:   FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
@@ -17,7 +17,7 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Revision:        19/01/2017                                                          //
+// Revision:        07/02/2017                                                          //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -28,9 +28,9 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+import fpu_defs_div_sqrt::*;
 
-module fpu_norm
+module fpu_norm_div_sqrt
   (
    //Input Operands
    input logic        [C_MANT_PRENORM-1:0] Mant_in_DI,
@@ -329,4 +329,4 @@ logic Mant_renorm_S;
    assign Rounded_SO  = Mant_rounded_S;
       
          
-endmodule // fpu_norm
+endmodule // fpu_norm_div_sqrt

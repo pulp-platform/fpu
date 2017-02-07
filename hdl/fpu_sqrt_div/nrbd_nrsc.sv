@@ -27,7 +27,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+import fpu_defs_div_sqrt::*;
 
 module nrbd_nrsc
   (//Input
@@ -175,4 +175,4 @@ iteration_div_sqrt  iteration_unit_U3
 
 
 
-endmodule //  nrbd
+endmodule // 

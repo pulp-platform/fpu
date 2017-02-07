@@ -28,7 +28,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+import fpu_defs_div_sqrt::*;
 
 module preprocess
   (
