@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-package fpu_defs;
+package fpu_defs_div_sqrt;
 
    // op command
 
@@ -31,4 +31,4 @@ package fpu_defs;
          
    
    
-endpackage : fpu_defs
+endpackage : fpu_defs_div_sqrt

@@ -16,7 +16,7 @@
 // Description:    The top of div and sqrt                                    //
 //                                                                          //
 //                                                                            //
-// Revision:       16/01/2017                                                 //
+// Revision:       07/02/2017                                                 //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -27,7 +27,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+import fpu_defs_div_sqrt::*;
 
 module div_sqrt_top
   (//Input
@@ -139,7 +139,7 @@ preprocess  precess_U0
 
 
   
- fpu_divsqrt_norm  fpu_norm_U0
+ fpu_norm_div_sqrt  fpu_norm_U0
   (
    .Mant_in_DI            (Mant_z_D           ),
    .Exp_in_DI             (Exp_z_D            ),

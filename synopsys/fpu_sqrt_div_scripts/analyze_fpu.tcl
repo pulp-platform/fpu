@@ -1,6 +1,6 @@
 analyze -format vhdl     -work WORK $FPU_PATH/VHDLTools.vhd 
 analyze -format vhdl     -work WORK $FPU_PATH/firstone.vhd   
-analyze -format sverilog -work WORK $FPU_PATH/fpu_norm.sv   	      
+analyze -format sverilog -work WORK $FPU_PATH/fpu_norm_div_sqrt.sv   	      
 analyze -format sverilog -work WORK $FPU_PATH/iteration_div_sqrt_first.sv    
 analyze -format sverilog -work WORK $FPU_PATH/iteration_div_sqrt.sv 
 analyze -format sverilog -work WORK $FPU_PATH/control.sv   
