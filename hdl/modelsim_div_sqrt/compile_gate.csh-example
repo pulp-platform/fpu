@@ -1,0 +1,24 @@
+#! /bin/tcsh -f
+
+# example file to compile GATE-LEVEL sourcecode
+
+
+set VER=10.5a
+set LIB=gate
+
+
+if (-e ${LIB}) then
+  rm -rf ${LIB}
+endif
+
+vlib-${VER} ${LIB}
+
+# gate-level netlist
+vlog-${VER} -work ${LIB} ../encounter/out/final.v
+
+# testbench
+vcom-${VER}  -work ${LIB} ../sourcecode/tb_util.vhd
+vcom-${VER}  -work ${LIB} ../sourcecode/a_tb.vhd
+
+
+# run with the sim_postlayout.csh script
