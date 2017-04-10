@@ -57,8 +57,7 @@ module preprocess
    output logic                  Zero_a_SO,
    output logic                  Zero_b_SO,
    output logic                  NaN_a_SO,
-   output logic                  NaN_b_SO,
-   output logic                  Special_case_dly_SBO 
+   output logic                  NaN_b_SO 
 
    );
    
@@ -94,75 +93,6 @@ module preprocess
    
    assign Start_S= Div_start_SI | Sqrt_start_SI;
 
-
-
-
-   /////////////////////////////////////////////////////////////////////////////
-   // preliminary checks for infinite/zero/NaN operands
-   /////////////////////////////////////////////////////////////////////////////
-   
-   logic               Mant_a_prenorm_zero_S;
-   logic               Mant_b_prenorm_zero_S;
-   assign Mant_a_prenorm_zero_S=(Operand_a_DI[C_MANT-1:0] == C_MANT_ZERO);
-   assign Mant_b_prenorm_zero_S=(Operand_b_DI[C_MANT-1:0] == C_MANT_ZERO);
-
-   logic               Exp_a_prenorm_zero_S;
-   logic               Exp_b_prenorm_zero_S;
-   assign Exp_a_prenorm_zero_S=(Exp_a_D == C_EXP_ZERO);
-   assign Exp_b_prenorm_zero_S=(Exp_b_D == C_EXP_ZERO);
-
-   logic               Exp_a_prenorm_Inf_NaN_S;
-   logic               Exp_b_prenorm_Inf_NaN_S;
-   assign Exp_a_prenorm_Inf_NaN_S=(Exp_a_D == C_EXP_INF);
-   assign Exp_b_prenorm_Inf_NaN_S=(Exp_b_D == C_EXP_INF);
-
-   logic               Zero_a_SN,Zero_a_SP;
-   logic               Zero_b_SN,Zero_b_SP;
-   logic               Inf_a_SN,Inf_a_SP;
-   logic               Inf_b_SN,Inf_b_SP;
-   logic               NaN_a_SN,NaN_a_SP;
-   logic               NaN_b_SN,NaN_b_SP;
-
-   assign Zero_a_SN = Start_S?(Exp_a_prenorm_zero_S&&Mant_a_prenorm_zero_S):Zero_a_SP;
-   assign Zero_b_SN = Start_S?(Exp_b_prenorm_zero_S&&Mant_b_prenorm_zero_S):Zero_b_SP;
-   assign Inf_a_SN = Start_S?(Exp_a_prenorm_Inf_NaN_S&&Mant_a_prenorm_zero_S):Inf_a_SP;
-   assign Inf_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&Mant_b_prenorm_zero_S):Inf_b_SP;
-   assign NaN_a_SN = Start_S?(Exp_a_prenorm_Inf_NaN_S&&(~Mant_a_prenorm_zero_S)):NaN_a_SP;
-   assign NaN_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&(~Mant_b_prenorm_zero_S)):NaN_b_SP;
-
-    
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
-     begin
-        if(~Rst_RBI)
-          begin
-            Zero_a_SP <='0;
-            Zero_b_SP <='0;
-            Inf_a_SP <='0;
-            Inf_b_SP <='0;
-            NaN_a_SP <='0;
-            NaN_b_SP <='0;
-          end
- 
-        else 
-         begin 
-           Inf_a_SP <=Inf_a_SN;
-           Inf_b_SP <=Inf_b_SN;
-           Zero_a_SP <=Zero_a_SN;
-           Zero_b_SP <=Zero_b_SN;
-           NaN_a_SP <=NaN_a_SN;
-           NaN_b_SP <=NaN_b_SN;
-         end
-
-      end
-   /////////////////////////////////////////////////////////////////////////////
-   // Low power control
-   /////////////////////////////////////////////////////////////////////////////
-   logic               Special_case_SB;
-   logic               Special_case_dly_SB;
- 
-    
-   assign Special_case_SB=~(Zero_a_SN | Zero_b_SN |  Inf_a_SN | Inf_b_SN | NaN_a_SN | NaN_b_SN);
-   assign Special_case_dly_SB=~(Zero_a_SP | Zero_b_SP |  Inf_a_SP | Inf_b_SP | NaN_a_SP | NaN_b_SP);
 
    /////////////////////////////////////////////////////////////////////////////
    // Delay operands for normalization and round
@@ -297,7 +227,7 @@ module preprocess
 
    logic [C_MANT:0]            Mant_a_norm_DN,Mant_a_norm_DP;
    
-   assign  Mant_a_norm_DN = (Start_S&Special_case_SB)?(Mant_a_D<<(Mant_leadingOne_a)):Mant_a_norm_DP;
+   assign  Mant_a_norm_DN = Start_S?(Mant_a_D<<(Mant_leadingOne_a)):Mant_a_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -313,7 +243,7 @@ module preprocess
    
 
    logic [C_EXP:0]            Exp_a_norm_DN,Exp_a_norm_DP;
-   assign  Exp_a_norm_DN = (Start_S&Special_case_SB)?(Exp_a_D-Mant_leadingOne_a+(|Mant_leadingOne_a)):Exp_a_norm_DP;
+   assign  Exp_a_norm_DN = Start_S?(Exp_a_D-Mant_leadingOne_a+(|Mant_leadingOne_a)):Exp_a_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -344,7 +274,7 @@ module preprocess
 
    logic [C_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;
    
-   assign  Mant_b_norm_DN = (Start_S&Special_case_SB)?(Mant_b_D<<(Mant_leadingOne_b)):Mant_b_norm_DP;
+   assign  Mant_b_norm_DN = Start_S?(Mant_b_D<<(Mant_leadingOne_b)):Mant_b_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -360,7 +290,7 @@ module preprocess
    
 
    logic [C_EXP:0]            Exp_b_norm_DN,Exp_b_norm_DP;
-   assign  Exp_b_norm_DN = (Start_S&Special_case_SB)?(Exp_b_D-Mant_leadingOne_b+(|Mant_leadingOne_b)):Exp_b_norm_DP;
+   assign  Exp_b_norm_DN = Start_S?(Exp_b_D-Mant_leadingOne_b+(|Mant_leadingOne_b)):Exp_b_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
      begin
@@ -377,10 +307,64 @@ module preprocess
 
 
  
-
-
-
+   /////////////////////////////////////////////////////////////////////////////
+   // preliminary checks for infinite/zero/NaN operands
+   /////////////////////////////////////////////////////////////////////////////
    
+   logic               Mant_a_prenorm_zero_S;
+   logic               Mant_b_prenorm_zero_S;
+   assign Mant_a_prenorm_zero_S=(Operand_a_DI[C_MANT-1:0] == C_MANT_ZERO);
+   assign Mant_b_prenorm_zero_S=(Operand_b_DI[C_MANT-1:0] == C_MANT_ZERO);
+
+   logic               Exp_a_prenorm_zero_S;
+   logic               Exp_b_prenorm_zero_S;
+   assign Exp_a_prenorm_zero_S=(Exp_a_D == C_EXP_ZERO);
+   assign Exp_b_prenorm_zero_S=(Exp_b_D == C_EXP_ZERO);
+
+   logic               Exp_a_prenorm_Inf_NaN_S;
+   logic               Exp_b_prenorm_Inf_NaN_S;
+   assign Exp_a_prenorm_Inf_NaN_S=(Exp_a_D == C_EXP_INF);
+   assign Exp_b_prenorm_Inf_NaN_S=(Exp_b_D == C_EXP_INF);
+
+   logic               Zero_a_SN,Zero_a_SP;
+   logic               Zero_b_SN,Zero_b_SP;
+   logic               Inf_a_SN,Inf_a_SP;
+   logic               Inf_b_SN,Inf_b_SP;
+   logic               NaN_a_SN,NaN_a_SP;
+   logic               NaN_b_SN,NaN_b_SP;
+
+   assign Zero_a_SN = Start_S?(Exp_a_prenorm_zero_S&&Mant_a_prenorm_zero_S):Zero_a_SP;
+   assign Zero_b_SN = Start_S?(Exp_b_prenorm_zero_S&&Mant_b_prenorm_zero_S):Zero_b_SP;
+   assign Inf_a_SN = Start_S?(Exp_a_prenorm_Inf_NaN_S&&Mant_a_prenorm_zero_S):Inf_a_SP;
+   assign Inf_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&Mant_b_prenorm_zero_S):Inf_b_SP;
+   assign NaN_a_SN = Start_S?(Exp_a_prenorm_Inf_NaN_S&&(~Mant_a_prenorm_zero_S)):NaN_a_SP;
+   assign NaN_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&(~Mant_b_prenorm_zero_S)):NaN_b_SP;
+
+    
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
+     begin
+        if(~Rst_RBI)
+          begin
+            Zero_a_SP <='0;
+            Zero_b_SP <='0;
+            Inf_a_SP <='0;
+            Inf_b_SP <='0;
+            NaN_a_SP <='0;
+            NaN_b_SP <='0;
+          end
+ 
+        else 
+         begin 
+           Inf_a_SP <=Inf_a_SN;
+           Inf_b_SP <=Inf_b_SN;
+           Zero_a_SP <=Zero_a_SN;
+           Zero_b_SP <=Zero_b_SN;
+           NaN_a_SP <=NaN_a_SN;
+           NaN_b_SP <=NaN_b_SN;
+         end
+
+      end
+
    /////////////////////////////////////////////////////////////////////////////
    // Output assignments
    /////////////////////////////////////////////////////////////////////////////
@@ -403,7 +387,6 @@ module preprocess
    assign Zero_b_SO=Zero_b_SP;
    assign NaN_a_SO=NaN_a_SP;
    assign NaN_b_SO=NaN_b_SP;
-   assign Special_case_dly_SBO=Special_case_dly_SB;
  
      
 endmodule // 

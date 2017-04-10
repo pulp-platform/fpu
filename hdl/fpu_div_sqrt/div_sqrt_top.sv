@@ -84,8 +84,6 @@ module div_sqrt_top
    logic                   NaN_b_S;
    logic [31:0]            Operand_a_dly_D;
    logic [31:0]            Operand_b_dly_D;
-   logic                   Special_case_dly_SB;
-   
  //
 preprocess  precess_U0
  (
@@ -113,8 +111,7 @@ preprocess  precess_U0
    .Zero_a_SO             (Zero_a_S           ),
    .Zero_b_SO             (Zero_b_S           ),
    .NaN_a_SO              (NaN_a_S            ),
-   .NaN_b_SO              (NaN_b_S            ),
-   .Special_case_dly_SBO  (Special_case_dly_SB )
+   .NaN_b_SO              (NaN_b_S            )
    );
 
 
@@ -131,7 +128,7 @@ preprocess  precess_U0
    .Exp_b_DI              (Exp_b_D            ),
    .Mant_a_DI             (Mant_a_D           ),
    .Mant_b_DI             (Mant_b_D           ),
-   .Special_case_dly_SBI  (Special_case_dly_SB ),
+
   //output
    .Ready_SO              (Ready_SO            ),
    .Done_SO               (Done_SO             ),

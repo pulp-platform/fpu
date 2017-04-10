@@ -40,7 +40,6 @@ module control
    input logic [C_EXP:0]                             Exp_num_DI,
    input logic [C_MANT:0]                            Denominator_DI,
    input logic [C_EXP:0]                             Exp_den_DI,
-   input logic                                       Special_case_dly_SBI,
    input logic [C_MANT+1:0]                          First_iteration_cell_sum_DI,
    input logic                                       First_iteration_cell_carry_DI,
    input logic [1:0]                                 Sqrt_Da0,   
@@ -211,9 +210,7 @@ module control
    assign   Start_dly_S=Div_start_dly_S |Sqrt_start_dly_S;
 
    logic       Fsm_enable_S;
-   assign      Fsm_enable_S=(Start_dly_S | (| Crtl_cnt_S[2:0]));
-   logic       Fsm_enable_lp_S;
-   assign      Fsm_enable_lp_S=Fsm_enable_S&Special_case_dly_SBI;
+   assign      Fsm_enable_S=Start_dly_S | (| Crtl_cnt_S[2:0]);
   
    logic  State5_S;
    assign     State5_S= (Crtl_cnt_S==3'b101)?1'b1:1'b0; 
@@ -248,7 +245,7 @@ module control
           begin
             Done_SO<=1'b0;       
           end    
-        else if(State5_S)  //Three clock cycles for special cases
+        else if(State5_S)
          begin
            Done_SO<=1'b1;
         end      
@@ -267,7 +264,7 @@ module control
          begin
            Ready_SO<=1'b1;       
          end    
-       else if(State5_S)     //Three clock cycles for special cases
+       else if(State5_S)
          begin
            Ready_SO<=1'b1;
          end      
@@ -598,7 +595,7 @@ module control
 
   always_comb 
     begin  //    
-     if (Fsm_enable_lp_S)
+     if (Fsm_enable_S)
        Partial_remainder_DN = Sqrt_enable_SO?Sqrt_R4:Fou_iteration_cell_sum_DI;
       else
        Partial_remainder_DN = Partial_remainder_DP;
@@ -622,7 +619,7 @@ module control
 
   always_comb 
     begin
-      if(Fsm_enable_lp_S)
+      if(Fsm_enable_S)
          Quotient_DN={Quotient_DP[C_MANT-4:0],First_iteration_cell_carry_DI,Sec_iteration_cell_carry_DI,Thi_iteration_cell_carry_DI,Fou_iteration_cell_carry_DI};
       else
          Quotient_DN=Quotient_DP;
@@ -652,7 +649,7 @@ module control
 // resultant exponent
    logic   [C_EXP+1:0]                                  Exp_result_prenorm_DN,Exp_result_prenorm_DP;      
 
-   assign Exp_result_prenorm_DN  = (Start_dly_S&Special_case_dly_SBI)?{{Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI}} + {Div_start_dly_S?128:63}}:Exp_result_prenorm_DP;
+   assign Exp_result_prenorm_DN  = (Div_start_dly_S | Sqrt_start_dly_S)?{{Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI}} + {Div_start_dly_S?128:63}}:Exp_result_prenorm_DP;
 
   
     always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient

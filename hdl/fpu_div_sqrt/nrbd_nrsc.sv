@@ -42,7 +42,6 @@ module nrbd_nrsc
 
    input logic [C_EXP:0]                       Exp_a_DI,
    input logic [C_EXP:0]                       Exp_b_DI,
-   input logic                                 Special_case_dly_SBI, 
    
   //output
    output logic                                Div_enable_SO,
@@ -79,7 +78,7 @@ control  control_U0
 
    .Denominator_DI                           (Mant_b_DI                       ),
    .Exp_den_DI                               (Exp_b_DI                        ),
-   .Special_case_dly_SBI                     (Special_case_dly_SBI            ),
+
    .First_iteration_cell_sum_DI              (First_iteration_cell_sum_D      ),
    .First_iteration_cell_carry_DI            (First_iteration_cell_carry_D    ),
    .Sqrt_Da0                                 (Sqrt_Da0                        ),
