@@ -214,8 +214,8 @@ module fpu_norm_div_sqrt
       else if(Exp_in_DI[C_EXP])            //OF
         begin
           Div_zero_SO=1'b0;   
-          Exp_OF_SO=1'b0;
-          Exp_UF_SO=1'b1; 
+          Exp_OF_SO=1'b1;
+          Exp_UF_SO=1'b0; 
           Mant_res_norm_D='0;
           Exp_res_norm_D='1;
           Mant_lower_D={1'b0,1'b0};
