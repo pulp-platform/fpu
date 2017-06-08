@@ -14,7 +14,6 @@ fpu:
     hdl/fpu_v0.1/fpu_mult.sv,
     hdl/fpu_v0.1/fpu_norm.sv,
     hdl/fpu_v0.1/fpu_private.sv,
-    hdl/fpu_v0.1/fpu_shared.sv,
     hdl/fpu_v0.1/riscv_fpu.sv,
     hdl/fpu_sqrt_div/fpu_defs_div_sqrt.sv,
     hdl/fpu_sqrt_div/VHDLTools.vhd,

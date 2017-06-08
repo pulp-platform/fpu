@@ -82,13 +82,13 @@ module fpu_add
      begin
         if (Exp_agtb_S)
           begin
-             Exp_diff_D    <= Exp_a_D - Exp_b_D;
-             Exp_prenorm_D <= Exp_a_D;
+             Exp_diff_D    = Exp_a_D - Exp_b_D;
+             Exp_prenorm_D = Exp_a_D;
           end
         else
           begin
-             Exp_diff_D    <= Exp_b_D - Exp_a_D;
-             Exp_prenorm_D <= Exp_b_D;
+             Exp_diff_D    = Exp_b_D - Exp_a_D;
+             Exp_prenorm_D = Exp_b_D;
           end
      end // always_comb
    
@@ -134,21 +134,21 @@ module fpu_add
 
    always_comb
      begin
-        Mant_invA_S <= '0;
-        Mant_invB_S <= '0;
+        Mant_invA_S = '0;
+        Mant_invB_S = '0;
         if (Subtract_S)
           begin
              if (Exp_agtb_S)
-               Mant_invA_S <= 1'b1;
+               Mant_invA_S = 1'b1;
              else if (Exp_equal_S)
                begin
                  if (Mant_agtb_S)
-                   Mant_invB_S <= 1'b1;
+                   Mant_invB_S = 1'b1;
                  else
-                   Mant_invA_S <= 1'b1;
+                   Mant_invA_S = 1'b1;
                end
              else
-               Mant_invA_S <= 1'b1;
+               Mant_invA_S = 1'b1;
           end // if (Subtract_S)
      end // always_comb begin
    
@@ -169,18 +169,18 @@ module fpu_add
    
    always_comb
      begin
-        Sign_norm_D <= 1'b0;
+        Sign_norm_D = 1'b0;
         if (Exp_agtb_S)
-          Sign_norm_D <= Sign_a_D;
+          Sign_norm_D = Sign_a_D;
         else if (Exp_equal_S)
           begin
              if (Mant_agtb_S)
-               Sign_norm_D <= Sign_a_D;
+               Sign_norm_D = Sign_a_D;
              else
-               Sign_norm_D <= Sign_b_D;
+               Sign_norm_D = Sign_b_D;
           end
         else //Exp_a < Exp_b
-          Sign_norm_D <= Sign_b_D;
+          Sign_norm_D = Sign_b_D;
      end
 
    
