@@ -119,21 +119,22 @@ module fpu_private
    assign divsqrt_operand_b = (div_start)              ? operand_b_i : '0;
    
    
-   div_sqrt_top fpu_divsqrt
+   div_sqrt_top_tp fpu_divsqrt_tp
      (
-      .Clk_CI         ( clk_i             ),
-      .Rst_RBI        ( rst_ni            ),
-      .Div_start_SI   ( div_start         ),
-      .Sqrt_start_SI  ( sqrt_start        ),
-      .Operand_a_DI   ( divsqrt_operand_a ),
-      .Operand_b_DI   ( divsqrt_operand_b ),
-      .RM_SI          ( rm_i[1:0]         ),
-      .Result_DO      ( divsqrt_result    ),
-      .Exp_OF_SO      ( divsqrt_of        ),
-      .Exp_UF_SO      ( divsqrt_uf        ),
-      .Div_zero_SO    ( divsqrt_zero      ),
-      .Ready_SO       ( divsqrt_busy_o    ),
-      .Done_SO        ( divsqrt_valid     )
+      .Clk_CI           ( clk_i             ),
+      .Rst_RBI          ( rst_ni            ),
+      .Div_start_SI     ( div_start         ),
+      .Sqrt_start_SI    ( sqrt_start        ),
+      .Operand_a_DI     ( divsqrt_operand_a ),
+      .Operand_b_DI     ( divsqrt_operand_b ),
+      .RM_SI            ( rm_i[1:0]         ),
+      .Precision_ctl_SI ( prec_i            ),
+      .Result_DO        ( divsqrt_result    ),
+      .Exp_OF_SO        ( divsqrt_of        ),
+      .Exp_UF_SO        ( divsqrt_uf        ),
+      .Div_zero_SO      ( divsqrt_zero      ),
+      .Ready_SO         ( divsqrt_busy_o    ),
+      .Done_SO          ( divsqrt_valid     )
       );
    
    assign divsqrt_nv = 1'b0;
