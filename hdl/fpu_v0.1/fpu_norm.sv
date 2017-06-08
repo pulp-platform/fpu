@@ -97,17 +97,17 @@ module fpu_norm
      begin
         logic [C_MANT_PRENORM+C_MANT+4:0] temp;
         temp = ((C_MANT_PRENORM+C_MANT+4+1)'(Mant_in_DI) << (Mant_shAmt2_D) );
-        Mant_norm_D <= temp[C_MANT_PRENORM+C_MANT+4:C_MANT_PRENORM];
+        Mant_norm_D = temp[C_MANT_PRENORM+C_MANT+4:C_MANT_PRENORM];
      end
            
 
    always_comb
      begin
-        Mant_sticky_D <= 1'b0;
+        Mant_sticky_D = 1'b0;
         if (Mant_shAmt2_D <= 0)
-          Mant_sticky_D <= | Mant_in_DI;
+          Mant_sticky_D = | Mant_in_DI;
         else if (Mant_shAmt2_D <= C_MANT_PRENORM)
-          Mant_sticky_D <= | (Mant_in_DI << (Mant_shAmt2_D));
+          Mant_sticky_D = | (Mant_in_DI << (Mant_shAmt2_D));
      end
                         
    
@@ -124,15 +124,15 @@ module fpu_norm
 
    always_comb //detect exponent over/underflow
      begin
-        Exp_OF_SO <= 1'b0;
-        Exp_UF_SO <= 1'b0;
+        Exp_OF_SO = 1'b0;
+        Exp_UF_SO = 1'b0;
         if (Exp_rounded_D >= signed'({2'b0,C_EXP_INF})) //overflow
           begin
-             Exp_OF_SO <= 1'b1;
+             Exp_OF_SO = 1'b1;
           end
         else if (Exp_rounded_D <= signed'({2'b0,C_EXP_ZERO})) //underflow      
           begin
-             Exp_UF_SO <= 1'b1;
+             Exp_UF_SO = 1'b1;
           end
      end
    
@@ -156,18 +156,18 @@ module fpu_norm
    
    always_comb //determine whether to round up or not
      begin
-        Mant_roundUp_S <= 1'b0;
+        Mant_roundUp_S = 1'b0;
         case (RM_SI)
           C_RM_NEAREST : 
-            Mant_roundUp_S <= Mant_lower_D[3] && (((| Mant_lower_D[2:0]) | Mant_sticky_D) || Mant_upper_D[0]);
+            Mant_roundUp_S = Mant_lower_D[3] && (((| Mant_lower_D[2:0]) | Mant_sticky_D) || Mant_upper_D[0]);
           C_RM_TRUNC   : 
-            Mant_roundUp_S <= 0;
+            Mant_roundUp_S = 0;
           C_RM_PLUSINF : 
-            Mant_roundUp_S <= Mant_rounded_S & ~Sign_in_DI;
+            Mant_roundUp_S = Mant_rounded_S & ~Sign_in_DI;
           C_RM_MINUSINF:
-            Mant_roundUp_S <= Mant_rounded_S & Sign_in_DI;
+            Mant_roundUp_S = Mant_rounded_S & Sign_in_DI;
           default     :
-            Mant_roundUp_S <= 0;
+            Mant_roundUp_S = 0;
         endcase // case (RM_DI)
      end // always_comb begin
 

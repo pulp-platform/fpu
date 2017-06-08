@@ -2,7 +2,7 @@
 // This file contains all FPU parameters
 //
 // Authors    : Michael Gautschi  (gautschi@iis.ee.ethz.ch)
-//              Michael Schaffner (schaffner@iis.ee.ethz.ch) 
+//              Michael Schaffner (schaffner@iis.ee.ethz.ch)
 //
 // Copyright (c) 2015 Integrated Systems Laboratory, ETH Zurich
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,21 +18,31 @@ package fpu_defs;
    parameter C_FPU_DIV_CMD       = 4'h3;
    parameter C_FPU_I2F_CMD       = 4'h4;
    parameter C_FPU_F2I_CMD       = 4'h5;
+   parameter C_FPU_SQRT_CMD      = 4'h6;
+   parameter C_FPU_NOP_CMD       = 4'h7;
+   parameter C_FPU_FMADD_CMD     = 4'h8;
+   parameter C_FPU_FMSUB_CMD     = 4'h9;
+   parameter C_FPU_FNMADD_CMD    = 4'hA;
+   parameter C_FPU_FNMSUB_CMD    = 4'hB;
+   
+   parameter C_RM           = 3;
+   parameter C_RM_NEAREST   = 3'h0;
+   parameter C_RM_TRUNC     = 3'h1;
+   parameter C_RM_PLUSINF   = 3'h3;
+   parameter C_RM_MINUSINF  = 3'h2;
+   parameter C_RM_NEAREST_MAX = 3'h4;
 
-   parameter C_RM           = 2;
-   parameter C_RM_NEAREST   = 2'h0;
-   parameter C_RM_TRUNC     = 2'h1;
-   parameter C_RM_PLUSINF   = 2'h2;
-   parameter C_RM_MINUSINF  = 2'h3;
+   parameter C_PC           = 5;
+   
 
 // to be verified if it works in half precision mode!!!
 //`define HALFPREC
-   
+
 `ifdef HALFPREC
    parameter C_OP           = 16;
    parameter C_MANT         = 10;
    parameter C_EXP          = 5;
-   
+
    parameter C_EXP_PRENORM  = 7;
    parameter C_MANT_PRENORM = 22;
    parameter C_MANT_ADDIN   = 14;
@@ -51,12 +61,12 @@ package fpu_defs;
    parameter C_EXP_INF      = 5'hff;
    parameter C_MANT_ZERO    = 11'h0;
    parameter C_MANT_PRENORM_IND = 5;
-   
+
 `else
    parameter C_OP           = 32;
    parameter C_MANT         = 23;
    parameter C_EXP          = 8;
-   
+
    parameter C_EXP_PRENORM  = C_EXP+2;
    parameter C_MANT_PRENORM = C_MANT*2+2;
    parameter C_MANT_ADDIN   = C_MANT+4;
@@ -75,11 +85,10 @@ package fpu_defs;
    parameter C_EXP_INF      = 8'hff;
    parameter C_MANT_ZERO    = 24'h0;
    parameter C_MANT_PRENORM_IND = 6;
-         
+
 `endif
+
+   parameter C_FFLAG         = 5;
    
-   parameter C_FLAG    = 9;
-   parameter C_TAG     = 7;
-   
-   
+
 endpackage : fpu_defs

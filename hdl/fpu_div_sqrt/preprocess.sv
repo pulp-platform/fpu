@@ -105,12 +105,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           Operand_a_dly_DN = '0;
-           Operand_b_dly_DN = '0;
-         end
-       else if(Start_S) 
+       if(Start_S) 
          begin
            Operand_a_dly_DN = Operand_a_DI;
            Operand_b_dly_DN = Operand_b_DI;
@@ -148,11 +143,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           Sign_z_DN = '0;
-         end
-       else if(Div_start_SI)
+       if(Div_start_SI)
            Sign_z_DN = Sign_a_D ^ Sign_b_D;
        else if(Sqrt_start_SI)
            Sign_z_DN = Sign_a_D;
@@ -182,11 +173,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           RM_DN = '0;
-         end
-       else if(Start_S)
+       if(Start_S)
            RM_DN = RM_SI;
        else
            RM_DN = RM_DP; 
