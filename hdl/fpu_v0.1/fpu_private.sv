@@ -176,12 +176,13 @@ module fpu_private
       endcase
       end
 
-   fp_mac_wrapper
+   fp_fma_wrapper
      #(
        .C_MAC_PIPE_REGS(2),
-       .TAG_WIDTH(1)
+       .RND_WIDTH(3),
+       .STAT_WIDTH(5)
        )
-   fp_mac_wrap_i
+   fp_fma_wrap_i
      (
       .clk_i            ( clk_i         ),
       .rst_ni           ( rst_ni        ),
@@ -192,9 +193,7 @@ module fpu_private
       .Op_i             ( fma_op        ),
       .Rnd_i            ( rm_i          ),
       .Status_o         ( fma_flags     ),
-      .Tag_i            ( 1'b0          ),
       .Res_o            ( fma_result    ),
-      .Tag_o            (               ),
       .Valid_o          ( fma_valid     ),
       .Ready_o          (               ),
       .Ack_i            ( 1'b1          )

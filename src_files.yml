@@ -15,6 +15,7 @@ fpu:
     hdl/fpu_v0.1/fpu_norm.sv,
     hdl/fpu_v0.1/fpu_private.sv,
     hdl/fpu_v0.1/riscv_fpu.sv,
+    hdl/fpu_v0.1/fp_fma_wrapper.sv,
     hdl/fpu_div_sqrt_tp_nlp/fpu_defs_div_sqrt_tp.sv,
     hdl/fpu_div_sqrt_tp_nlp/VHDLTools.vhd,
     hdl/fpu_div_sqrt_tp_nlp/firstone.vhd,
