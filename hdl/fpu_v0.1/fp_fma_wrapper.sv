@@ -86,6 +86,7 @@ module fp_fma_wrapper
    assign Status_o          = Status_DP[C_POST_PIPE_REGS];
    assign Ready_o           = 1'b1;
 
+`ifndef VERILATOR
 `ifdef FP_SIM_MODELS
    shortreal              a, b, c, res;
    
@@ -121,7 +122,7 @@ module fp_fma_wrapper
       .status(status)
       );
 `endif
-   
+`endif   
    // PRE_PIPE_REGS
    generate
     genvar i;

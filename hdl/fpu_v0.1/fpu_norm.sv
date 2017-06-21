@@ -72,15 +72,16 @@ module fpu_norm
    logic                            Mant_renorm_S;
    
    //Detect leading one  
-   firstone 
-     #(.G_VECTORLEN(C_MANT_PRENORM),
-       .G_FLIPVECTOR(1))
+   fpu_ff
+   #(
+     .LEN(C_MANT_PRENORM))
    LOD
-     (
-      .Vector_DI(Mant_in_DI),
-      .FirstOneIdx_DO(Mant_leadingOne_D),
-      .NoOnes_SO(Mant_zero_S)
-      );
+   (
+     .in_i        ( Mant_in_DI        ),
+     .first_one_o ( Mant_leadingOne_D ),
+     .no_ones_o   ( Mant_zero_S       )
+   );
+
    
    
    logic Denormals_shift_add_D;  

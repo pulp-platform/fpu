@@ -201,16 +201,15 @@ module preprocess
    logic [4:0]                  Mant_leadingOne_a, Mant_leadingOne_b;
    logic                        Mant_zero_S_a,Mant_zero_S_b;
    //Detect leading one  
-   firstone 
-     #(.G_VECTORLEN(C_MANT+1),
-       .G_FLIPVECTOR(1))
+   fpu_ff
+   #(
+     .LEN(C_MANT+1))
    LOD_Ua
-     (
-      .Vector_DI(Mant_a_D),
-      .FirstOneIdx_DO(Mant_leadingOne_a),
-      .NoOnes_SO(Mant_zero_S_a)
-      );
- 
+   (
+     .in_i        ( Mant_a_D          ),
+     .first_one_o ( Mant_leadingOne_a ),
+     .no_ones_o   ( Mant_zero_S_a     )
+   ); 
 
    logic [C_MANT:0]            Mant_a_norm_DN,Mant_a_norm_DP;
    
@@ -246,15 +245,15 @@ module preprocess
                                   
    
 
-   firstone 
-     #(.G_VECTORLEN(C_MANT+1),
-       .G_FLIPVECTOR(1))
+   fpu_ff
+   #(
+     .LEN(C_MANT+1))
    LOD_Ub
-     (
-      .Vector_DI(Mant_b_D),
-      .FirstOneIdx_DO(Mant_leadingOne_b),
-      .NoOnes_SO(Mant_zero_S_b)
-      );
+   (
+     .in_i        ( Mant_b_D          ),
+     .first_one_o ( Mant_leadingOne_b ),
+     .no_ones_o   ( Mant_zero_S_b     )
+   ); 
 
 
 
