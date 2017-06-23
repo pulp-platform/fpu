@@ -177,7 +177,7 @@ module fpu_private
 
    fp_fma_wrapper
      #(
-       .C_MAC_PIPE_REGS(3),
+       .C_MAC_PIPE_REGS(2),
        .RND_WIDTH(3),
        .STAT_WIDTH(5)
        )
