@@ -172,11 +172,9 @@ module fpu_private
       endcase
       end
 
-   assign fma_operand_a = (fma_enable) ? operand_a_i                                      : '0;
-   assign fma_operand_b = (fma_enable) ? {operand_b_i[31] ^ fma_op[1], operand_b_i[30:0]} : '0;
-   assign fma_operand_c = (fma_enable) ? {operand_c_i[31] ^ fma_op[0], operand_c_i[30:0]} : '0;
 
 `ifndef PULP_FPGA_EMUL
+
    fp_fma_wrapper
      #(
        .C_MAC_PIPE_REGS(3),
@@ -188,9 +186,9 @@ module fpu_private
       .clk_i            ( clk_i         ),
       .rst_ni           ( rst_ni        ),
       .En_i             ( fma_enable    ),
-      .OpA_i            ( fma_operand_a ),
-      .OpB_i            ( fma_operand_b ),
-      .OpC_i            ( fma_operand_c ),
+      .OpA_i            ( operand_a_i   ),
+      .OpB_i            ( operand_b_i   ),
+      .OpC_i            ( operand_c_i   ),
       .Op_i             ( fma_op        ),
       .Rnd_i            ( rm_i          ),
       .Status_o         ( fma_flags     ),
@@ -202,6 +200,10 @@ module fpu_private
 `else
    logic [2:0] tuser;
    
+   assign fma_operand_a = (fma_enable) ? operand_a_i                                      : '0;
+   assign fma_operand_b = (fma_enable) ? {operand_b_i[31] ^ fma_op[1], operand_b_i[30:0]} : '0;
+   assign fma_operand_c = (fma_enable) ? {operand_c_i[31] ^ fma_op[0], operand_c_i[30:0]} : '0;
+
    xilinx_fp_fma
    fp_fma_wrap
    (
