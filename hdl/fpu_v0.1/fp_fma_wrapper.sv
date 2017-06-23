@@ -112,7 +112,7 @@ module fp_fma_wrapper
        .exp_width(8),
        .ieee_compliance(1)
        )
-   fp_mac_i
+   fp_fma_i
      (
       .a(OpA_DP[C_PRE_PIPE_REGS]),
       .b(OpB_DP[C_PRE_PIPE_REGS]),

@@ -155,10 +155,6 @@ module fpu_private
    logic                        fma_valid;
    logic [C_FFLAG-1:0]          fma_flags;
       
-   assign fma_operand_a = (fma_enable) ? operand_a_i : '0;
-   assign fma_operand_b = (fma_enable) ? operand_b_i : '0;
-   assign fma_operand_c = (fma_enable) ? operand_c_i : '0;
-
    always_comb begin
       fma_op = 2'b00;
       
@@ -176,9 +172,14 @@ module fpu_private
       endcase
       end
 
+   assign fma_operand_a = (fma_enable) ? operand_a_i                                      : '0;
+   assign fma_operand_b = (fma_enable) ? {operand_b_i[31] ^ fma_op[1], operand_b_i[30:0]} : '0;
+   assign fma_operand_c = (fma_enable) ? {operand_c_i[31] ^ fma_op[0], operand_c_i[30:0]} : '0;
+
+`ifndef PULP_FPGA_EMUL
    fp_fma_wrapper
      #(
-       .C_MAC_PIPE_REGS(2),
+       .C_MAC_PIPE_REGS(3),
        .RND_WIDTH(3),
        .STAT_WIDTH(5)
        )
@@ -198,7 +199,29 @@ module fpu_private
       .Ready_o          (               ),
       .Ack_i            ( 1'b1          )
       );
-
+`else
+   logic [2:0] tuser;
+   
+   xilinx_fp_fma
+   fp_fma_wrap
+   (
+    .aclk                    ( clk_i         ),
+    .aresetn                 ( rst_ni        ),
+    .s_axis_a_tvalid         ( fma_enable    ),
+    .s_axis_a_tdata          ( fma_operand_a ),
+    .s_axis_b_tvalid         ( fma_enable    ),
+    .s_axis_b_tdata          ( fma_operand_b ),
+    .s_axis_c_tvalid         ( fma_enable    ),
+    .s_axis_c_tdata          ( fma_operand_c ),
+    .s_axis_operation_tvalid ( fma_enable    ),
+    .s_axis_operation_tdata  ( '0            ),
+    .m_axis_result_tvalid    ( fma_valid     ),
+    .m_axis_result_tdata     ( fma_result    ),
+    .m_axis_result_tuser     ( tuser         )
+    );
+   
+   assign fma_flags = {tuser[2], 1'b0, tuser[1], tuser[0], 1'b0};
+`endif
 
    // output assignment
    
