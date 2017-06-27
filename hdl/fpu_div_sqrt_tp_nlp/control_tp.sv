@@ -39,23 +39,23 @@ module control_tp
    input logic                                       Div_start_SI ,
    input logic                                       Sqrt_start_SI,
    input logic                                       Start_SI,
-   input logic [C_PC-1:0]                            Precision_ctl_SI,  
-   input logic [C_MANT:0]                            Numerator_DI,
-   input logic [C_EXP:0]                             Exp_num_DI,
-   input logic [C_MANT:0]                            Denominator_DI,
-   input logic [C_EXP:0]                             Exp_den_DI,
+   input logic [C_DIV_PC-1:0]                        Precision_ctl_SI,  
+   input logic [C_DIV_MANT:0]                        Numerator_DI,
+   input logic [C_DIV_EXP:0]                         Exp_num_DI,
+   input logic [C_DIV_MANT:0]                        Denominator_DI,
+   input logic [C_DIV_EXP:0]                         Exp_den_DI,
 //   input logic                                       Special_case_SBI,
 //   input logic                                       Special_case_dly_SBI,
-   input logic [C_MANT+1:0]                          First_iteration_cell_sum_DI,
+   input logic [C_DIV_MANT+1:0]                      First_iteration_cell_sum_DI,
    input logic                                       First_iteration_cell_carry_DI,
    input logic [1:0]                                 Sqrt_Da0,   
-   input logic [C_MANT+1:0]                          Sec_iteration_cell_sum_DI,
+   input logic [C_DIV_MANT+1:0]                      Sec_iteration_cell_sum_DI,
    input logic                                       Sec_iteration_cell_carry_DI,
    input logic [1:0]                                 Sqrt_Da1,  
-   input logic [C_MANT+1:0]                          Thi_iteration_cell_sum_DI,
+   input logic [C_DIV_MANT+1:0]                      Thi_iteration_cell_sum_DI,
    input logic                                       Thi_iteration_cell_carry_DI,
    input logic [1:0]                                 Sqrt_Da2,   
-   input logic [C_MANT+1:0]                          Fou_iteration_cell_sum_DI,
+   input logic [C_DIV_MANT+1:0]                      Fou_iteration_cell_sum_DI,
    input logic                                       Fou_iteration_cell_carry_DI,
    input logic [1:0]                                 Sqrt_Da3,  
 
@@ -70,32 +70,32 @@ module control_tp
    output logic [1:0]                                Sqrt_D2,
    output logic [1:0]                                Sqrt_D3,
 
-   output logic [C_MANT+1:0]                         First_iteration_cell_a_DO,
-   output logic [C_MANT+1:0]                         First_iteration_cell_b_DO,
-   output logic [C_MANT+1:0]                         Sec_iteration_cell_a_DO,
-   output logic [C_MANT+1:0]                         Sec_iteration_cell_b_DO,
-   output logic [C_MANT+1:0]                         Thi_iteration_cell_a_DO,
-   output logic [C_MANT+1:0]                         Thi_iteration_cell_b_DO,
-   output logic [C_MANT+1:0]                         Fou_iteration_cell_a_DO,
-   output logic [C_MANT+1:0]                         Fou_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1:0]                    First_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                    First_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1:0]                    Sec_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                    Sec_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1:0]                    Thi_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                    Thi_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1:0]                    Fou_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                    Fou_iteration_cell_b_DO,
 
 
    //To next stage
    output  logic                                     Ready_SO,
    output logic                                      Done_SO,
-   output logic [C_MANT:0]                           Mant_result_prenorm_DO,
+   output logic [C_DIV_MANT:0]                       Mant_result_prenorm_DO,
 //   output  logic sign_result,
-   output logic [C_EXP+1:0]                          Exp_result_prenorm_DO
+   output logic [C_DIV_EXP+1:0]                      Exp_result_prenorm_DO
  );
    
-   logic [C_MANT+1:0] Partial_remainder_DN,  Partial_remainder_DP;
-   logic  [C_MANT:0]   Quotient_DP;
+   logic [C_DIV_MANT+1:0] Partial_remainder_DN,  Partial_remainder_DP;
+   logic  [C_DIV_MANT:0]   Quotient_DP;
    /////////////////////////////////////////////////////////////////////////////
    // Assign Inputs
    /////////////////////////////////////////////////////////////////////////////
-   logic [C_MANT+1:0]          Numerator_se_D;  //sign extension and hidden bit
-   logic [C_MANT+1:0]          Denominator_se_D; //signa extension and hidden bit
-   logic [C_MANT+1:0]          Denominator_se_DB;  //1's complement
+   logic [C_DIV_MANT+1:0]          Numerator_se_D;  //sign extension and hidden bit
+   logic [C_DIV_MANT+1:0]          Denominator_se_D; //signa extension and hidden bit
+   logic [C_DIV_MANT+1:0]          Denominator_se_DB;  //1's complement
                        
  //  logic               select; // for choosing Mb or ~Mb
 //    logic  Start_SI;  
@@ -108,7 +108,7 @@ module control_tp
    assign  Denominator_se_DB=~Denominator_se_D;
 
 
-   logic [C_MANT+1:0]  Mant_D_sqrt_Norm;
+   logic [C_DIV_MANT+1:0]  Mant_D_sqrt_Norm;
 
    assign Mant_D_sqrt_Norm=Exp_num_DI[0]?{1'b0,Numerator_DI}:{Numerator_DI,1'b0}; //for sqrt
  
@@ -117,7 +117,7 @@ module control_tp
    // Precision Control
    /////////////////////////////////////////////////////////////////////////////
  
-   logic [C_PC-1:0]   Precision_ctl_S;
+   logic [C_DIV_PC-1:0]   Precision_ctl_S;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   
      begin
@@ -368,7 +368,7 @@ module control_tp
 
 
 
-   logic [C_MANT+1:0]                                            Sqrt_R0,Sqrt_R1,Sqrt_R2,Sqrt_R3,Sqrt_R4;//partial remainder for each iteration
+   logic [C_DIV_MANT+1:0]                                        Sqrt_R0,Sqrt_R1,Sqrt_R2,Sqrt_R3,Sqrt_R4;//partial remainder for each iteration
 
    logic [3:0]                                                   Qcnt0, Q_cnt_cmp_0;
    logic [6:0]                                                   Qcnt1, Q_cnt_cmp_1;  
@@ -376,10 +376,10 @@ module control_tp
    logic [14:0]                                                  Qcnt3, Q_cnt_cmp_3;
    logic [18:0]                                                  Qcnt4, Q_cnt_cmp_4;
    logic [22:0]                                                  Qcnt5, Q_cnt_cmp_5;
-   logic [C_MANT+1:0]                                            Sqrt_Q0,Sqrt_Q1,Sqrt_Q2,Sqrt_Q3,Sqrt_Q4;
+   logic [C_DIV_MANT+1:0]                                        Sqrt_Q0,Sqrt_Q1,Sqrt_Q2,Sqrt_Q3,Sqrt_Q4;
    
-   logic [C_MANT+1:0]                                            Q_sqrt0,Q_sqrt1,Q_sqrt2,Q_sqrt3,Q_sqrt4;
-   logic [C_MANT+1:0]                                            Q_sqrt_com_0,Q_sqrt_com_1,Q_sqrt_com_2,Q_sqrt_com_3,Q_sqrt_com_4;
+   logic [C_DIV_MANT+1:0]                                        Q_sqrt0,Q_sqrt1,Q_sqrt2,Q_sqrt3,Q_sqrt4;
+   logic [C_DIV_MANT+1:0]                                        Q_sqrt_com_0,Q_sqrt_com_1,Q_sqrt_com_2,Q_sqrt_com_3,Q_sqrt_com_4;
    
    assign Qcnt0=    {1'b0,            ~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};   //qk for each feedback
    assign Qcnt1=    {Quotient_DP[3:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]}; 
@@ -405,10 +405,10 @@ module control_tp
   
     3'b000: begin
        
-       Sqrt_D0=Mant_D_sqrt_Norm[C_MANT+1:C_MANT];
-       Sqrt_D1=Mant_D_sqrt_Norm[C_MANT-1:C_MANT-2];
-       Sqrt_D2=Mant_D_sqrt_Norm[C_MANT-3:C_MANT-4];
-       Sqrt_D3=Mant_D_sqrt_Norm[C_MANT-5:C_MANT-6];
+       Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT+1:C_DIV_MANT];
+       Sqrt_D1=Mant_D_sqrt_Norm[C_DIV_MANT-1:C_DIV_MANT-2];
+       Sqrt_D2=Mant_D_sqrt_Norm[C_DIV_MANT-3:C_DIV_MANT-4];
+       Sqrt_D3=Mant_D_sqrt_Norm[C_DIV_MANT-5:C_DIV_MANT-6];
 
        //
 
@@ -436,10 +436,10 @@ module control_tp
 
     end
     3'b001: begin
-       Sqrt_D0=Mant_D_sqrt_Norm[C_MANT-7:C_MANT-8];
-       Sqrt_D1=Mant_D_sqrt_Norm[C_MANT-9:C_MANT-10];
-       Sqrt_D2=Mant_D_sqrt_Norm[C_MANT-11:C_MANT-12];
-       Sqrt_D3=Mant_D_sqrt_Norm[C_MANT-13:C_MANT-14];
+       Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT-7:C_DIV_MANT-8];
+       Sqrt_D1=Mant_D_sqrt_Norm[C_DIV_MANT-9:C_DIV_MANT-10];
+       Sqrt_D2=Mant_D_sqrt_Norm[C_DIV_MANT-11:C_DIV_MANT-12];
+       Sqrt_D3=Mant_D_sqrt_Norm[C_DIV_MANT-13:C_DIV_MANT-14];
 
        //
 
@@ -466,10 +466,10 @@ module control_tp
        
     end
     3'b010: begin
-       Sqrt_D0=Mant_D_sqrt_Norm[C_MANT-15:C_MANT-16]; 
-       Sqrt_D1=Mant_D_sqrt_Norm[C_MANT-17:C_MANT-18];
-       Sqrt_D2=Mant_D_sqrt_Norm[C_MANT-19:C_MANT-20];
-       Sqrt_D3=Mant_D_sqrt_Norm[C_MANT-21:C_MANT-22];
+       Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT-15:C_DIV_MANT-16]; 
+       Sqrt_D1=Mant_D_sqrt_Norm[C_DIV_MANT-17:C_DIV_MANT-18];
+       Sqrt_D2=Mant_D_sqrt_Norm[C_DIV_MANT-19:C_DIV_MANT-20];
+       Sqrt_D3=Mant_D_sqrt_Norm[C_DIV_MANT-21:C_DIV_MANT-22];
 
 //
        //
@@ -630,11 +630,11 @@ module control_tp
 //
 
 //                   for           iteration cell_U0
-  logic [C_MANT+1:0]                               First_iteration_cell_div_a_D,First_iteration_cell_div_b_D;
+  logic [C_DIV_MANT+1:0]                           First_iteration_cell_div_a_D,First_iteration_cell_div_b_D;
   logic                                            Sel_b_for_first_S;
 
 
-  assign First_iteration_cell_div_a_D=(Div_start_dly_S)?Numerator_se_D:{Partial_remainder_DP[C_MANT:0],Quotient_DP[0]};
+  assign First_iteration_cell_div_a_D=(Div_start_dly_S)?Numerator_se_D:{Partial_remainder_DP[C_DIV_MANT:0],Quotient_DP[0]};
   assign Sel_b_for_first_S=(Div_start_dly_S)?1:Quotient_DP[0];
   assign First_iteration_cell_div_b_D=Sel_b_for_first_S?Denominator_se_DB:Denominator_se_D;
   assign First_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R0:(First_iteration_cell_div_a_D);
@@ -642,10 +642,10 @@ module control_tp
 
 
 //                   for           iteration cell_U1
-  logic [C_MANT+1:0]                              Sec_iteration_cell_div_a_D,Sec_iteration_cell_div_b_D;
+  logic [C_DIV_MANT+1:0]                          Sec_iteration_cell_div_a_D,Sec_iteration_cell_div_b_D;
   logic                                           Sel_b_for_sec_S;
 
-  assign Sec_iteration_cell_div_a_D={First_iteration_cell_sum_DI[C_MANT:0],First_iteration_cell_carry_DI};
+  assign Sec_iteration_cell_div_a_D={First_iteration_cell_sum_DI[C_DIV_MANT:0],First_iteration_cell_carry_DI};
   assign Sel_b_for_sec_S=First_iteration_cell_carry_DI;
   assign Sec_iteration_cell_div_b_D=Sel_b_for_sec_S?Denominator_se_DB:Denominator_se_D;
 
@@ -654,10 +654,10 @@ module control_tp
 
 
 //                   for           iteration cell_U2
-  logic [C_MANT+1:0]                              Thi_iteration_cell_div_a_D,Thi_iteration_cell_div_b_D;
+  logic [C_DIV_MANT+1:0]                          Thi_iteration_cell_div_a_D,Thi_iteration_cell_div_b_D;
   logic                                           Sel_b_for_thi_S;
 
-  assign Thi_iteration_cell_div_a_D={Sec_iteration_cell_sum_DI[C_MANT:0],Sec_iteration_cell_carry_DI};
+  assign Thi_iteration_cell_div_a_D={Sec_iteration_cell_sum_DI[C_DIV_MANT:0],Sec_iteration_cell_carry_DI};
   assign Sel_b_for_thi_S=Sec_iteration_cell_carry_DI;
   assign Thi_iteration_cell_div_b_D=Sel_b_for_thi_S?Denominator_se_DB:Denominator_se_D;
   assign Thi_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R2:(Thi_iteration_cell_div_a_D);
@@ -665,10 +665,10 @@ module control_tp
 
 
 //                   for           iteration cell_U3
-  logic [C_MANT+1:0]                              Fou_iteration_cell_div_a_D,Fou_iteration_cell_div_b_D;
+  logic [C_DIV_MANT+1:0]                          Fou_iteration_cell_div_a_D,Fou_iteration_cell_div_b_D;
   logic                                           Sel_b_for_fou_S;
 
-  assign Fou_iteration_cell_div_a_D={Thi_iteration_cell_sum_DI[C_MANT:0],Thi_iteration_cell_carry_DI};
+  assign Fou_iteration_cell_div_a_D={Thi_iteration_cell_sum_DI[C_DIV_MANT:0],Thi_iteration_cell_carry_DI};
   assign Sel_b_for_fou_S=Thi_iteration_cell_carry_DI;
   assign Fou_iteration_cell_div_b_D=Sel_b_for_fou_S?Denominator_se_DB:Denominator_se_D;
   assign Fou_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R3:(Fou_iteration_cell_div_a_D);
@@ -704,12 +704,12 @@ module control_tp
         
 
 
-   logic [C_MANT:0] Quotient_DN;
+   logic [C_DIV_MANT:0] Quotient_DN;
 
   always_comb 
     begin
       if(Fsm_enable_S)
-         Quotient_DN={Quotient_DP[C_MANT-4:0],First_iteration_cell_carry_DI,Sec_iteration_cell_carry_DI,Thi_iteration_cell_carry_DI,Fou_iteration_cell_carry_DI};
+         Quotient_DN={Quotient_DP[C_DIV_MANT-4:0],First_iteration_cell_carry_DI,Sec_iteration_cell_carry_DI,Thi_iteration_cell_carry_DI,Fou_iteration_cell_carry_DI};
       else
          Quotient_DN=Quotient_DP;
      end
@@ -726,13 +726,13 @@ module control_tp
     end  
 
    logic                                               Msc_D;
-   logic                                               [C_MANT+1:0] Sum_msc_D;
+   logic    [C_DIV_MANT+1:0]                           Sum_msc_D;
 
    assign {Msc_D,Sum_msc_D}=First_iteration_cell_div_a_D+First_iteration_cell_div_b_D;  //last iteration for division
-//   assign Mant_result_prenorm_DO=Quotient_DP[C_MANT:0]+{Sqrt_enable_SO?1'b0:Msc_D}; //correction for division
-   logic [C_MANT:0]                                    Mant_result_prenorm_noncorrect_D; //no correction with MSC
-   logic [C_MANT:0]                                    Msc_forcorrect_D;
-   logic [C_MANT+1:0]                                  Mant_result_prenorm_correct_D; // correction with MSC
+//   assign Mant_result_prenorm_DO=Quotient_DP[C_DIV_MANT:0]+{Sqrt_enable_SO?1'b0:Msc_D}; //correction for division
+   logic [C_DIV_MANT:0]                                Mant_result_prenorm_noncorrect_D; //no correction with MSC
+   logic [C_DIV_MANT:0]                                Msc_forcorrect_D;
+   logic [C_DIV_MANT+1:0]                              Mant_result_prenorm_correct_D; // correction with MSC
 
    /////////////////////////////////////////////////////////////////////////////
    // Precision Control for outputs
@@ -746,97 +746,97 @@ module control_tp
          case(Precision_ctl_S)
            5'b01000:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-12:3],15'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-12:3],15'b0};
                Msc_forcorrect_D={8'b0,Quotient_DP[2],15'b0};
              end 
            5'b01001:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-12:2],14'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-12:2],14'b0};
                Msc_forcorrect_D={9'b0,Quotient_DP[1],14'b0};
              end     
            5'b01010:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-12:1],13'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-12:1],13'b0};
                Msc_forcorrect_D={10'b0,Quotient_DP[0],13'b0};
              end
            5'b01011:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-12:0],12'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-12:0],12'b0};
                Msc_forcorrect_D={11'b0,Msc_D,12'b0};
              end
        ///////////////////////////////////////////////////////////////////////
            5'b01100:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-8:3],11'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-8:3],11'b0};
                Msc_forcorrect_D={12'b0,Quotient_DP[2],11'b0};
              end 
            5'b01101:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-8:2],10'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-8:2],10'b0};
                Msc_forcorrect_D={13'b0,Quotient_DP[1],10'b0};
              end     
            5'b01110:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-8:1],9'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-8:1],9'b0};
                Msc_forcorrect_D={14'b0,Quotient_DP[0],9'b0};
              end
            5'b01111:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-8:0],8'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-8:0],8'b0};
                Msc_forcorrect_D={15'b0,Msc_D,8'b0};
              end
        ///////////////////////////////////////////////////////////////////////
            5'b10000:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-4:3],7'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-4:3],7'b0};
                Msc_forcorrect_D={16'b0,Quotient_DP[2],7'b0};
              end 
            5'b10001:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-4:2],6'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-4:2],6'b0};
                Msc_forcorrect_D={17'b0,Quotient_DP[1],6'b0};
              end     
            5'b10010:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-4:1],5'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-4:1],5'b0};
                Msc_forcorrect_D={18'b0,Quotient_DP[0],5'b0};
              end
            5'b10011:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT-4:0],4'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-4:0],4'b0};
                Msc_forcorrect_D={19'b0,Msc_D,4'b0};
              end
        ///////////////////////////////////////////////////////////////////////
            5'b10100:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT:3],3'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT:3],3'b0};
                Msc_forcorrect_D={20'b0,Quotient_DP[2],3'b0};
              end
            5'b10101:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT:2],2'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT:2],2'b0};
                Msc_forcorrect_D={21'b0,Quotient_DP[1],2'b0};
              end
            5'b10110:
              begin
-               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_MANT:1],1'b0};
+               Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT:1],1'b0};
                Msc_forcorrect_D={22'b0,Quotient_DP[0],1'b0};
              end
            5'b10111:
              begin
-               Mant_result_prenorm_noncorrect_D=Quotient_DP[C_MANT:0];
+               Mant_result_prenorm_noncorrect_D=Quotient_DP[C_DIV_MANT:0];
                Msc_forcorrect_D={23'b0,Msc_D};
              end
            default:
              begin
-               Mant_result_prenorm_noncorrect_D=Quotient_DP[C_MANT:0];
+               Mant_result_prenorm_noncorrect_D=Quotient_DP[C_DIV_MANT:0];
                Msc_forcorrect_D={23'b0,Msc_D};
              end      
            endcase 
            end
            else
              begin
-               Mant_result_prenorm_noncorrect_D=Quotient_DP[C_MANT:0];
+               Mant_result_prenorm_noncorrect_D=Quotient_DP[C_DIV_MANT:0];
                Msc_forcorrect_D={23'b0,Msc_D};
              end 
                
@@ -844,11 +844,11 @@ module control_tp
 
 
    assign Mant_result_prenorm_correct_D= Mant_result_prenorm_noncorrect_D + {Div_enable_SO?Msc_forcorrect_D:24'b0};
-   assign Mant_result_prenorm_DO = Mant_result_prenorm_correct_D[C_MANT+1]?Mant_result_prenorm_noncorrect_D:Mant_result_prenorm_correct_D[C_MANT:0];
+   assign Mant_result_prenorm_DO = Mant_result_prenorm_correct_D[C_DIV_MANT+1]?Mant_result_prenorm_noncorrect_D:Mant_result_prenorm_correct_D[C_DIV_MANT:0];
 // resultant exponent
-   logic   [C_EXP+1:0]                                  Exp_result_prenorm_DN,Exp_result_prenorm_DP;      
+   logic   [C_DIV_EXP+1:0]    Exp_result_prenorm_DN,Exp_result_prenorm_DP;      
 
-   assign Exp_result_prenorm_DN  = (Start_dly_S)?{{Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI}} + {Div_start_dly_S?{C_BIAS+1}:{C_HALF_BIAS}}}:Exp_result_prenorm_DP;
+   assign Exp_result_prenorm_DN  = (Start_dly_S)?{{Sqrt_start_dly_S?{Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP:1]}:{Exp_num_DI[C_DIV_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_DIV_EXP],~Exp_den_DI}} + {Div_start_dly_S?{C_DIV_BIAS+1}:{C_DIV_HALF_BIAS}}}:Exp_result_prenorm_DP;
 
   
     always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
