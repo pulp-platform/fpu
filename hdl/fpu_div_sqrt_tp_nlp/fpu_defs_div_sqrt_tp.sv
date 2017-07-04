@@ -25,7 +25,8 @@ package fpu_defs_div_sqrt_tp;
    parameter C_MANT         = 23;
    parameter C_EXP          = 8;
    parameter C_BIAS         = 127;
-   parameter C_HALF_BIAS    = 63;
+   parameter C_BIAS_AONE    = 8'h80;
+   parameter C_HALF_BIAS    = 8'h3f;
    
    parameter C_MANT_PRENORM = C_MANT+1;
    parameter C_EXP_ZERO     = 8'h00;

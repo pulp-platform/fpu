@@ -848,9 +848,16 @@ module control_tp
 // resultant exponent
    logic   [C_EXP+1:0]                                  Exp_result_prenorm_DN,Exp_result_prenorm_DP;      
 
-   assign Exp_result_prenorm_DN  = (Start_dly_S)?{{Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI}} + {Div_start_dly_S?{C_BIAS+1}:{C_HALF_BIAS}}}:Exp_result_prenorm_DP;
+   logic   [C_EXP+1:0]                                    Exp_add_a_D;
+   logic   [C_EXP+1:0]                                    Exp_add_b_D;
+   logic   [C_EXP+1:0]                                    Exp_add_c_D;  
+ 
+//   assign Exp_result_prenorm_DN  = (Start_dly_S)?{{Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI}} + {Div_start_dly_S?{C_BIAS+1}:{C_HALF_BIAS}}}:Exp_result_prenorm_DP;
+     assign Exp_add_a_D = {Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI}};
+     assign Exp_add_b_D = {Sqrt_start_dly_S?{1'b0,{C_EXP_ZERO},Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI[C_EXP],~Exp_den_DI}};
+     assign Exp_add_c_D = {Div_start_dly_S?{2'b00,{C_BIAS_AONE}}:{2'b00,{C_HALF_BIAS}}};
+     assign Exp_result_prenorm_DN  = (Start_dly_S)?{Exp_add_a_D + Exp_add_b_D + Exp_add_c_D}:Exp_result_prenorm_DP;
 
-  
     always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
      begin
         if(~Rst_RBI)
