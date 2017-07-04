@@ -39,12 +39,12 @@ module nrbd_nrsc_tp
    input logic                                 Div_start_SI , 
    input logic                                 Sqrt_start_SI,
    input logic                                 Start_SI,
-   input logic [C_PC-1:0]                      Precision_ctl_SI,            
-   input logic [C_MANT:0]                      Mant_a_DI,
-   input logic [C_MANT:0]                      Mant_b_DI,
+   input logic [C_DIV_PC-1:0]                  Precision_ctl_SI,            
+   input logic [C_DIV_MANT:0]                  Mant_a_DI,
+   input logic [C_DIV_MANT:0]                  Mant_b_DI,
 
-   input logic [C_EXP:0]                       Exp_a_DI,
-   input logic [C_EXP:0]                       Exp_b_DI,
+   input logic [C_DIV_EXP:0]                   Exp_a_DI,
+   input logic [C_DIV_EXP:0]                   Exp_b_DI,
 //   input logic                                 Special_case_SBI, 
 //   input logic                                 Special_case_dly_SBI, 
    
@@ -53,24 +53,24 @@ module nrbd_nrsc_tp
    output logic                                Sqrt_enable_SO, 
    output logic                                Ready_SO,
    output logic                                Done_SO,
-   output logic  [C_MANT:0]                    Mant_z_DO,
+   output logic  [C_DIV_MANT:0]                Mant_z_DO,
  //  output  logic sign_z,
-   output logic [C_EXP+1:0]                    Exp_z_DO
+   output logic [C_DIV_EXP+1:0]                Exp_z_DO
     );
    
 
 
 
-    logic [C_MANT+1:0]                        First_iteration_cell_sum_D, Sec_iteration_cell_sum_D,Thi_iteration_cell_sum_D,Fou_iteration_cell_sum_D;
+    logic [C_DIV_MANT+1:0]                    First_iteration_cell_sum_D, Sec_iteration_cell_sum_D,Thi_iteration_cell_sum_D,Fou_iteration_cell_sum_D;
     logic                                     First_iteration_cell_carry_D,Sec_iteration_cell_carry_D,Thi_iteration_cell_carry_D,Fou_iteration_cell_carry_D;
    
     logic [1:0]                               Sqrt_Da0,Sqrt_Da1,Sqrt_Da2,Sqrt_Da3;
     logic [1:0]                               Sqrt_D0,Sqrt_D1,Sqrt_D2,Sqrt_D3;
 
-    logic [C_MANT+1:0]                        First_iteration_cell_a_D,First_iteration_cell_b_D;
-    logic [C_MANT+1:0]                        Sec_iteration_cell_a_D,Sec_iteration_cell_b_D;
-    logic [C_MANT+1:0]                        Thi_iteration_cell_a_D,Thi_iteration_cell_b_D;
-    logic [C_MANT+1:0]                        Fou_iteration_cell_a_D,Fou_iteration_cell_b_D;
+    logic [C_DIV_MANT+1:0]                    First_iteration_cell_a_D,First_iteration_cell_b_D;
+    logic [C_DIV_MANT+1:0]                    Sec_iteration_cell_a_D,Sec_iteration_cell_b_D;
+    logic [C_DIV_MANT+1:0]                    Thi_iteration_cell_a_D,Thi_iteration_cell_b_D;
+    logic [C_DIV_MANT+1:0]                    Fou_iteration_cell_a_D,Fou_iteration_cell_b_D;
     logic                                     Div_start_dly_S,Sqrt_start_dly_S;
 
 control_tp #(Precision_ctl_Enable_S)         control_U0

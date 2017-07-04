@@ -37,20 +37,20 @@ module preprocess
    input logic                   Div_start_SI,
    input logic                   Sqrt_start_SI,
    //Input Operands
-   input logic [C_OP-1:0]        Operand_a_DI,
-   input logic [C_OP-1:0]        Operand_b_DI,
-   input logic [C_RM-1:0]        RM_SI,    //Rounding Mode
+   input logic [C_DIV_OP-1:0]    Operand_a_DI,
+   input logic [C_DIV_OP-1:0]    Operand_b_DI,
+   input logic [C_DIV_RM-1:0]    RM_SI,    //Rounding Mode
 
    // to control
    output logic                  Start_SO,
-   output logic [C_EXP:0]        Exp_a_DO_norm,
-   output logic [C_EXP:0]        Exp_b_DO_norm,
-   output logic [C_MANT:0]       Mant_a_DO_norm,
-   output logic [C_MANT:0]       Mant_b_DO_norm,
+   output logic [C_DIV_EXP:0]    Exp_a_DO_norm,
+   output logic [C_DIV_EXP:0]    Exp_b_DO_norm,
+   output logic [C_DIV_MANT:0]   Mant_a_DO_norm,
+   output logic [C_DIV_MANT:0]   Mant_b_DO_norm,
 
-   output logic [C_RM-1:0]       RM_dly_SO, 
-//   output logic [C_OP-1:0]       Operand_a_dly_DO,
-//   output logic [C_OP-1:0]       Operand_b_dly_DO,
+   output logic [C_DIV_RM-1:0]   RM_dly_SO, 
+//   output logic [C_DIV_OP-1:0]       Operand_a_dly_DO,
+//   output logic [C_DIV_OP-1:0]       Operand_b_dly_DO,
    output logic                  Sign_z_DO,
    output logic                  Inf_a_SO,
    output logic                  Inf_b_SO,
@@ -72,10 +72,10 @@ module preprocess
    logic                       Hb_a_D;
    logic                       Hb_b_D;
 
-   logic [C_EXP-1:0]           Exp_a_D;
-   logic [C_EXP-1:0]           Exp_b_D;
-   logic [C_MANT:0]            Mant_a_D;
-   logic [C_MANT:0]            Mant_b_D;
+   logic [C_DIV_EXP-1:0]       Exp_a_D;
+   logic [C_DIV_EXP-1:0]       Exp_b_D;
+   logic [C_DIV_MANT:0]        Mant_a_D;
+   logic [C_DIV_MANT:0]        Mant_b_D;
 
    /////////////////////////////////////////////////////////////////////////////
    // Disassemble operands
@@ -83,12 +83,12 @@ module preprocess
    logic                      Sign_a_D,Sign_b_D;
    logic                      Start_S;
 
-   assign Sign_a_D = Operand_a_DI[C_OP-1];
-   assign Sign_b_D = Operand_b_DI[C_OP-1];
-   assign Exp_a_D  = Operand_a_DI[C_OP-2:C_MANT];
-   assign Exp_b_D  = Operand_b_DI[C_OP-2:C_MANT];
-   assign Mant_a_D = {Hb_a_D,Operand_a_DI[C_MANT-1:0]};
-   assign Mant_b_D = {Hb_b_D,Operand_b_DI[C_MANT-1:0]};
+   assign Sign_a_D = Operand_a_DI[C_DIV_OP-1];
+   assign Sign_b_D = Operand_b_DI[C_DIV_OP-1];
+   assign Exp_a_D  = Operand_a_DI[C_DIV_OP-2:C_DIV_MANT];
+   assign Exp_b_D  = Operand_b_DI[C_DIV_OP-2:C_DIV_MANT];
+   assign Mant_a_D = {Hb_a_D,Operand_a_DI[C_DIV_MANT-1:0]};
+   assign Mant_b_D = {Hb_b_D,Operand_b_DI[C_DIV_MANT-1:0]};
    
    assign Hb_a_D = | Exp_a_D; // hidden bit
    assign Hb_b_D = | Exp_b_D; // hidden bit
@@ -104,18 +104,18 @@ module preprocess
    
    logic               Mant_a_prenorm_zero_S;
    logic               Mant_b_prenorm_zero_S;
-   assign Mant_a_prenorm_zero_S=(Operand_a_DI[C_MANT-1:0] == C_MANT_ZERO);
-   assign Mant_b_prenorm_zero_S=(Operand_b_DI[C_MANT-1:0] == C_MANT_ZERO);
+   assign Mant_a_prenorm_zero_S=(Operand_a_DI[C_DIV_MANT-1:0] == C_DIV_MANT_ZERO);
+   assign Mant_b_prenorm_zero_S=(Operand_b_DI[C_DIV_MANT-1:0] == C_DIV_MANT_ZERO);
 
    logic               Exp_a_prenorm_zero_S;
    logic               Exp_b_prenorm_zero_S;
-   assign Exp_a_prenorm_zero_S=(Exp_a_D == C_EXP_ZERO);
-   assign Exp_b_prenorm_zero_S=(Exp_b_D == C_EXP_ZERO);
+   assign Exp_a_prenorm_zero_S=(Exp_a_D == C_DIV_EXP_ZERO);
+   assign Exp_b_prenorm_zero_S=(Exp_b_D == C_DIV_EXP_ZERO);
 
    logic               Exp_a_prenorm_Inf_NaN_S;
    logic               Exp_b_prenorm_Inf_NaN_S;
-   assign Exp_a_prenorm_Inf_NaN_S=(Exp_a_D == C_EXP_INF);
-   assign Exp_b_prenorm_Inf_NaN_S=(Exp_b_D == C_EXP_INF);
+   assign Exp_a_prenorm_Inf_NaN_S=(Exp_a_D == C_DIV_EXP_INF);
+   assign Exp_b_prenorm_Inf_NaN_S=(Exp_b_D == C_DIV_EXP_INF);
 
    logic               Zero_a_SN,Zero_a_SP;
    logic               Zero_b_SN,Zero_b_SP;
@@ -169,10 +169,10 @@ module preprocess
    // Delay operands for normalization and round
    /////////////////////////////////////////////////////////////////////////////
 /*
-   logic [C_OP-1:0]             Operand_a_dly_DN;
-   logic [C_OP-1:0]             Operand_a_dly_DP;
-   logic [C_OP-1:0]             Operand_b_dly_DN;
-   logic [C_OP-1:0]             Operand_b_dly_DP;
+   logic [C_DIV_OP-1:0]             Operand_a_dly_DN;
+   logic [C_DIV_OP-1:0]             Operand_a_dly_DP;
+   logic [C_DIV_OP-1:0]             Operand_b_dly_DN;
+   logic [C_DIV_OP-1:0]             Operand_b_dly_DP;
 
    always_comb   
      begin
@@ -248,8 +248,8 @@ module preprocess
 
 
 
-   logic [C_RM-1:0]                  RM_DN;
-   logic [C_RM-1:0]                  RM_DP;
+   logic [C_DIV_RM-1:0]                  RM_DN;
+   logic [C_DIV_RM-1:0]                  RM_DP;
 
    always_comb   
      begin
@@ -285,18 +285,18 @@ module preprocess
    logic [4:0]                  Mant_leadingOne_a, Mant_leadingOne_b;
    logic                        Mant_zero_S_a,Mant_zero_S_b;
    //Detect leading one  
-   firstone 
-     #(.G_VECTORLEN(C_MANT+1),
-       .G_FLIPVECTOR(1))
+   fpu_ff
+   #(
+     .LEN(C_DIV_MANT+1))
    LOD_Ua
-     (
-      .Vector_DI(Mant_a_D),
-      .FirstOneIdx_DO(Mant_leadingOne_a),
-      .NoOnes_SO(Mant_zero_S_a)
-      );
+   (
+     .in_i        ( Mant_a_D          ),
+     .first_one_o ( Mant_leadingOne_a ),
+     .no_ones_o   ( Mant_zero_S_a     )
+   ); 
  
 
-   logic [C_MANT:0]            Mant_a_norm_DN,Mant_a_norm_DP;
+   logic [C_DIV_MANT:0]            Mant_a_norm_DN,Mant_a_norm_DP;
    
    assign  Mant_a_norm_DN = (Start_S)?(Mant_a_D<<(Mant_leadingOne_a)):Mant_a_norm_DP;
 
@@ -313,7 +313,7 @@ module preprocess
      end 
    
 
-   logic [C_EXP:0]            Exp_a_norm_DN,Exp_a_norm_DP;
+   logic [C_DIV_EXP:0]            Exp_a_norm_DN,Exp_a_norm_DP;
    assign  Exp_a_norm_DN = (Start_S)?(Exp_a_D-Mant_leadingOne_a+(|Mant_leadingOne_a)):Exp_a_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  
@@ -330,20 +330,19 @@ module preprocess
                                   
    
 
-   firstone 
-     #(.G_VECTORLEN(C_MANT+1),
-       .G_FLIPVECTOR(1))
+   fpu_ff
+   #(
+     .LEN(C_DIV_MANT+1))
    LOD_Ub
-     (
-      .Vector_DI(Mant_b_D),
-      .FirstOneIdx_DO(Mant_leadingOne_b),
-      .NoOnes_SO(Mant_zero_S_b)
-      );
+   (
+     .in_i        ( Mant_b_D          ),
+     .first_one_o ( Mant_leadingOne_b ),
+     .no_ones_o   ( Mant_zero_S_b     )
+   ); 
 
 
 
-
-   logic [C_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;
+   logic [C_DIV_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;
    
    assign  Mant_b_norm_DN = (Start_S)?(Mant_b_D<<(Mant_leadingOne_b)):Mant_b_norm_DP;
 
@@ -360,7 +359,7 @@ module preprocess
      end 
    
 
-   logic [C_EXP:0]            Exp_b_norm_DN,Exp_b_norm_DP;
+   logic [C_DIV_EXP:0]            Exp_b_norm_DN,Exp_b_norm_DP;
    assign  Exp_b_norm_DN = (Start_S)?(Exp_b_D-Mant_leadingOne_b+(|Mant_leadingOne_b)):Exp_b_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)  

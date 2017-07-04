@@ -105,12 +105,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           Operand_a_dly_DN = '0;
-           Operand_b_dly_DN = '0;
-         end
-       else if(Start_S) 
+       if(Start_S) 
          begin
            Operand_a_dly_DN = Operand_a_DI;
            Operand_b_dly_DN = Operand_b_DI;
@@ -148,11 +143,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           Sign_z_DN = '0;
-         end
-       else if(Div_start_SI)
+       if(Div_start_SI)
            Sign_z_DN = Sign_a_D ^ Sign_b_D;
        else if(Sqrt_start_SI)
            Sign_z_DN = Sign_a_D;
@@ -182,11 +173,7 @@ module preprocess
 
    always_comb   
      begin
-       if(~Rst_RBI)
-         begin
-           RM_DN = '0;
-         end
-       else if(Start_S)
+       if(Start_S)
            RM_DN = RM_SI;
        else
            RM_DN = RM_DP; 
@@ -214,16 +201,15 @@ module preprocess
    logic [4:0]                  Mant_leadingOne_a, Mant_leadingOne_b;
    logic                        Mant_zero_S_a,Mant_zero_S_b;
    //Detect leading one  
-   firstone 
-     #(.G_VECTORLEN(C_MANT+1),
-       .G_FLIPVECTOR(1))
+   fpu_ff
+   #(
+     .LEN(C_MANT+1))
    LOD_Ua
-     (
-      .Vector_DI(Mant_a_D),
-      .FirstOneIdx_DO(Mant_leadingOne_a),
-      .NoOnes_SO(Mant_zero_S_a)
-      );
- 
+   (
+     .in_i        ( Mant_a_D          ),
+     .first_one_o ( Mant_leadingOne_a ),
+     .no_ones_o   ( Mant_zero_S_a     )
+   ); 
 
    logic [C_MANT:0]            Mant_a_norm_DN,Mant_a_norm_DP;
    
@@ -259,15 +245,15 @@ module preprocess
                                   
    
 
-   firstone 
-     #(.G_VECTORLEN(C_MANT+1),
-       .G_FLIPVECTOR(1))
+   fpu_ff
+   #(
+     .LEN(C_MANT+1))
    LOD_Ub
-     (
-      .Vector_DI(Mant_b_D),
-      .FirstOneIdx_DO(Mant_leadingOne_b),
-      .NoOnes_SO(Mant_zero_S_b)
-      );
+   (
+     .in_i        ( Mant_b_D          ),
+     .first_one_o ( Mant_leadingOne_b ),
+     .no_ones_o   ( Mant_zero_S_b     )
+   ); 
 
 
 

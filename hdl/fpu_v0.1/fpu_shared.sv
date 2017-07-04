@@ -47,10 +47,6 @@ module fpu_shared
    
    logic             Valid_S;
    logic [C_TAG-1:0] Tag_D;
-
-   logic             Stall_S;
-   
-   assign Stall_S = Interface.req_us_s & ~Interface.ack_us_s;
    
    
    /////////////////////////////////////////////////////////////////////////////
@@ -68,13 +64,13 @@ module fpu_shared
            logic             Valid_SN;
            logic [C_TAG-1:0] Tag_DN;
 
-           assign  Operand_a_DN = Stall_S ? Operand_a_D : Interface.arga_ds_d;
-           assign  Operand_b_DN = Stall_S ? Operand_b_D : Interface.argb_ds_d;
-           assign  RM_SN        = Stall_S ? RM_S        : Interface.flags_ds_d;
-           assign  Op_SN        = Stall_S ? Op_S        : Interface.op_ds_d;
+           assign  Operand_a_DN = Interface.arga_ds_d;
+           assign  Operand_b_DN = Interface.argb_ds_d;
+           assign  RM_SN        = Interface.flags_ds_d;
+           assign  Op_SN        = Interface.op_ds_d;
                     
-           assign  Valid_SN     = Stall_S ? Valid_S     : Interface.valid_ds_s;
-           assign  Tag_DN       = Stall_S ? Tag_D       : Interface.tag_ds_d;
+           assign  Valid_SN     = Interface.valid_ds_s;
+           assign  Tag_DN       = Interface.tag_ds_d;
 
            always_ff @(posedge Clk_CI, negedge Rst_RBI) begin
               if (~Rst_RBI) begin
@@ -134,8 +130,6 @@ module fpu_shared
       .RM_SI        ( RM_S          ),
       .OP_SI        ( Op_S          ),
       
-      .Stall_SI     ( Stall_S       ),
-
       .Result_DO    ( Result_D      ),
 
       .OF_SO        ( OF_S          ),
@@ -156,8 +150,8 @@ module fpu_shared
    logic [C_TAG-1:0]  TagDelayed_DP;
    logic [C_TAG-1:0]  TagDelayed_DN;
 
-   assign ValidDelayed_SN = Stall_S ? ValidDelayed_SP : Valid_S;
-   assign TagDelayed_DN   = Stall_S ? TagDelayed_DP   : Tag_D;
+   assign ValidDelayed_SN = Valid_S;
+   assign TagDelayed_DN   = Tag_D;
    
   
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
@@ -182,6 +176,6 @@ module fpu_shared
    assign Interface.flags_us_d  = {1'b0, Inf_S, IV_S, IX_S, Zero_S, 2'b0, UF_S, OF_S};
    assign Interface.tag_us_d    = TagDelayed_DP;
    assign Interface.req_us_s    = ValidDelayed_SP;
-   assign Interface.ready_ds_s  = ~Stall_S;
+   assign Interface.ready_ds_s  = 1'b1;
        
 endmodule

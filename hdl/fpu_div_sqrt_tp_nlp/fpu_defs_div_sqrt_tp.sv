@@ -12,28 +12,27 @@ package fpu_defs_div_sqrt_tp;
 
    // op command
 
-   parameter C_RM           = 2;
-   parameter C_RM_NEAREST   = 2'h0;
-   parameter C_RM_TRUNC     = 2'h1;
-   parameter C_RM_PLUSINF   = 2'h2;
-   parameter C_RM_MINUSINF  = 2'h3;
-   parameter C_PC           = 5;
+   parameter C_DIV_RM           = 2;
+   parameter C_DIV_RM_NEAREST   = 2'h0;
+   parameter C_DIV_RM_TRUNC     = 2'h1;
+   parameter C_DIV_RM_PLUSINF   = 2'h2;
+   parameter C_DIV_RM_MINUSINF  = 2'h3;
+   parameter C_DIV_PC           = 5;
  
 
-
-   parameter C_OP           = 32;
-   parameter C_MANT         = 23;
-   parameter C_EXP          = 8;
-   parameter C_BIAS         = 127;
-   parameter C_BIAS_AONE    = 8'h80;
-   parameter C_HALF_BIAS    = 8'h3f;
+   parameter C_DIV_OP           = 32;
+   parameter C_DIV_MANT         = 23;
+   parameter C_DIV_EXP          = 8;
+   parameter C_DIV_BIAS         = 127;
+   parameter C_DIV_BIAS_AONE    = 8'h80;
+   parameter C_DIV_HALF_BIAS    = 63;
    
-   parameter C_MANT_PRENORM = C_MANT+1;
-   parameter C_EXP_ZERO     = 8'h00;
-   parameter  C_EXP_ONE     = 8'h01;
-   parameter C_EXP_INF      = 8'hff;
-   parameter C_MANT_ZERO    = 23'h0;
-   parameter C_MANT_NAN     = 23'h400000;
+   parameter C_DIV_MANT_PRENORM = C_DIV_MANT+1;
+   parameter C_DIV_EXP_ZERO     = 8'h00;
+   parameter C_DIV_EXP_ONE      = 8'h01;
+   parameter C_DIV_EXP_INF      = 8'hff;
+   parameter C_DIV_MANT_ZERO    = 23'h0;
+   parameter C_DIV_MANT_NAN     = 23'h400000;
    
          
    

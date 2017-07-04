@@ -33,21 +33,21 @@ import fpu_defs_div_sqrt_tp::*;
 module iteration_div_sqrt_first
   (//Input
 
-   input logic [C_MANT+1:0]     A_DI,
-   input logic [C_MANT+1:0]     B_DI,
-   input logic                  Div_enable_SI,
-   input logic                  Div_start_dly_SI, 
-   input logic                  Sqrt_enable_SI,
-   input logic [1:0]            D_DI,
+   input logic [C_DIV_MANT+1:0]  A_DI,
+   input logic [C_DIV_MANT+1:0]  B_DI,
+   input logic                   Div_enable_SI,
+   input logic                   Div_start_dly_SI, 
+   input logic                   Sqrt_enable_SI,
+   input logic [1:0]             D_DI,
    
-   output logic [1:0]           D_DO, 
-   output logic [C_MANT+1:0]    Sum_DO,
-   output logic                 Carry_out_DO
+   output logic [1:0]            D_DO, 
+   output logic [C_DIV_MANT+1:0] Sum_DO,
+   output logic                  Carry_out_DO
     );
 
-   logic                        D_carry_D;
-   logic                        Sqrt_cin_D;
-   logic                        Cin_D;
+   logic                         D_carry_D;
+   logic                         Sqrt_cin_D;
+   logic                         Cin_D;
    
    assign D_DO[0]=~D_DI[0];
    assign D_DO[1]=~(D_DI[1] ^ D_DI[0]);

@@ -5,7 +5,7 @@
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
 //		                                                                        //
 // Additional contributions by:                                               //
-//                                                                            //
+//                Michael Gautschi -- gautschi@iis.ee.ethz.ch                 //
 //                                                                            //
 //                                                                            //
 // Create Date:    26/10/2014                                                 // 
@@ -19,10 +19,7 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
+//            1.6.2017 added divsqrt module                                   //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -34,65 +31,204 @@ import fpu_defs::*;
 module fpu_private
   (
    //Clock and reset
-   input logic 	             Clk_CI,
-   input logic 	             Rst_RBI,
-   input logic               Enable_SI,
-   input logic               Stall_SI,
-
-   //Input Operands
-   input logic [C_OP-1:0]    Operand_a_DI,
-   input logic [C_OP-1:0]    Operand_b_DI,
-   input logic [C_RM-1:0]    RM_SI,    //Rounding Mode
-   input logic [C_CMD-1:0]   OP_SI,
+   input logic 	              clk_i,
+   input logic 	              rst_ni,
+   // enable
+   input logic                fpu_en_i,
+   // inputs
+   input logic [C_OP-1:0]     operand_a_i,
+   input logic [C_OP-1:0]     operand_b_i,
+   input logic [C_OP-1:0]     operand_c_i,
+   input logic [C_RM-1:0]     rm_i,
+   input logic [C_CMD-1:0]    fpu_op_i,
+   input logic [C_PC-1:0]     prec_i,
   
-
-   output logic [C_OP-1:0]   Result_DO,
-   //Output-Flags
-   output logic [C_FLAG-1:0] Flags_SO
+   // outputs
+   output logic [C_OP-1:0]    result_o,
+   output logic               valid_o,
+   output logic [C_FFLAG-1:0] flags_o,
+   output logic               divsqrt_busy_o
    );
 
-   logic [C_OP-1:0]          Operand_a_D;
-   logic [C_OP-1:0]          Operand_b_D;
-   logic [C_RM-1:0]          RM_S;
-   logic [C_CMD-1:0]         OP_S;
+   logic                     divsqrt_enable;
+   logic                     fpu_enable;
+   logic                     fma_enable;
+   
+   assign divsqrt_enable = fpu_en_i & ((fpu_op_i==C_FPU_DIV_CMD) | (fpu_op_i==C_FPU_SQRT_CMD));
+   assign fpu_enable     = fpu_en_i & ((fpu_op_i==C_FPU_ADD_CMD) | (fpu_op_i==C_FPU_SUB_CMD) | (fpu_op_i==C_FPU_MUL_CMD) | (fpu_op_i==C_FPU_I2F_CMD) | (fpu_op_i==C_FPU_F2I_CMD));
+   assign fma_enable     = fpu_en_i & ((fpu_op_i==C_FPU_FMADD_CMD) | (fpu_op_i==C_FPU_FMSUB_CMD) | (fpu_op_i==C_FPU_FNMADD_CMD)| (fpu_op_i==C_FPU_FNMSUB_CMD));
 
-   assign Operand_a_D = Operand_a_DI;
-   assign Operand_b_D = Operand_b_DI;
-   assign RM_S        = RM_SI;
-   assign OP_S        = OP_SI;
-      
+   
+   ///////////////////////////////////////////////
+   // FPU_core for Add/Sub/Mul/Casts            //
+   ///////////////////////////////////////////////
 
-   logic OF_S;
-   logic UF_S;
-   logic Zero_S;
-   logic IX_S;
-   logic IV_S;
-   logic Inf_S;
-      
-   fpu_core core
+   logic [31:0]                 fpu_operand_a;
+   logic [31:0]                 fpu_operand_b;
+   logic [31:0]                 fpu_result;
+   logic [C_FFLAG-1:0]          fpu_flags;
+   logic                        fpu_of, fpu_uf, fpu_zero, fpu_ix, fpu_iv, fpu_inf;
+   
+   assign fpu_operand_a = (fpu_enable) ? operand_a_i : '0;
+   assign fpu_operand_b = (fpu_enable) ? operand_b_i : '0;
+
+   fpu_core fpu_core
      (
-      .Clk_CI        ( Clk_CI       ),
-      .Rst_RBI       ( Rst_RBI      ),
-      .Enable_SI     ( Enable_SI    ),
-     
-      .Operand_a_DI  ( Operand_a_D  ),
-      .Operand_b_DI  ( Operand_b_D  ),
-      .RM_SI         ( RM_S         ),
-      .OP_SI         ( OP_S         ),
+      .Clk_CI        ( clk_i             ),
+      .Rst_RBI       ( rst_ni            ),
+      // enable
+      .Enable_SI     ( fpu_enable        ),
+      // inputs
+      .Operand_a_DI  ( fpu_operand_a     ),
+      .Operand_b_DI  ( fpu_operand_b     ),
+      .RM_SI         ( rm_i              ),
+      .OP_SI         ( fpu_op_i          ),
 
-      .Stall_SI      ( Stall_SI     ),
-
-      .Result_DO     ( Result_DO    ),
+      // outputs
+      .Result_DO     ( fpu_result        ),
+      .Valid_SO      ( fpu_valid         ),
       
-      .OF_SO         ( OF_S         ),
-      .UF_SO         ( UF_S         ),
-      .Zero_SO       ( Zero_S       ),
-      .IX_SO         ( IX_S         ),
-      .IV_SO         ( IV_S         ),
-      .Inf_SO        ( Inf_S        )
+      .OF_SO         ( fpu_of            ),
+      .UF_SO         ( fpu_uf            ),
+      .Zero_SO       ( fpu_zero          ),
+      .IX_SO         ( fpu_ix            ),
+      .IV_SO         ( fpu_iv            ),
+      .Inf_SO        ( fpu_inf           )
       );
 
-   assign Flags_SO = {1'b0, Inf_S, IV_S, IX_S, Zero_S, 2'b0, UF_S, OF_S};
+   assign fpu_flags = {fpu_iv, 1'b0, fpu_of, fpu_uf, fpu_ix};
+
+
+   ///////////////////////////////////////////////
+   // Iterative DIV-Sqrt Unit                   //
+   ///////////////////////////////////////////////   
+
+   // generate inputs for div/sqrt unit
+   logic                       div_start, sqrt_start;
+   logic [31:0]                divsqrt_operand_a;
+   logic [31:0]                divsqrt_operand_b;
+   logic [31:0]                divsqrt_result;
+   logic [C_FFLAG-1:0]         divsqrt_flags;
+   logic                       divsqrt_nv;
+   logic                       divsqrt_ix;
    
+   assign sqrt_start = divsqrt_enable & (fpu_op_i == C_FPU_SQRT_CMD);
+   assign div_start  = divsqrt_enable & (fpu_op_i == C_FPU_DIV_CMD);
+
+   assign divsqrt_operand_a = (div_start | sqrt_start) ? operand_a_i : '0;
+   assign divsqrt_operand_b = (div_start)              ? operand_b_i : '0;
+   
+   
+   div_sqrt_top_tp fpu_divsqrt_tp
+     (
+      .Clk_CI           ( clk_i             ),
+      .Rst_RBI          ( rst_ni            ),
+      .Div_start_SI     ( div_start         ),
+      .Sqrt_start_SI    ( sqrt_start        ),
+      .Operand_a_DI     ( divsqrt_operand_a ),
+      .Operand_b_DI     ( divsqrt_operand_b ),
+      .RM_SI            ( rm_i[1:0]         ),
+      .Precision_ctl_SI ( prec_i            ),
+      .Result_DO        ( divsqrt_result    ),
+      .Exp_OF_SO        ( divsqrt_of        ),
+      .Exp_UF_SO        ( divsqrt_uf        ),
+      .Div_zero_SO      ( divsqrt_zero      ),
+      .Ready_SO         ( divsqrt_busy_o    ),
+      .Done_SO          ( divsqrt_valid     )
+      );
+   
+   assign divsqrt_nv = 1'b0;
+   assign divsqrt_ix = 1'b0;
+   assign divsqrt_flags = {divsqrt_nv, divsqrt_zero, divsqrt_of, divsqrt_uf, divsqrt_ix};
+
+   ///////////////////////////////////////////////
+   // temporary place holder for FMA            //
+   ///////////////////////////////////////////////
+   
+   logic [31:0]                 fma_operand_a;
+   logic [31:0]                 fma_operand_b;
+   logic [31:0]                 fma_operand_c;
+
+   logic [31:0]                 fma_result;
+      
+   logic [1:0]                  fma_op;
+   logic                        fma_valid;
+   logic [C_FFLAG-1:0]          fma_flags;
+      
+   always_comb begin
+      fma_op = 2'b00;
+      
+      unique case (fpu_op_i)
+        C_FPU_FMADD_CMD:
+          fma_op = 2'b00;
+        C_FPU_FMSUB_CMD:
+          fma_op = 2'b01;
+        C_FPU_FNMADD_CMD:
+          fma_op = 2'b11;
+        C_FPU_FNMSUB_CMD:
+          fma_op = 2'b10;
+        default:
+          fma_op = 2'b0;
+      endcase
+      end
+
+
+`ifndef PULP_FPGA_EMUL
+
+   fp_fma_wrapper
+     #(
+       .C_MAC_PIPE_REGS(2),
+       .RND_WIDTH(3),
+       .STAT_WIDTH(5)
+       )
+   fp_fma_wrap_i
+     (
+      .clk_i            ( clk_i         ),
+      .rst_ni           ( rst_ni        ),
+      .En_i             ( fma_enable    ),
+      .OpA_i            ( operand_a_i   ),
+      .OpB_i            ( operand_b_i   ),
+      .OpC_i            ( operand_c_i   ),
+      .Op_i             ( fma_op        ),
+      .Rnd_i            ( rm_i          ),
+      .Status_o         ( fma_flags     ),
+      .Res_o            ( fma_result    ),
+      .Valid_o          ( fma_valid     ),
+      .Ready_o          (               ),
+      .Ack_i            ( 1'b1          )
+      );
+`else
+   logic [2:0] tuser;
+   
+   assign fma_operand_a = (fma_enable) ? operand_a_i                                      : '0;
+   assign fma_operand_b = (fma_enable) ? {operand_b_i[31] ^ fma_op[1], operand_b_i[30:0]} : '0;
+   assign fma_operand_c = (fma_enable) ? {operand_c_i[31] ^ fma_op[0], operand_c_i[30:0]} : '0;
+
+   xilinx_fp_fma
+   fp_fma_wrap
+   (
+    .aclk                    ( clk_i         ),
+    .aresetn                 ( rst_ni        ),
+    .s_axis_a_tvalid         ( fma_enable    ),
+    .s_axis_a_tdata          ( fma_operand_a ),
+    .s_axis_b_tvalid         ( fma_enable    ),
+    .s_axis_b_tdata          ( fma_operand_b ),
+    .s_axis_c_tvalid         ( fma_enable    ),
+    .s_axis_c_tdata          ( fma_operand_c ),
+    .s_axis_operation_tvalid ( fma_enable    ),
+    .s_axis_operation_tdata  ( '0            ),
+    .m_axis_result_tvalid    ( fma_valid     ),
+    .m_axis_result_tdata     ( fma_result    ),
+    .m_axis_result_tuser     ( tuser         )
+    );
+   
+   assign fma_flags = {tuser[2], 1'b0, tuser[1], tuser[0], 1'b0};
+`endif
+
+   // output assignment
+   
+   assign valid_o  = divsqrt_valid | fpu_valid | fma_valid;
+   assign result_o = divsqrt_valid ? divsqrt_result : fpu_valid ? fpu_result : fma_valid ? fma_result : '0;
+   assign flags_o  = divsqrt_valid ? divsqrt_flags  : fpu_valid ? fpu_flags  : fma_valid ? fma_flags  : '0;
 
 endmodule

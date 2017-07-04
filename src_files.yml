@@ -3,8 +3,7 @@ fpu:
     .,
   ]
   files: [
-    hdl/fpu_v0.1/VHDLTools.vhd,
-    hdl/fpu_v0.1/firstone.vhd,
+    hdl/fpu_utils/fpu_ff.sv,
     hdl/fpu_v0.1/fpu_defs.sv,
     hdl/fpu_v0.1/fpexc.sv,
     hdl/fpu_v0.1/fpu_add.sv,
@@ -14,6 +13,14 @@ fpu:
     hdl/fpu_v0.1/fpu_mult.sv,
     hdl/fpu_v0.1/fpu_norm.sv,
     hdl/fpu_v0.1/fpu_private.sv,
-    hdl/fpu_v0.1/fpu_shared.sv,
-    hdl/fpu_v0.1/fpu.sv,
+    hdl/fpu_v0.1/riscv_fpu.sv,
+    hdl/fpu_v0.1/fp_fma_wrapper.sv,
+    hdl/fpu_div_sqrt_tp_nlp/fpu_defs_div_sqrt_tp.sv,
+    hdl/fpu_div_sqrt_tp_nlp/control_tp.sv,
+    hdl/fpu_div_sqrt_tp_nlp/fpu_norm_div_sqrt.sv,
+    hdl/fpu_div_sqrt_tp_nlp/iteration_div_sqrt_first.sv,
+    hdl/fpu_div_sqrt_tp_nlp/iteration_div_sqrt.sv,
+    hdl/fpu_div_sqrt_tp_nlp/nrbd_nrsc_tp.sv,
+    hdl/fpu_div_sqrt_tp_nlp/preprocess.sv,
+    hdl/fpu_div_sqrt_tp_nlp/div_sqrt_top_tp.sv,
   ]
