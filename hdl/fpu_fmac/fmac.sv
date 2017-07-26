@@ -1,0 +1,245 @@
+////////////////////////////////////////////////////////////////////////////////
+// Company:        IIS @ ETHZ - Federal Institute of Technology               //
+//                                                                            //
+// Engineers:      Lei Li -- lile@iis.ee.ethz.ch                              //
+//                                                                            //
+// Additional contributions by:                                               //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+// Create Date:    01/06/2017                                                 // 
+// Design Name:    fmac                                               // 
+// Module Name:    fmac.sv                                            //
+// Project Name:   The shared divisor and square root                         //
+// Language:       SystemVerilog                                              //
+//                                                                            //
+// Description:    The top of fmac                                    //
+// function:       a+b*c                                                      //
+//                                                                            //
+// Revision:       07/07/2017                                                 //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+import fpu_defs_fmac::*;
+
+module fmac
+#(
+   parameter   Precision_ctl_Enable_S       =        0 
+)
+  (//Input
+
+   //Input Operands
+   input logic [C_OP-1:0]   Operand_a_DI,
+   input logic [C_OP-1:0]   Operand_b_DI,
+   input logic [C_OP-1:0]   Operand_c_DI,
+   input logic [C_RM-1:0]   RM_SI,    //Rounding Mode
+   input logic [C_PC-1:0]   Precision_ctl_SI, // Precision Control
+
+   output logic [31:0]      Result_DO,
+ 
+   //Output-Flags
+   output logic             Exp_OF_SO,
+   output logic             Exp_UF_SO
+
+ );
+   
+
+
+  logic [C_MANT-1:0]        Mant_res_DO;
+  logic [C_EXP-1:0]         Exp_res_DO;
+  logic                     Sign_res_DO;
+
+   assign Result_DO =   {Sign_res_DO,Exp_res_DO, Mant_res_DO};   
+
+   //Operand components
+   logic                   Sign_a_D;
+   logic                   Sign_b_D;
+   logic                   Sign_c_D;
+   logic [C_EXP-1:0]       Exp_a_D;
+   logic [C_EXP-1:0]       Exp_b_D;
+   logic [C_EXP-1:0]       Exp_c_D;
+   logic [C_MANT:0]        Mant_a_D;
+   logic [C_MANT:0]        Mant_b_D;
+   logic [C_MANT:0]        Mant_c_D;
+
+
+
+   logic                   Inf_a_S;
+   logic                   Inf_b_S;
+   logic                   Zero_a_S;
+   logic                   Zero_b_S;
+   logic                   NaN_a_S;
+   logic                   NaN_b_S;
+
+   
+ //
+preprocess_fmac  precess_U0
+ (
+
+   .Operand_a_DI          (Operand_a_DI       ),
+   .Operand_b_DI          (Operand_b_DI       ),
+   .Operand_c_DI          (Operand_c_DI       ),
+ 
+   .Exp_a_DO              (Exp_a_D            ),
+   .Mant_a_DO             (Mant_a_D           ),
+   .Sign_a_DO             (Sign_a_D           ),
+   .Exp_b_DO              (Exp_b_D            ),
+   .Mant_b_DO             (Mant_b_D           ),
+   .Sign_b_DO             (Sign_b_D           ),
+   .Exp_c_DO              (Exp_c_D            ),
+   .Mant_c_DO             (Mant_c_D           ),
+   .Sign_c_DO             (Sign_c_D           ),
+   .DeN_a_SO              (DeN_a_S            ),
+   .Inf_a_SO              (Inf_a_S            ),
+   .Inf_b_SO              (Inf_b_S            ),
+   .Inf_c_SO              (Inf_c_S            ),
+//   .Zero_a_SO             (Zero_a_S           ),
+//   .Zero_b_SO             (Zero_b_S           ),
+   .NaN_a_SO              (NaN_a_S            ),
+   .NaN_b_SO              (NaN_b_S            ),
+   .NaN_c_SO              (NaN_c_S            )
+
+   );
+
+ logic [12:0] [2*C_MANT+2:0]               Pp_index_D;
+ pp_generation  pp_gneration_U0
+ (
+   .Mant_a_DI             (Mant_b_D          ),
+   .Mant_b_DI             (Mant_c_D          ),
+   .Pp_index_DO           (Pp_index_D        )
+ );
+
+   logic [2*C_MANT+2:0]                      Pp_sum_D;
+   logic [2*C_MANT+2:0]                      Pp_carry_D;
+   logic                                MSB_cor_D;
+ wallace   wallace_U0
+ ( 
+   .Pp_index_DI           (Pp_index_D        ),
+   .Pp_sum_DO             (Pp_sum_D          ),
+   .Pp_carry_DO           (Pp_carry_D        ),
+   .MSB_cor_DO            (MSB_cor_D         )
+ );
+
+ logic [74:0]                              Mant_postalig_a_D;
+ logic signed [C_EXP+1:0]                  Exp_postalig_D;
+ logic [2*C_MANT+2:0]                      Pp_sum_postcal_D;
+ logic [2*C_MANT+2:0]                      Pp_carry_postcal_D;
+
+ aligner  aligner_U0
+ (
+   .Exp_a_DI              (Exp_a_D          ),
+   .Exp_b_DI              (Exp_b_D          ),
+   .Mant_a_DI             (Mant_a_D         ),
+   .Exp_c_DI              (Exp_c_D          ),
+
+   .Sign_a_DI             (Sign_a_D         ),
+   .Sign_b_DI             (Sign_b_D         ),
+   .Sign_c_DI             (Sign_c_D         ),
+   .Pp_sum_DI             (Pp_sum_D          ),
+   .Pp_carry_DI           (Pp_carry_D        ),
+   .Sub_SO                (Sub_S            ),  
+   .Mant_postalig_a_DO    (Mant_postalig_a_D),
+//   .Stick_one_SO          (Stick_one_S      ),
+   .Exp_postalig_DO       (Exp_postalig_D   ),
+   .Sign_postalig_DO      (Sign_postalig_D  ),
+   .Sign_amt_DO           (Sign_amt_D      ), 
+   .Sft_stop_SO            (Sft_stop_S     ),
+   .Pp_sum_postcal_DO     (Pp_sum_postcal_D          ),
+   .Pp_carry_postcal_DO   (Pp_carry_postcal_D        )
+ );
+
+// 48-bit CSA. In fact the bit width is 49 bits including sign bit. After this CSA, EDCA is used to produce the correct sum and the carry out bit.
+   logic [2*C_MANT+1:0]                      Csa_sum_D;
+   logic [2*C_MANT+1:0]                      Csa_carry_D;                      
+
+CSA   #(2*C_MANT+2)  CSA_U0 
+ 
+ ( 
+   .A_DI                  (Mant_postalig_a_D[2*C_MANT+1:0]), 
+   .B_DI                  ({Pp_sum_postcal_D[2*C_MANT+1:0]}       ),
+   .C_DI                  ({Pp_carry_postcal_D[2*C_MANT:0],1'b0}  ), 
+   .Sum_DO                (Csa_sum_D                      ), 
+   .Carry_DO              (Csa_carry_D                    )
+ );
+
+// The correction based sign extension is included in adders.  
+
+ logic [73:0]         Sum_pos_D;
+ logic [3*C_MANT+4:0]            A_LZA_D;
+ logic [3*C_MANT+4:0]            B_LZA_D;
+ 
+
+adders adders_U0
+ (
+  .AL_DI                   (Csa_sum_D),
+  .BL_DI                   (Csa_carry_D),
+  .Sub_SI                  (Sub_S),
+  .Sign_cor_SI             ({MSB_cor_D, Pp_carry_postcal_D[2*C_MANT+2],{Pp_sum_postcal_D[2*C_MANT+2] && Pp_carry_postcal_D[2*C_MANT+1]}}),   //????
+  .Sign_amt_DI             (Sign_amt_D      ), 
+  .Sft_stop_SI             (Sft_stop_S     ),
+  .BH_DI                   (Mant_postalig_a_D[3*C_MANT+5:2*C_MANT+2]),
+  .Sign_postalig_DI        (Sign_postalig_D  ),
+  .Sum_pos_DO              (Sum_pos_D),
+  .Sign_out_DO             (Sign_out_D),
+  .A_LZA_DO                (A_LZA_D),
+  .B_LZA_DO                (B_LZA_D)
+ );
+ 
+
+ logic [C_LEADONE_WIDTH-1:0]        Leading_one_D;
+
+LZA #(3*C_MANT+5) LZA_U0
+
+  (
+
+   .A_DI                   (A_LZA_D),
+   .B_DI                   (B_LZA_D), 
+   .Leading_one_DO         (Leading_one_D)        
+   );
+
+
+
+
+
+ fpu_norm_fmac  fpu_norm_U0
+  (
+   .Mant_in_DI            (Sum_pos_D           ),
+   .Exp_in_DI             (Exp_postalig_D      ),
+   .Sign_in_DI            (Sign_out_D          ),
+   .Leading_one_DI        (Leading_one_D      ), 
+   .Sign_amt_DI             (Sign_amt_D      ), 
+   .Exp_a_DI              (Operand_a_DI[C_OP-2:C_MANT]), //exponent
+   .Mant_a_DI             (Mant_a_D           ),
+   .Sign_a_DI             (Sign_a_D           ),
+   .DeN_a_SI              (DeN_a_S            ),
+   .RM_SI                 (RM_SI              ),    //Rounding Mode
+//   .Stick_one_SI          (Stick_one_S        ), 
+   .Inf_a_SI              (Inf_a_S            ),
+   .Inf_b_SI              (Inf_b_S            ),
+   .Inf_c_SI              (Inf_c_S            ),
+   .NaN_a_SI              (NaN_a_S            ),
+   .NaN_b_SI              (NaN_b_S            ),
+   .NaN_c_SI              (NaN_c_S            ),
+   //Rounding Mode
+
+  
+
+
+   .Mant_res_DO           (Mant_res_DO        ),
+   .Exp_res_DO            (Exp_res_DO         ),
+   .Sign_res_DO           (Sign_res_DO        ),
+   .Exp_OF_SO             (Exp_OF_SO          ),
+   .Exp_UF_SO             (Exp_UF_SO          )
+   );
+
+
+ 
+ 
+endmodule // 

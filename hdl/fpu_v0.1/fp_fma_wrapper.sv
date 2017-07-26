@@ -106,6 +106,7 @@ module fp_fma_wrapper
    logic [7:0]            status;
    assign Status_DP[0] = {status[2], 1'b0, status[4], status[3], 1'b0};
 
+/*
    DW_fp_mac
      #(
        .sig_width(23),
@@ -121,6 +122,20 @@ module fp_fma_wrapper
       .z(Res_DP[0]),
       .status(status)
       );
+*/
+
+fmac  fp_fma_i
+  (
+   .Operand_a_DI         (OpA_DP[C_PRE_PIPE_REGS]       ),
+   .Operand_b_DI         (OpB_DP[C_PRE_PIPE_REGS]       ),
+   .Operand_c_DI         (OpC_DP[C_PRE_PIPE_REGS]       ),
+   .RM_SI                (Rnd_DP[C_PRE_PIPE_REGS]              ),
+//   .Precision_ctl_SI     (Precision_ctl_SI   ),
+   .Result_DO            (Res_DP[0]          ),
+   .Exp_OF_SO            (Status[4]          ),
+   .Exp_UF_SO            (Status[3]          )
+   );
+
 `endif
 `endif   
    // PRE_PIPE_REGS
