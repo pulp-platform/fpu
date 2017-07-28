@@ -71,27 +71,6 @@ module riscv_fpu
 
    logic [$clog2(CYCLES):0]     valid_count_q, valid_count_n;
 
-   // always_ff @(posedge clk, negedge rst_n)
-     // begin
-        // if (~rst_n)
-          // begin
-             // operand_a_q            <= '0;
-             // operand_b_q            <= '0;
-             // rounding_mode_q        <= '0;
-             // operator_q             <= '0;
-          // end
-        // else
-          // begin
-             // if(~stall_i)
-               // begin
-                  // operand_a_q       <= operand_a_i;
-                  // operand_b_q       <= operand_b_i;
-                  // rounding_mode_q   <= rounding_mode_i;
-                  // operator_q        <= operator_i;
-               // end
-          // end
-     // end
-
    // result is valid if we waited 2 cycles
    assign result_valid_o = (valid_count_q == CYCLES - 1) ? 1'b1 : 1'b0;
 

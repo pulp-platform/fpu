@@ -44,17 +44,15 @@ module fpu_shared
    input logic     Rst_RBI,
    marx_apu_if.apu Interface
    );
-   
 
    logic [C_OP-1:0]  Operand_a_D;
    logic [C_OP-1:0]  Operand_b_D;
    logic [C_CMD-1:0] Op_S;
    logic [C_RM-1:0]  RM_S;
-   
+
    logic             Valid_S;
    logic [C_TAG-1:0] Tag_D;
-   
-   
+
    /////////////////////////////////////////////////////////////////////////////
    // Optional Input Register
    /////////////////////////////////////////////////////////////////////////////

@@ -48,7 +48,7 @@ module control_tp
    input logic                                       Div_start_SI ,
    input logic                                       Sqrt_start_SI,
    input logic                                       Start_SI,
-   input logic [C_DIV_PC-1:0]                        Precision_ctl_SI,  
+   input logic [C_DIV_PC-1:0]                        Precision_ctl_SI,
    input logic [C_DIV_MANT:0]                        Numerator_DI,
    input logic [C_DIV_EXP:0]                         Exp_num_DI,
    input logic [C_DIV_MANT:0]                        Denominator_DI,
