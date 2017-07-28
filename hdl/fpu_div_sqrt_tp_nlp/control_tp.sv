@@ -1,28 +1,37 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
-// Engineers:      Lei Li                  //lile@iis.ee.ethz.ch
+// Engineers:      Lei Li                    lile@iis.ee.ethz.ch              //
 //                                                                            //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    01/12/2016                                                 // 
-// Design Name:    FPU                                                        // 
-// Module Name:    control.sv                                                   //
+// Create Date:    01/12/2016                                                 //
+// Design Name:    FPU                                                        //
+// Module Name:    control_tp.sv                                              //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
-// Description:    the control logic  of div and sqrt                                      //
-//                                                                          //
-//                                                                            //
-// Revision:    19/01/2017                                                              //
+// Description:    the control logic  of div and sqrt                         //
 //                                                                            //
 //                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
+// Revision:       19/01/2017                                                 //
 //                                                                            //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +40,7 @@ import fpu_defs_div_sqrt_tp::*;
 
 module control_tp
 #(
-   parameter   Precision_ctl_Enable_S       =        1 
+   parameter   Precision_ctl_Enable_S = 1
 )
   (//Input
    input logic                                       Clk_CI,
@@ -44,8 +53,6 @@ module control_tp
    input logic [C_DIV_EXP:0]                         Exp_num_DI,
    input logic [C_DIV_MANT:0]                        Denominator_DI,
    input logic [C_DIV_EXP:0]                         Exp_den_DI,
-//   input logic                                       Special_case_SBI,
-//   input logic                                       Special_case_dly_SBI,
    input logic [C_DIV_MANT+1:0]                      First_iteration_cell_sum_DI,
    input logic                                       First_iteration_cell_carry_DI,
    input logic [1:0]                                 Sqrt_Da0,   
@@ -59,9 +66,8 @@ module control_tp
    input logic                                       Fou_iteration_cell_carry_DI,
    input logic [1:0]                                 Sqrt_Da3,  
 
-
    output logic                                      Div_start_dly_SO ,
-   output logic                                      Sqrt_start_dly_SO,   
+   output logic                                      Sqrt_start_dly_SO,
    output logic                                      Div_enable_SO,
    output logic                                      Sqrt_enable_SO,
 
@@ -70,83 +76,74 @@ module control_tp
    output logic [1:0]                                Sqrt_D2,
    output logic [1:0]                                Sqrt_D3,
 
-   output logic [C_DIV_MANT+1:0]                    First_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                    First_iteration_cell_b_DO,
-   output logic [C_DIV_MANT+1:0]                    Sec_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                    Sec_iteration_cell_b_DO,
-   output logic [C_DIV_MANT+1:0]                    Thi_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                    Thi_iteration_cell_b_DO,
-   output logic [C_DIV_MANT+1:0]                    Fou_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                    Fou_iteration_cell_b_DO,
-
+   output logic [C_DIV_MANT+1:0]                     First_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                     First_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1:0]                     Sec_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                     Sec_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1:0]                     Thi_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                     Thi_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1:0]                     Fou_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1:0]                     Fou_iteration_cell_b_DO,
 
    //To next stage
-   output  logic                                     Ready_SO,
+   output logic                                      Ready_SO,
    output logic                                      Done_SO,
    output logic [C_DIV_MANT:0]                       Mant_result_prenorm_DO,
-//   output  logic sign_result,
+
    output logic [C_DIV_EXP+1:0]                      Exp_result_prenorm_DO
  );
-   
-   logic [C_DIV_MANT+1:0] Partial_remainder_DN,  Partial_remainder_DP;
-   logic  [C_DIV_MANT:0]   Quotient_DP;
-   /////////////////////////////////////////////////////////////////////////////
-   // Assign Inputs
-   /////////////////////////////////////////////////////////////////////////////
-   logic [C_DIV_MANT+1:0]          Numerator_se_D;  //sign extension and hidden bit
-   logic [C_DIV_MANT+1:0]          Denominator_se_D; //signa extension and hidden bit
-   logic [C_DIV_MANT+1:0]          Denominator_se_DB;  //1's complement
-                       
- //  logic               select; // for choosing Mb or ~Mb
-//    logic  Start_SI;  
 
-   
+   logic [C_DIV_MANT+1:0]                            Partial_remainder_DN,Partial_remainder_DP;
+   logic  [C_DIV_MANT:0]                             Quotient_DP;
+   /////////////////////////////////////////////////////////////////////////////
+   // Assign Inputs                                                          //
+   /////////////////////////////////////////////////////////////////////////////
+   logic [C_DIV_MANT+1:0]                            Numerator_se_D;  //sign extension and hidden bit
+   logic [C_DIV_MANT+1:0]                            Denominator_se_D; //signa extension and hidden bit
+   logic [C_DIV_MANT+1:0]                            Denominator_se_DB;  //1's complement
+
    assign  Numerator_se_D={1'b0,Numerator_DI};
 
-   
    assign  Denominator_se_D={1'b0,Denominator_DI};
    assign  Denominator_se_DB=~Denominator_se_D;
 
 
-   logic [C_DIV_MANT+1:0]  Mant_D_sqrt_Norm;
+   logic [C_DIV_MANT+1:0]                            Mant_D_sqrt_Norm;
 
    assign Mant_D_sqrt_Norm=Exp_num_DI[0]?{1'b0,Numerator_DI}:{Numerator_DI,1'b0}; //for sqrt
- 
 
    /////////////////////////////////////////////////////////////////////////////
-   // Precision Control
+   // Precision Control                                                       //
    /////////////////////////////////////////////////////////////////////////////
- 
-   logic [C_DIV_PC-1:0]   Precision_ctl_S;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   
+   logic [C_DIV_PC-1:0]                              Precision_ctl_S;
+
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
           begin
-            Precision_ctl_S<='b0; 
+            Precision_ctl_S<='b0;
           end
         else if(Start_SI)
           begin
              if(Precision_ctl_Enable_S==1)
                begin
-                 Precision_ctl_S<=Precision_ctl_SI; 
+                 Precision_ctl_S<=Precision_ctl_SI;
                end
              else
                begin
-                 Precision_ctl_S<=5'b10111; 
+                 Precision_ctl_S<=5'b10111;
                end
           end
         else
           begin
-            Precision_ctl_S<=Precision_ctl_S; 
+            Precision_ctl_S<=Precision_ctl_S;
           end
-    end 
+    end
 
+     logic [2:0]                                     State_ctl_S;
 
- 
-     logic [2:0]           State_ctl_S;  
- 
-     always_comb   
+     always_comb
        begin
          if(Precision_ctl_Enable_S==1)
          begin
@@ -176,119 +173,104 @@ module control_tp
         else
              begin
                State_ctl_S<=3'b101;
-             end                 
-       end 
- 
-  
+             end
+       end
 
    /////////////////////////////////////////////////////////////////////////////
-   // control logic
+   // control logic                                                           //
    /////////////////////////////////////////////////////////////////////////////
-//  
 
-
-
-   logic Div_start_dly_S;
+   logic                                               Div_start_dly_S;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Div_start_dly_S signal
      begin
         if(~Rst_RBI)
           begin
-            Div_start_dly_S<=1'b0; 
+            Div_start_dly_S<=1'b0;
           end
         else if(Div_start_SI)
          begin
-           Div_start_dly_S<=1'b1; 
+           Div_start_dly_S<=1'b1;
          end
         else
           begin
-            Div_start_dly_S<=1'b0; 
+            Div_start_dly_S<=1'b0;
           end
-    end 
+    end
+
    assign Div_start_dly_SO=Div_start_dly_S;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Div_enable_SO signal
      begin
         if(~Rst_RBI)
           begin
-            Div_enable_SO<=1'b0; 
+            Div_enable_SO<=1'b0;
           end
         else if(Div_start_SI)
          begin
-           Div_enable_SO<=1'b1; 
+           Div_enable_SO<=1'b1;
          end
-//        else if(Done_SO&&Special_case_dly_SBI)
          else if(Done_SO)
           begin
-            Div_enable_SO<=1'b0; 
+            Div_enable_SO<=1'b0;
           end
        else
           begin
-            Div_enable_SO<=Div_enable_SO; 
+            Div_enable_SO<=Div_enable_SO;
           end
+    end
 
-    end 
 
-
-   logic  Sqrt_start_dly_S;
+   logic                                                Sqrt_start_dly_S;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Sqrt_start_dly_SI signal
      begin
         if(~Rst_RBI)
           begin
-            Sqrt_start_dly_S<=1'b0; 
+            Sqrt_start_dly_S<=1'b0;
           end
         else if(Sqrt_start_SI)
          begin
-           Sqrt_start_dly_S<=1'b1; 
+           Sqrt_start_dly_S<=1'b1;
          end
         else
           begin
-            Sqrt_start_dly_S<=1'b0; 
+            Sqrt_start_dly_S<=1'b0;
           end
-      end 
+      end
     assign Sqrt_start_dly_SO=Sqrt_start_dly_S;
-
-//logic  Sqrt_enable_SO;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   //  generate Sqrt_enable_SO signal
      begin
         if(~Rst_RBI)
           begin
-            Sqrt_enable_SO<=1'b0; 
+            Sqrt_enable_SO<=1'b0;
           end
         else if(Sqrt_start_SI)
          begin
-           Sqrt_enable_SO<=1'b1; 
+           Sqrt_enable_SO<=1'b1;
          end
         else if(Done_SO)
           begin
-           Sqrt_enable_SO<=1'b0; 
+           Sqrt_enable_SO<=1'b0;
           end
        else
           begin
-           Sqrt_enable_SO<=Sqrt_enable_SO; 
+           Sqrt_enable_SO<=Sqrt_enable_SO;
           end
+    end
 
-    end 
-
-
-     
- 
-
-   logic [2:0]                                              Crtl_cnt_S;
-   logic                                                    Start_dly_S;
+   logic [2:0]                                                  Crtl_cnt_S;
+   logic                                                        Start_dly_S;
 
    assign   Start_dly_S=Div_start_dly_S |Sqrt_start_dly_S;
 
    logic       Fsm_enable_S;
    assign      Fsm_enable_S=(Start_dly_S | (| Crtl_cnt_S[2:0]));
-//   logic       Fsm_enable_lp_S;
-//   assign      Fsm_enable_lp_S=Fsm_enable_S&Special_case_dly_SBI;
-  
+
    logic  Final_state_S;
    assign     Final_state_S= (Crtl_cnt_S==State_ctl_S);
-///4 iteration units per stage    
+   //4 iteration units per stage    
    always_ff @(posedge Clk_CI, negedge Rst_RBI) //control_FSM
      begin
         if (~Rst_RBI)
@@ -297,7 +279,7 @@ module control_tp
           end
           else if (Final_state_S)
             begin     
-              Crtl_cnt_S    <= '0;  
+              Crtl_cnt_S    <= '0;
             end
           else if(Fsm_enable_S) // one cycle Start_SI
             begin
@@ -306,8 +288,7 @@ module control_tp
           else
             begin
               Crtl_cnt_S    <= '0;
-            end 
-      
+            end
      end // always_ff
 
 
@@ -316,22 +297,17 @@ module control_tp
       begin
         if(~Rst_RBI)
           begin
-            Done_SO<=1'b0;       
+            Done_SO<=1'b0;
           end
-/*        else if(~Special_case_SBI)   //Two clock cycles for special cases
-          begin
-            Done_SO<=1'b1;
-          end   
-*/ 
         else if(Start_SI)
           begin
-            Done_SO<=1'b0;  
+            Done_SO<=1'b0;
           end
-        else if(Final_state_S)  
+        else if(Final_state_S)
           begin
             Done_SO<=1'b1;
-          end      
-        else 
+          end
+        else
           begin
             Done_SO<=1'b0;
           end
@@ -344,29 +320,22 @@ module control_tp
      begin
        if(~Rst_RBI)
          begin
-           Ready_SO<=1'b1;       
-         end   
-/*       else if(~Special_case_SBI)           //Two clock cycles for special cases
-          begin
-            Ready_SO<=1'b1; 
-          end 
-*/ 
+           Ready_SO<=1'b1;
+         end
+
        else if(Start_SI)
          begin
-           Ready_SO<=1'b0;       
+           Ready_SO<=1'b0;
          end 
-       else if(Final_state_S)     
+       else if(Final_state_S)
          begin
            Ready_SO<=1'b1;
-         end      
-
+         end
        else
          begin
            Ready_SO<=Ready_SO;
          end
      end
-
-
 
    logic [C_DIV_MANT+1:0]                                        Sqrt_R0,Sqrt_R1,Sqrt_R2,Sqrt_R3,Sqrt_R4;//partial remainder for each iteration
 
@@ -377,17 +346,17 @@ module control_tp
    logic [18:0]                                                  Qcnt4, Q_cnt_cmp_4;
    logic [22:0]                                                  Qcnt5, Q_cnt_cmp_5;
    logic [C_DIV_MANT+1:0]                                        Sqrt_Q0,Sqrt_Q1,Sqrt_Q2,Sqrt_Q3,Sqrt_Q4;
-   
+
    logic [C_DIV_MANT+1:0]                                        Q_sqrt0,Q_sqrt1,Q_sqrt2,Q_sqrt3,Q_sqrt4;
    logic [C_DIV_MANT+1:0]                                        Q_sqrt_com_0,Q_sqrt_com_1,Q_sqrt_com_2,Q_sqrt_com_3,Q_sqrt_com_4;
-   
-   assign Qcnt0=    {1'b0,            ~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};   //qk for each feedback
-   assign Qcnt1=    {Quotient_DP[3:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]}; 
-   assign Qcnt2=    {Quotient_DP[7:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};   
+
+   assign Qcnt0=    {1'b0,            ~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};  //qk for each feedback
+   assign Qcnt1=    {Quotient_DP[3:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};
+   assign Qcnt2=    {Quotient_DP[7:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};
    assign Qcnt3=    {Quotient_DP[11:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};
    assign Qcnt4=    {Quotient_DP[15:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};
    assign Qcnt5=    {Quotient_DP[19:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};  //just 24 iteration
- 
+
    assign Q_cnt_cmp_0=~Qcnt0;
    assign Q_cnt_cmp_1=~Qcnt1;
    assign Q_cnt_cmp_2=~Qcnt2;
@@ -395,61 +364,44 @@ module control_tp
    assign Q_cnt_cmp_4=~Qcnt4;
    assign Q_cnt_cmp_5=~Qcnt5;
 
-
-
-   
-  
   always_comb begin  // the intermediate operands for sqrt
- 
   case(Crtl_cnt_S)
-  
+
     3'b000: begin
-       
+
        Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT+1:C_DIV_MANT];
        Sqrt_D1=Mant_D_sqrt_Norm[C_DIV_MANT-1:C_DIV_MANT-2];
        Sqrt_D2=Mant_D_sqrt_Norm[C_DIV_MANT-3:C_DIV_MANT-4];
        Sqrt_D3=Mant_D_sqrt_Norm[C_DIV_MANT-5:C_DIV_MANT-6];
-
-       //
-
-       
-       //
 
        Q_sqrt0={24'h000000,Qcnt0[3]};
        Q_sqrt1={23'h000000,Qcnt0[3:2]};
        Q_sqrt2={22'h000000,Qcnt0[3:1]};
        Q_sqrt3={21'h000000,Qcnt0[3:0]};
 
-//
        Q_sqrt_com_0={24'hffffff, Q_cnt_cmp_0[3]};
        Q_sqrt_com_1={23'h7fffff,Q_cnt_cmp_0[3:2]};
        Q_sqrt_com_2={22'h3fffff,Q_cnt_cmp_0[3:1]};
        Q_sqrt_com_3={21'h1fffff,Q_cnt_cmp_0[3:0]};
 
-        
        Sqrt_Q0=Q_sqrt_com_0;
        Sqrt_Q1=First_iteration_cell_sum_DI[24]?Q_sqrt1:Q_sqrt_com_1;
        Sqrt_Q2=Sec_iteration_cell_sum_DI[24]?Q_sqrt2:Q_sqrt_com_2;
        Sqrt_Q3=Thi_iteration_cell_sum_DI[24]?Q_sqrt3:Q_sqrt_com_3;
 
-
-
     end
+
     3'b001: begin
        Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT-7:C_DIV_MANT-8];
        Sqrt_D1=Mant_D_sqrt_Norm[C_DIV_MANT-9:C_DIV_MANT-10];
        Sqrt_D2=Mant_D_sqrt_Norm[C_DIV_MANT-11:C_DIV_MANT-12];
        Sqrt_D3=Mant_D_sqrt_Norm[C_DIV_MANT-13:C_DIV_MANT-14];
 
-       //
-
-       //
        Q_sqrt0={21'h000000,Qcnt1[6:3]};
        Q_sqrt1={20'h00000,Qcnt1[6:2]};
        Q_sqrt2={19'h00000,Qcnt1[6:1]};
        Q_sqrt3={18'h00000,Qcnt1[6:0]};
 
-//
        Q_sqrt_com_0={21'h1fffff,Q_cnt_cmp_1[6:3]};
        Q_sqrt_com_1={20'hfffff,Q_cnt_cmp_1[6:2]};
        Q_sqrt_com_2={19'h7ffff,Q_cnt_cmp_1[6:1]};
@@ -461,99 +413,77 @@ module control_tp
        Sqrt_Q2=Sec_iteration_cell_sum_DI[24]?Q_sqrt2:Q_sqrt_com_2;
        Sqrt_Q3=Thi_iteration_cell_sum_DI[24]?Q_sqrt3:Q_sqrt_com_3;
 
-
-
-       
     end
+
     3'b010: begin
        Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT-15:C_DIV_MANT-16]; 
        Sqrt_D1=Mant_D_sqrt_Norm[C_DIV_MANT-17:C_DIV_MANT-18];
        Sqrt_D2=Mant_D_sqrt_Norm[C_DIV_MANT-19:C_DIV_MANT-20];
        Sqrt_D3=Mant_D_sqrt_Norm[C_DIV_MANT-21:C_DIV_MANT-22];
 
-//
-       //
-
-       //
        Q_sqrt0={17'h00000,Qcnt2[10:3]};
        Q_sqrt1={16'h0000,Qcnt2[10:2]};
        Q_sqrt2={15'h0000,Qcnt2[10:1]};
        Q_sqrt3={14'h0000,Qcnt2[10:0]};
 
-//
        Q_sqrt_com_0={17'h1ffff,Q_cnt_cmp_2[10:3]};
        Q_sqrt_com_1={16'hffff,Q_cnt_cmp_2[10:2]};
        Q_sqrt_com_2={15'h7fff,Q_cnt_cmp_2[10:1]};
        Q_sqrt_com_3={14'h3fff,Q_cnt_cmp_2[10:0]};
- 
 
        Sqrt_Q0=Quotient_DP[0]?Q_sqrt_com_0:Q_sqrt0;
        Sqrt_Q1=First_iteration_cell_sum_DI[24]?Q_sqrt1:Q_sqrt_com_1;
        Sqrt_Q2=Sec_iteration_cell_sum_DI[24]?Q_sqrt2:Q_sqrt_com_2;
        Sqrt_Q3=Thi_iteration_cell_sum_DI[24]?Q_sqrt3:Q_sqrt_com_3;
 
-
-
-       
     end
+
     3'b011: begin
        Sqrt_D0={Mant_D_sqrt_Norm[0],1'b0};;
        Sqrt_D1='0;
        Sqrt_D2='0;
        Sqrt_D3='0;
- 
-       //
 
-       //
        Q_sqrt0={13'h0000,Qcnt3[14:3]};
        Q_sqrt1={12'h000,Qcnt3[14:2]};
        Q_sqrt2={11'h000,Qcnt3[14:1]};
        Q_sqrt3={10'h000,Qcnt3[14:0]};
 
-//
        Q_sqrt_com_0={13'h1fff,Q_cnt_cmp_3[14:3]};
        Q_sqrt_com_1={12'hfff,Q_cnt_cmp_3[14:2]};
        Q_sqrt_com_2={11'h7ff,Q_cnt_cmp_3[14:1]};
        Q_sqrt_com_3={10'h3ff,Q_cnt_cmp_3[14:0]};
 
-
        Sqrt_Q0=Quotient_DP[0]?Q_sqrt_com_0:Q_sqrt0;
        Sqrt_Q1=First_iteration_cell_sum_DI[24]?Q_sqrt1:Q_sqrt_com_1;
        Sqrt_Q2=Sec_iteration_cell_sum_DI[24]?Q_sqrt2:Q_sqrt_com_2;
        Sqrt_Q3=Thi_iteration_cell_sum_DI[24]?Q_sqrt3:Q_sqrt_com_3;
- 
 
+    end
 
-
-    end 
     3'b100: begin
        Sqrt_D0='0;
        Sqrt_D1='0;
        Sqrt_D2='0;
-       Sqrt_D3='0; 
-       //
-      
-       //  
-       //
+       Sqrt_D3='0;
+
        Q_sqrt0={9'h000,Qcnt4[18:3]};
        Q_sqrt1={8'h00,Qcnt4[18:2]};
        Q_sqrt2={7'h00,Qcnt4[18:1]};
        Q_sqrt3={6'h00,Qcnt4[18:0]};
- 
-//
+
        Q_sqrt_com_0={9'h1ff,Q_cnt_cmp_4[18:3]};
        Q_sqrt_com_1={8'hff,Q_cnt_cmp_4[18:2]};
        Q_sqrt_com_2={7'h7f,Q_cnt_cmp_4[18:1]};
        Q_sqrt_com_3={6'h3f,Q_cnt_cmp_4[18:0]};
- 
 
        Sqrt_Q0=Quotient_DP[0]?Q_sqrt_com_0:Q_sqrt0;
        Sqrt_Q1=First_iteration_cell_sum_DI[24]?Q_sqrt1:Q_sqrt_com_1;
        Sqrt_Q2=Sec_iteration_cell_sum_DI[24]?Q_sqrt2:Q_sqrt_com_2;
        Sqrt_Q3=Thi_iteration_cell_sum_DI[24]?Q_sqrt3:Q_sqrt_com_3;
 
-  
-    end  
+    end
+
        3'b101: begin
        Sqrt_D0='0;
        Sqrt_D1='0;
@@ -565,31 +495,23 @@ module control_tp
        Q_sqrt2={3'h0,Qcnt5[22:1]};
        Q_sqrt3={2'h0,Qcnt5[22:0]};
 
-//
        Q_sqrt_com_0={5'h1f,Q_cnt_cmp_5[22:3]};
        Q_sqrt_com_1={4'hf,Q_cnt_cmp_5[22:2]};
        Q_sqrt_com_2={3'h7,Q_cnt_cmp_5[22:1]};
        Q_sqrt_com_3={2'h3,Q_cnt_cmp_5[22:0]};
- 
 
        Sqrt_Q0=Quotient_DP[0]?Q_sqrt_com_0:Q_sqrt0;
        Sqrt_Q1=First_iteration_cell_sum_DI[24]?Q_sqrt1:Q_sqrt_com_1;
        Sqrt_Q2=Sec_iteration_cell_sum_DI[24]?Q_sqrt2:Q_sqrt_com_2;
        Sqrt_Q3=Thi_iteration_cell_sum_DI[24]?Q_sqrt3:Q_sqrt_com_3;
-    
+
      end
-
-
-
-
 
    default: begin
        Sqrt_D0='0;
        Sqrt_D1='0;
        Sqrt_D2='0;
        Sqrt_D3='0;
-
-           //
 
        Q_sqrt0='0;
        Q_sqrt1='0;
@@ -601,35 +523,25 @@ module control_tp
        Q_sqrt_com_1='0;
        Q_sqrt_com_2='0;
        Q_sqrt_com_3='0;
-       Q_sqrt_com_4='0;  
+       Q_sqrt_com_4='0;
 
        Sqrt_Q0='0;
        Sqrt_Q1='0;
        Sqrt_Q2='0;
        Sqrt_Q3='0;
- 
- 
 
-    end  
-     
+    end
   endcase
  end
 
 
   assign Sqrt_R0=(Sqrt_start_dly_S)?'0:Partial_remainder_DP; 
-  assign Sqrt_R1={First_iteration_cell_sum_DI[24],First_iteration_cell_sum_DI[21:0],Sqrt_Da0}; 
-  assign Sqrt_R2={Sec_iteration_cell_sum_DI[24],Sec_iteration_cell_sum_DI[21:0],Sqrt_Da1}; 
-  assign Sqrt_R3={Thi_iteration_cell_sum_DI[24],Thi_iteration_cell_sum_DI[21:0],Sqrt_Da2}; 
-  assign Sqrt_R4={Fou_iteration_cell_sum_DI[24],Fou_iteration_cell_sum_DI[21:0],Sqrt_Da3}; 
+  assign Sqrt_R1={First_iteration_cell_sum_DI[24],First_iteration_cell_sum_DI[21:0],Sqrt_Da0};
+  assign Sqrt_R2={Sec_iteration_cell_sum_DI[24],Sec_iteration_cell_sum_DI[21:0],Sqrt_Da1};
+  assign Sqrt_R3={Thi_iteration_cell_sum_DI[24],Thi_iteration_cell_sum_DI[21:0],Sqrt_Da2};
+  assign Sqrt_R4={Fou_iteration_cell_sum_DI[24],Fou_iteration_cell_sum_DI[21:0],Sqrt_Da3};
 
-
- 
-
-
-
-//
-
-//                   for           iteration cell_U0
+  //                   for           iteration cell_U0
   logic [C_DIV_MANT+1:0]                           First_iteration_cell_div_a_D,First_iteration_cell_div_b_D;
   logic                                            Sel_b_for_first_S;
 
@@ -641,7 +553,7 @@ module control_tp
   assign First_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q0:(First_iteration_cell_div_b_D);
 
 
-//                   for           iteration cell_U1
+  //                   for           iteration cell_U1
   logic [C_DIV_MANT+1:0]                          Sec_iteration_cell_div_a_D,Sec_iteration_cell_div_b_D;
   logic                                           Sel_b_for_sec_S;
 
@@ -653,7 +565,7 @@ module control_tp
   assign Sec_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q1:(Sec_iteration_cell_div_b_D);
 
 
-//                   for           iteration cell_U2
+  //                   for           iteration cell_U2
   logic [C_DIV_MANT+1:0]                          Thi_iteration_cell_div_a_D,Thi_iteration_cell_div_b_D;
   logic                                           Sel_b_for_thi_S;
 
@@ -664,7 +576,7 @@ module control_tp
   assign Thi_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q2:(Thi_iteration_cell_div_b_D);
 
 
-//                   for           iteration cell_U3
+  //                   for           iteration cell_U3
   logic [C_DIV_MANT+1:0]                          Fou_iteration_cell_div_a_D,Fou_iteration_cell_div_b_D;
   logic                                           Sel_b_for_fou_S;
 
@@ -672,24 +584,16 @@ module control_tp
   assign Sel_b_for_fou_S=Thi_iteration_cell_carry_DI;
   assign Fou_iteration_cell_div_b_D=Sel_b_for_fou_S?Denominator_se_DB:Denominator_se_D;
   assign Fou_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R3:(Fou_iteration_cell_div_a_D);
-  assign Fou_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q3:(Fou_iteration_cell_div_b_D);   
-
-
- 
-
-
- 
-
-   
+  assign Fou_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q3:(Fou_iteration_cell_div_b_D);
 
   always_comb 
-    begin  //    
+    begin  //
      if (Fsm_enable_S)
        Partial_remainder_DN = Sqrt_enable_SO?Sqrt_R4:Fou_iteration_cell_sum_DI;
       else
        Partial_remainder_DN = Partial_remainder_DP;
     end
-   
+
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   // partial_remainder
      begin
         if(~Rst_RBI)
@@ -697,23 +601,20 @@ module control_tp
              Partial_remainder_DP <= '0;
           end
         else
-          begin 
+          begin
              Partial_remainder_DP <= Partial_remainder_DN;
           end
     end
-        
-
 
    logic [C_DIV_MANT:0] Quotient_DN;
 
-  always_comb 
+  always_comb
     begin
       if(Fsm_enable_S)
          Quotient_DN={Quotient_DP[C_DIV_MANT-4:0],First_iteration_cell_carry_DI,Sec_iteration_cell_carry_DI,Thi_iteration_cell_carry_DI,Fou_iteration_cell_carry_DI};
       else
          Quotient_DN=Quotient_DP;
      end
-
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
      begin
@@ -723,19 +624,18 @@ module control_tp
           end
         else
           Quotient_DP <= Quotient_DN;
-    end  
+    end
 
    logic                                               Msc_D;
    logic    [C_DIV_MANT+1:0]                           Sum_msc_D;
 
    assign {Msc_D,Sum_msc_D}=First_iteration_cell_div_a_D+First_iteration_cell_div_b_D;  //last iteration for division
-//   assign Mant_result_prenorm_DO=Quotient_DP[C_DIV_MANT:0]+{Sqrt_enable_SO?1'b0:Msc_D}; //correction for division
    logic [C_DIV_MANT:0]                                Mant_result_prenorm_noncorrect_D; //no correction with MSC
    logic [C_DIV_MANT:0]                                Msc_forcorrect_D;
    logic [C_DIV_MANT+1:0]                              Mant_result_prenorm_correct_D; // correction with MSC
 
    /////////////////////////////////////////////////////////////////////////////
-   // Precision Control for outputs
+   // Precision Control for outputs                                          //
    /////////////////////////////////////////////////////////////////////////////
 
 
@@ -846,19 +746,18 @@ module control_tp
    assign Mant_result_prenorm_correct_D= Mant_result_prenorm_noncorrect_D + {Div_enable_SO?Msc_forcorrect_D:24'b0};
    assign Mant_result_prenorm_DO = Mant_result_prenorm_correct_D[C_DIV_MANT+1]?Mant_result_prenorm_noncorrect_D:Mant_result_prenorm_correct_D[C_DIV_MANT:0];
 // resultant exponent
-   logic   [C_DIV_EXP+1:0]    Exp_result_prenorm_DN,Exp_result_prenorm_DP;      
+   logic   [C_DIV_EXP+1:0]    Exp_result_prenorm_DN,Exp_result_prenorm_DP;
 
    logic   [C_DIV_EXP+1:0]                                Exp_add_a_D;
    logic   [C_DIV_EXP+1:0]                                Exp_add_b_D;
-   logic   [C_DIV_EXP+1:0]                                Exp_add_c_D;  
+   logic   [C_DIV_EXP+1:0]                                Exp_add_c_D;
  
-//   assign Exp_result_prenorm_DN  = (Start_dly_S)?{{Sqrt_start_dly_S?{Exp_num_DI[C_EXP],Exp_num_DI[C_EXP],Exp_num_DI[C_EXP:1]}:{Exp_num_DI[C_EXP],Exp_num_DI}}+ {Sqrt_start_dly_S?{'0,Exp_num_DI[0]}:{~Exp_den_DI[C_EXP],~Exp_den_DI}} + {Div_start_dly_S?{C_BIAS+1}:{C_HALF_BIAS}}}:Exp_result_prenorm_DP;
      assign Exp_add_a_D = {Sqrt_start_dly_S?{Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP:1]}:{Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP],Exp_num_DI}};
      assign Exp_add_b_D = {Sqrt_start_dly_S?{1'b0,{C_DIV_EXP_ZERO},Exp_num_DI[0]}:{~Exp_den_DI[C_DIV_EXP],~Exp_den_DI[C_DIV_EXP],~Exp_den_DI}};
      assign Exp_add_c_D = {Div_start_dly_S?{2'b00,{C_DIV_BIAS_AONE}}:{2'b00,{C_DIV_HALF_BIAS}}};
      assign Exp_result_prenorm_DN  = (Start_dly_S)?{Exp_add_a_D + Exp_add_b_D + Exp_add_c_D}:Exp_result_prenorm_DP;
 
-    always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
+    always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
           begin
@@ -868,16 +767,8 @@ module control_tp
           begin
             Exp_result_prenorm_DP<=  Exp_result_prenorm_DN;
           end
-
-     end 
+     end
 
     assign Exp_result_prenorm_DO = Exp_result_prenorm_DP; 
 
-
-
-   
-  //
-   
-//  
-   
-endmodule 
+endmodule

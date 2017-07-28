@@ -1,25 +1,40 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
-// Engineers:      Lei Li                  //lile@iis.ee.ethz.ch
+// Engineers:      Lei Li    lile@iis.ee.ethz.ch                              //
 //                                                                            //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
 //                                                                            //
 // Create Date:    01/12/2016                                                 // 
-// Design Name:    div_sqrt                                                        // 
-// Module Name:    fpu_norm_div_sqrt.sv                                                //
-// Project Name:   FPU                                                //
+// Design Name:    div_sqrt                                                   // 
+// Module Name:    fpu_norm_div_sqrt.sv                                       //
+// Project Name:   FPU                                                        //
 // Language:       SystemVerilog                                              //
 //                                                                            //
 // Description:    Floating point Normalizer/Rounding unit                    //
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Revision:        04/05/2017                                                          //
-//                    Update the normalization for special cases              //
-//                                                                            //
+// Revision:        04/05/2017                                                //
+//                  Update the normalization for special cases  by Lei Li     //
+//                  25/07/2017                                                //
+//                  Update some rounding by Lei Li                            //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -31,26 +46,20 @@
 import fpu_defs_div_sqrt_tp::*;
 
 module fpu_norm_div_sqrt
-  (
-   //Input Operands
+  (//Inputs
    input logic        [C_DIV_MANT_PRENORM-1:0] Mant_in_DI,
    input logic signed [C_DIV_EXP+1:0]          Exp_in_DI,
    input logic                                 Sign_in_DI,
-
    input logic                                 Div_enable_SI,
    input logic                                 Sqrt_enable_SI,
-   // 
-//   input logic [31:0]                      Operand_a_dly_DI,
-//   input logic [31:0]                      Operand_b_dly_DI,
    input logic                                 Inf_a_SI,
    input logic                                 Inf_b_SI,
    input logic                                 Zero_a_SI,
    input logic                                 Zero_b_SI,
    input logic                                 NaN_a_SI,
-   input logic                                 NaN_b_SI, 
-   //Rounding Mode
+   input logic                                 NaN_b_SI,
    input logic [C_DIV_RM-1:0]                  RM_SI,
-   
+   //Outputs
    output logic [C_DIV_MANT-1:0]               Mant_res_DO,
    output logic [C_DIV_EXP-1:0]                Exp_res_DO,
    output logic                                Sign_res_DO,
@@ -60,18 +69,13 @@ module fpu_norm_div_sqrt
    );
 
    /////////////////////////////////////////////////////////////////////////////
-   // Normalization
+   // Normalization                                                           //
    /////////////////////////////////////////////////////////////////////////////
-
-
-
    logic [C_DIV_MANT:0]                        Mant_res_norm_D;
-   
    logic [C_DIV_EXP-1:0]                       Exp_res_norm_D;
-   
 
    /////////////////////////////////////////////////////////////////////////////
-   // Right shift operations for negtive exponents without using LZD directly
+   // Right shift operations for negtive exponents                            //
    /////////////////////////////////////////////////////////////////////////////
  
   logic  [C_DIV_EXP+1:0]                       Exp_Max_RS_D;
@@ -79,10 +83,12 @@ module fpu_norm_div_sqrt
   logic  [C_DIV_EXP+1:0]                       Num_RS_D;
   assign Num_RS_D=~Exp_in_DI+1+1;            // How many right shifts(RS) are needed to generated a denormal number? >> is need only when Exp_in_DI is negative
   logic  [C_DIV_MANT_PRENORM+1:0]              Mant_RS_D;
-  assign  Mant_RS_D={Mant_in_DI,1'b0,1'b0}>>(Num_RS_D); // The LSB 2 bits for rounding
+  logic  [C_DIV_MANT-2:0]                      Mant_forsticky_D;  
+  assign  {Mant_RS_D,Mant_forsticky_D} ={Mant_in_DI,1'b0,1'b0,22'h000000}>>(Num_RS_D); // 
+  assign  Mant_sticky_D =(Exp_in_DI[C_DIV_EXP+1]&&Exp_Max_RS_D[C_DIV_EXP+1])&&(| Mant_forsticky_D);
+
 
    //normalization
-   
    logic [1:0]        Mant_lower_D;
 
    always_comb
@@ -93,26 +99,20 @@ module fpu_norm_div_sqrt
            Div_zero_SO=1'b0;   
            Exp_OF_SO=1'b0;
            Exp_UF_SO=1'b0;
-//           Mant_res_norm_D=Operand_a_dly_DI[C_DIV_MANT-1:0];
-//           Exp_res_norm_D=Operand_a_dly_DI[C_DIV_OP-2:C_DIV_MANT];
            Mant_res_norm_D={1'b0,C_DIV_MANT_NAN};
            Exp_res_norm_D='1;
-           Mant_lower_D={1'b0,1'b0};  
-//           Sign_res_DO=Operand_a_dly_DI[C_DIV_OP-1]; //   
-           Sign_res_DO=1'b0;   
+           Mant_lower_D={1'b0,1'b0};
+           Sign_res_DO=1'b0;
          end
 
       else if(NaN_b_SI)   //if b is NaN, return b
         begin
-          Div_zero_SO=1'b0;   
+          Div_zero_SO=1'b0;
           Exp_OF_SO=1'b0;
           Exp_UF_SO=1'b0;
-//          Mant_res_norm_D=Operand_b_dly_DI[C_DIV_MANT-1:0];
-//          Exp_res_norm_D=Operand_b_dly_DI[C_DIV_OP-2:C_DIV_MANT];
           Mant_res_norm_D={1'b0,C_DIV_MANT_NAN};
           Exp_res_norm_D='1;
-          Mant_lower_D={1'b0,1'b0};  
-//          Sign_res_DO=Operand_b_dly_DI[C_DIV_OP-1]; // 
+          Mant_lower_D={1'b0,1'b0};
           Sign_res_DO=1'b0; 
         end
 
@@ -120,90 +120,88 @@ module fpu_norm_div_sqrt
         begin
           if(Div_enable_SI&&Inf_b_SI)                     //Inf/Inf
             begin
-              Div_zero_SO=1'b0;   
+              Div_zero_SO=1'b0;
               Exp_OF_SO=1'b0;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D={1'b0,C_DIV_MANT_NAN};
               Exp_res_norm_D='1;
-              Mant_lower_D={1'b0,1'b0};  
-              Sign_res_DO=1'b0;  
+              Mant_lower_D={1'b0,1'b0};
+              Sign_res_DO=1'b0;
             end
           else
-            begin 
-              Div_zero_SO=1'b0;   
+            begin
+              Div_zero_SO=1'b0;
               Exp_OF_SO=1'b1;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D= '0;
               Exp_res_norm_D='1;
-              Mant_lower_D={1'b0,1'b0};  
-              Sign_res_DO=Sign_in_DI; 
-            end                
+              Mant_lower_D={1'b0,1'b0};
+              Sign_res_DO=Sign_in_DI;
+            end
         end
-       
+
       else if(Div_enable_SI&&Inf_b_SI) 
         begin
-          Div_zero_SO=1'b0;   
+          Div_zero_SO=1'b0;
           Exp_OF_SO=1'b1;
           Exp_UF_SO=1'b0;
           Mant_res_norm_D= '0;
           Exp_res_norm_D='0;
-          Mant_lower_D={1'b0,1'b0};  
-          Sign_res_DO=Sign_in_DI;                 
+          Mant_lower_D={1'b0,1'b0};
+          Sign_res_DO=Sign_in_DI;
         end     
  
      else if(Zero_a_SI) 
        begin
          if(Div_enable_SI&&Zero_b_SI)
            begin
-              Div_zero_SO=1'b1;   
+              Div_zero_SO=1'b1;
               Exp_OF_SO=1'b0;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D={1'b0,C_DIV_MANT_NAN};
               Exp_res_norm_D='1;
-              Mant_lower_D={1'b0,1'b0};  
-              Sign_res_DO=1'b0;  
+              Mant_lower_D={1'b0,1'b0};
+              Sign_res_DO=1'b0;
            end
          else
            begin
-             Div_zero_SO=1'b0;   
+             Div_zero_SO=1'b0;
              Exp_OF_SO=1'b0;
              Exp_UF_SO=1'b0;
              Mant_res_norm_D='0;
              Exp_res_norm_D='0;
-             Mant_lower_D={1'b0,1'b0}; 
-             Sign_res_DO=Sign_in_DI; 
+             Mant_lower_D={1'b0,1'b0};
+             Sign_res_DO=Sign_in_DI;
            end
        end
 
      else  if(Div_enable_SI&&(Zero_b_SI))  //div Zero
        begin
-         Div_zero_SO=1'b1;   
+         Div_zero_SO=1'b1;
          Exp_OF_SO=1'b0;
          Exp_UF_SO=1'b0;
          Mant_res_norm_D='0;
          Exp_res_norm_D='1;
-         Mant_lower_D={1'b0,1'b0};   
+         Mant_lower_D={1'b0,1'b0};
          Sign_res_DO=Sign_in_DI; 
        end
 
       else if(Sign_in_DI&&Sqrt_enable_SI)   //sqrt(-a)
         begin
-          Div_zero_SO=1'b0;   
+          Div_zero_SO=1'b0;
           Exp_OF_SO=1'b0;
           Exp_UF_SO=1'b0;
           Mant_res_norm_D={1'b0,C_DIV_MANT_NAN};
           Exp_res_norm_D='1;
-          Mant_lower_D={1'b0,1'b0};  
+          Mant_lower_D={1'b0,1'b0};
           Sign_res_DO=1'b0; 
         end
-    
 
-     else if((Exp_in_DI[C_DIV_EXP:0]=='0))   
+     else if((Exp_in_DI[C_DIV_EXP:0]=='0))
        begin
-
          if(Mant_in_DI!='0)       //Exp=0, Mant!=0, it is denormal
            begin
-             Div_zero_SO=1'b0;   
+             Div_zero_SO=1'b0;
              Exp_OF_SO=1'b0;
              Exp_UF_SO=1'b1;
              Mant_res_norm_D={1'b0,1'b0,Mant_in_DI[C_DIV_MANT_PRENORM-1:1]};
@@ -221,7 +219,8 @@ module fpu_norm_div_sqrt
              Mant_lower_D={1'b0,1'b0};
              Sign_res_DO=Sign_in_DI;
            end
-        end 
+        end
+
       else if((Exp_in_DI[C_DIV_EXP:0]==C_DIV_EXP_ONE)&&(~Mant_in_DI[C_DIV_MANT_PRENORM-1]))  //denormal
         begin
           Div_zero_SO=1'b0;   
@@ -232,12 +231,12 @@ module fpu_norm_div_sqrt
           Mant_lower_D={1'b0,1'b0};
           Sign_res_DO=Sign_in_DI;
         end
- 
+
       else if(Exp_in_DI[C_DIV_EXP+1])    //minus
         begin          
           if(~Exp_Max_RS_D[C_DIV_EXP+1])    //OF EXP<0 after RS
             begin 
-              Div_zero_SO=1'b0;   
+              Div_zero_SO=1'b0;
               Exp_OF_SO=1'b1;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D='0;
@@ -247,21 +246,21 @@ module fpu_norm_div_sqrt
             end
           else                    //denormal
             begin
-              Div_zero_SO=1'b0;   
+              Div_zero_SO=1'b0;
               Exp_OF_SO=1'b0;
-              Exp_UF_SO=1'b1;          
-              Mant_res_norm_D={1'b0,Mant_RS_D[C_DIV_MANT+1:2]}; 
+              Exp_UF_SO=1'b1;
+              Mant_res_norm_D={1'b0,Mant_RS_D[C_DIV_MANT+1:2]};
               Exp_res_norm_D='0;
               Mant_lower_D=Mant_RS_D[1:0];
-              Sign_res_DO=Sign_in_DI;   
-            end    
+              Sign_res_DO=Sign_in_DI;
+            end
         end
-  
+
       else if(Exp_in_DI[C_DIV_EXP])            //OF
         begin
-          Div_zero_SO=1'b0;   
+          Div_zero_SO=1'b0;
           Exp_OF_SO=1'b1;
-          Exp_UF_SO=1'b0; 
+          Exp_UF_SO=1'b0;
           Mant_res_norm_D='0;
           Exp_res_norm_D='1;
           Mant_lower_D={1'b0,1'b0};
@@ -272,17 +271,17 @@ module fpu_norm_div_sqrt
         begin
           if(~Mant_in_DI[C_DIV_MANT_PRENORM-1]) // MSB=0
             begin
-              Div_zero_SO=1'b0;   
+              Div_zero_SO=1'b0;
               Exp_OF_SO=1'b0;
-              Exp_UF_SO=1'b0; 
+              Exp_UF_SO=1'b0;
               Mant_res_norm_D={Mant_in_DI[C_DIV_MANT_PRENORM-2:0],1'b0};
               Exp_res_norm_D=Exp_in_DI[C_DIV_EXP-1:0]-1;
-              Mant_lower_D={1'b0,1'b0}; 
-              Sign_res_DO=Sign_in_DI;                  
+              Mant_lower_D={1'b0,1'b0};
+              Sign_res_DO=Sign_in_DI;
             end
           else if(Mant_in_DI!='0)         //NaN
             begin
-              Div_zero_SO=1'b0;   
+              Div_zero_SO=1'b0;
               Exp_OF_SO=1'b1;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D= '0;
@@ -291,64 +290,59 @@ module fpu_norm_div_sqrt
               Sign_res_DO=Sign_in_DI;
             end
           else                         //infinity
-            begin  
-              Div_zero_SO=1'b0;   
+            begin
+              Div_zero_SO=1'b0;
               Exp_OF_SO=1'b1;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D= '0;
               Exp_res_norm_D='1;
-              Mant_lower_D={1'b0,1'b0};  
-              Sign_res_DO=Sign_in_DI;                 
+              Mant_lower_D={1'b0,1'b0};
+              Sign_res_DO=Sign_in_DI;
             end
          end
-                  
+
       else if(Mant_in_DI[C_DIV_MANT_PRENORM-1])  //normal numbers with 1.XXX
         begin
-           Div_zero_SO=1'b0;   
+           Div_zero_SO=1'b0;
            Exp_OF_SO=1'b0;
-           Exp_UF_SO=1'b0; 
+           Exp_UF_SO=1'b0;
            Mant_res_norm_D= Mant_in_DI[C_DIV_MANT_PRENORM-1:0];
            Exp_res_norm_D=Exp_in_DI[C_DIV_EXP-1:0];
            Mant_lower_D={1'b0,1'b0};
            Sign_res_DO=Sign_in_DI;
         end
+
       else                                   //normal numbers with 0.1XX
-         begin 
-           Div_zero_SO=1'b0;   
+         begin
+           Div_zero_SO=1'b0;
            Exp_OF_SO=1'b0;
-           Exp_UF_SO=1'b0; 
+           Exp_UF_SO=1'b0;
            Mant_res_norm_D={Mant_in_DI[C_DIV_MANT_PRENORM-2:0],1'b0};
            Exp_res_norm_D=Exp_in_DI[C_DIV_EXP-1:0]-1;
            Mant_lower_D={1'b0,1'b0};
            Sign_res_DO=Sign_in_DI;
-         end        
+         end
 
      end
 
-      
-
    /////////////////////////////////////////////////////////////////////////////
-   // Rounding
+   // Rounding                                                                //
    /////////////////////////////////////////////////////////////////////////////
 
- 
    logic [C_DIV_MANT:0]                   Mant_upper_D;
    logic [C_DIV_MANT+1:0]                 Mant_upperRounded_D; 
-   logic                              Mant_roundUp_S;
-   logic                               Mant_rounded_S;
+   logic                                  Mant_roundUp_S;
+   logic                                  Mant_rounded_S;
 
    assign Mant_upper_D = Mant_res_norm_D;
-
-   
-   
-   assign Mant_rounded_S = (|(Mant_lower_D));
+   assign Mant_rounded_S = (|(Mant_lower_D))| Mant_sticky_D;
    
    always_comb //determine whether to round up or not
      begin
         Mant_roundUp_S = 1'b0;
         case (RM_SI)
           C_DIV_RM_NEAREST : 
-            Mant_roundUp_S = Mant_lower_D[1] && (Mant_lower_D[0]|| Mant_upper_D[0]);
+            Mant_roundUp_S = Mant_lower_D[1] && ((Mant_lower_D[0] | Mant_sticky_D )|| Mant_upper_D[0]);
           C_DIV_RM_TRUNC   : 
             Mant_roundUp_S = 0;
           C_DIV_RM_PLUSINF : 
@@ -360,19 +354,18 @@ module fpu_norm_div_sqrt
         endcase // case (RM_DI)
      end // always_comb begin
 
-logic Mant_renorm_S;
+   logic                                 Mant_renorm_S;
 
    assign Mant_upperRounded_D = Mant_upper_D + Mant_roundUp_S;
    assign Mant_renorm_S       = Mant_upperRounded_D[C_DIV_MANT+1];
 
    /////////////////////////////////////////////////////////////////////////////
-   // Renormalization and Output Assignments
+   // Renormalization and Output Assignments                                  //
    /////////////////////////////////////////////////////////////////////////////
-   logic Rounded_SO;
-   
+   logic                                   Rounded_SO;
+
    assign Mant_res_DO = (Mant_renorm_S)?Mant_upperRounded_D[C_DIV_MANT:1]:Mant_upperRounded_D[C_DIV_MANT-1:0];
    assign Exp_res_DO  = Exp_res_norm_D+Mant_renorm_S;
    assign Rounded_SO  = Mant_rounded_S;
-      
-         
+
 endmodule // fpu_norm_div_sqrt

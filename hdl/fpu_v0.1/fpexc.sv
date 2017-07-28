@@ -1,3 +1,17 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
@@ -10,7 +24,7 @@
 //                                                                            //
 // Create Date:    06/10/2014                                                 // 
 // Design Name:    FPU                                                        // 
-// Module Name:    fpnorm.sv                                                  //
+// Module Name:    fpexc.sv                                                   //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
@@ -19,14 +33,6 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
@@ -71,7 +77,7 @@ module fpexc
 
  
    /////////////////////////////////////////////////////////////////////////////
-   // preliminary checks for infinite/zero operands
+   // preliminary checks for infinite/zero operands                           //
    /////////////////////////////////////////////////////////////////////////////
    
    logic        Inf_a_S;
@@ -91,7 +97,7 @@ module fpexc
    
    
    /////////////////////////////////////////////////////////////////////////////
-   // flag assignments
+   // flag assignments                                                        //
    /////////////////////////////////////////////////////////////////////////////
    
    assign OF_SO   = (Op_SI == C_FPU_F2I_CMD) ? OF_SI : (Exp_OF_SI & ~Mant_zero_S) | (~IV_SO & (Inf_a_S ^ Inf_b_S) & (Op_SI != C_FPU_I2F_CMD));
@@ -114,13 +120,11 @@ module fpexc
               IV_SO = 1'b1;
             end
           C_FPU_F2I_CMD :
-            IV_SO = IV_SI;       
+            IV_SO = IV_SI;
         endcase
      end
 
    logic Inf_temp_S;
-   
-   
    always_comb //check infinite outputs
      begin
         Inf_temp_S = 1'b0;
@@ -136,14 +140,11 @@ module fpexc
 
    assign Inf_SO = (Op_SI == C_FPU_F2I_CMD) ? Inf_SI : Inf_temp_S | (Exp_OF_SI & ~Mant_zero_S);
 
- 
    /////////////////////////////////////////////////////////////////////////////
-   // flags/signals for result manipulation
+   // flags/signals for result manipulation                                   //
    /////////////////////////////////////////////////////////////////////////////
-   
    assign Exp_toZero_SO =(Op_SI == C_FPU_I2F_CMD) ? (Zero_a_S & ~Sign_a_DI) : Exp_UF_SI | (Mant_zero_S & ~Exp_toInf_SO);
    assign Exp_toInf_SO = (OF_SO | IV_SO);
    assign Mant_toZero_SO = Inf_SO;
-   
-   
+
 endmodule // fpexc

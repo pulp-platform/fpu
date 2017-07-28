@@ -1,3 +1,17 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
@@ -10,21 +24,13 @@
 //                                                                            //
 // Create Date:    26/10/2014                                                 // 
 // Design Name:    FPU                                                        // 
-// Module Name:    fpu.sv                                                     //
+// Module Name:    fpu_shared.sv                                              //
 // Project Name:   FPU                                                        //
 // Language:       SystemVerilog                                              //
 //                                                                            //
 // Description:    Wrapper for connecting the FPU to the shared interconnect  //
 //                                                                            //
 // Revision:                                                                  //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
@@ -118,7 +124,7 @@ module fpu_shared
    logic              IX_S;
    logic              IV_S;
    logic              Inf_S;
-   
+
    fpu_core core
      (
       .Clk_CI       ( Clk_CI        ),
@@ -139,7 +145,7 @@ module fpu_shared
       .IV_SO        ( IV_S          ),
       .Inf_SO       ( Inf_S         )
       );
-   
+
 
    /////////////////////////////////////////////////////////////////////////////
    // Shim register for tag and valid
@@ -152,8 +158,7 @@ module fpu_shared
 
    assign ValidDelayed_SN = Valid_S;
    assign TagDelayed_DN   = Tag_D;
-   
-  
+
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if (~Rst_RBI)
@@ -171,11 +176,11 @@ module fpu_shared
    /////////////////////////////////////////////////////////////////////////////
    // Output assignments
    /////////////////////////////////////////////////////////////////////////////   
-   
+
    assign Interface.result_us_d = Result_D;
    assign Interface.flags_us_d  = {1'b0, Inf_S, IV_S, IX_S, Zero_S, 2'b0, UF_S, OF_S};
    assign Interface.tag_us_d    = TagDelayed_DP;
    assign Interface.req_us_s    = ValidDelayed_SP;
    assign Interface.ready_ds_s  = 1'b1;
-       
+
 endmodule

@@ -1,88 +1,84 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
-// Engineers:                Lei Li  //lile@iis.ee.ethz.ch
+// Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
 //		                                                                        //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:      01/12/2016                                            // 
-// Design Name:    fmac                                                        // 
-// Module Name:    aligner.sv                                                     //
+// Create Date:    01/12/2016                                                 //
+// Design Name:    fmac                                                       //
+// Module Name:    aligner.sv                                                 //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
-// Description:          // decomposition and operand detection
-//                                                                            //
-//          FMAC=a+b*c                                                               //
-//                                                                            //
-// Revision:        06/07/2017                                                          //
+// Description:    To align Mant_a_DI                                         //
 //                                                                            //
 //                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
+// Revision:        06/07/2017                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module aligner
-  (
-
-   input logic [C_EXP-1:0]        Exp_a_DI,
-   input logic [C_EXP-1:0]        Exp_b_DI,
-   input logic [C_EXP-1:0]        Exp_c_DI,
-
-   input logic [C_MANT:0]         Mant_a_DI,
-
-   input logic                    Sign_a_DI,
-   input logic                    Sign_b_DI,
-   input logic                    Sign_c_DI,
+  (//Inputs
+   input logic [C_EXP-1:0]                         Exp_a_DI,
+   input logic [C_EXP-1:0]                         Exp_b_DI,
+   input logic [C_EXP-1:0]                         Exp_c_DI,
+   input logic [C_MANT:0]                          Mant_a_DI,
+   input logic                                     Sign_a_DI,
+   input logic                                     Sign_b_DI,
+   input logic                                     Sign_c_DI,
    input logic [2*C_MANT+2:0]                      Pp_sum_DI,
    input logic [2*C_MANT+2:0]                      Pp_carry_DI,
-   
-   output logic                   Sub_SO,  
-   output logic [74:0]            Mant_postalig_a_DO,
-//   output logic                   Stick_one_SO,              
-   output logic [C_EXP+1:0]         Exp_postalig_DO,
-   output logic                   Sign_postalig_DO,
-   output logic                   Sign_amt_DO,
-   output logic                   Sft_stop_SO,
-   output logic [2*C_MANT+2:0]                      Pp_sum_postcal_DO,
-   output logic [2*C_MANT+2:0]                      Pp_carry_postcal_DO 
+   //Outputs
+   output logic                                    Sub_SO,
+   output logic [74:0]                             Mant_postalig_a_DO,
+   output logic [C_EXP+1:0]                        Exp_postalig_DO,
+   output logic                                    Sign_postalig_DO,
+   output logic                                    Sign_amt_DO,
+   output logic                                    Sft_stop_SO,
+   output logic [2*C_MANT+2:0]                     Pp_sum_postcal_DO,
+   output logic [2*C_MANT+2:0]                     Pp_carry_postcal_DO 
    );
-   
 
- logic [C_EXP+1:0]               Exp_dif_D;
- logic [C_EXP+1:0]               Sft_amt_D;
+ logic [C_EXP+1:0]                                Exp_dif_D;
+ logic [C_EXP+1:0]                                Sft_amt_D;
 
 
  assign Sub_SO = Sign_a_DI ^ Sign_b_DI ^ Sign_c_DI;
  assign Exp_dif_D = Exp_a_DI - Exp_b_DI - Exp_c_DI + C_BIAS;
  assign Sft_amt_D = Exp_b_DI + Exp_c_DI - Exp_a_DI - C_BIAS + 27; //Two bits are added including sign bit
  assign Sign_amt_DO = Sft_amt_D[C_EXP+1];
- logic                        Sft_stop_S;       // right shift larger 51??
- assign Sft_stop_S = (~Sft_amt_D[C_EXP+1])&&(Sft_amt_D[C_EXP:0]>=74);  //For rounding??
+ logic                                            Sft_stop_S;       // right shift larger 74
+ assign Sft_stop_S = (~Sft_amt_D[C_EXP+1])&&(Sft_amt_D[C_EXP:0]>=74);  //For rounding
  assign Sft_stop_SO = Sft_stop_S;
  // The exponent after alignment
  assign Exp_postalig_DO = Sft_amt_D[C_EXP+1] ? Exp_a_DI : {Exp_b_DI + Exp_c_DI - C_BIAS + 27};
- // 
-  
-  
- logic [73:0]                  Mant_postalig_a_D;
- logic [C_MANT :0]            Bit_sftout_D;    
+
+ logic [73:0]                                     Mant_postalig_a_D;
+ logic [C_MANT :0]                                Bit_sftout_D;
  assign  {Mant_postalig_a_D, Bit_sftout_D} = {Mant_a_DI,74'h0}>>{Sft_stop_S?0 : Sft_amt_D};     //Alignment
-// another case for b*c>>a??
+// another case for b*c>>a
  assign   Mant_postalig_a_DO =Sft_amt_D[C_EXP+1] ? {1'b0, Mant_a_DI, 50'h0}: { Sft_stop_S? 75'h0 :{ Sub_SO ? {1'b1,~Mant_postalig_a_D}:{1'b0,Mant_postalig_a_D} } };
-// logic  Stick_one_S;
-// assign Stick_one_SO = Sft_stop_S ?{|Mant_a_DI} : {| Bit_sftout_D};
- assign Sign_postalig_DO = Sft_amt_D[C_EXP+1] ? Sign_a_DI: Sign_b_DI ^ Sign_c_DI;                     
-// 
+
+ assign Sign_postalig_DO = Sft_amt_D[C_EXP+1] ? Sign_a_DI: Sign_b_DI ^ Sign_c_DI;
  assign Pp_sum_postcal_DO = Sft_amt_D[C_EXP+1] ? '0 : Pp_sum_DI;
- assign Pp_carry_postcal_DO =  Sft_amt_D[C_EXP+1] ? '0 : Pp_carry_DI; 
-     
-endmodule // 
+ assign Pp_carry_postcal_DO =  Sft_amt_D[C_EXP+1] ? '0 : Pp_carry_DI;
+
+endmodule

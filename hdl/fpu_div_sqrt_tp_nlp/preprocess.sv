@@ -1,31 +1,37 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
-// Engineers:                Lei Li  //lile@iis.ee.ethz.ch
+// Engineers:                Lei Li  //lile@iis.ee.ethz.ch                    //
 //		                                                                        //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:      01/12/2016                                            // 
-// Design Name:    div_sqrt                                                        // 
-// Module Name:    preprocess.sv                                                     //
+// Create Date:      01/12/2016                                               //
+// Design Name:    div_sqrt                                                   //
+// Module Name:    preprocess.sv                                              //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
-// Description:          // decode and data preparation
+// Description:          // decode and data preparation                       //
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Revision:        19/01/2017                                                          //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
+// Revision:        19/01/2017                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_div_sqrt_tp::*;
@@ -39,7 +45,7 @@ module preprocess
    //Input Operands
    input logic [C_DIV_OP-1:0]    Operand_a_DI,
    input logic [C_DIV_OP-1:0]    Operand_b_DI,
-   input logic [C_DIV_RM-1:0]    RM_SI,    //Rounding Mode
+   input logic [C_DIV_RM-1:0]    RM_SI,
 
    // to control
    output logic                  Start_SO,
@@ -49,8 +55,7 @@ module preprocess
    output logic [C_DIV_MANT:0]   Mant_b_DO_norm,
 
    output logic [C_DIV_RM-1:0]   RM_dly_SO, 
-//   output logic [C_DIV_OP-1:0]       Operand_a_dly_DO,
-//   output logic [C_DIV_OP-1:0]       Operand_b_dly_DO,
+
    output logic                  Sign_z_DO,
    output logic                  Inf_a_SO,
    output logic                  Inf_b_SO,
@@ -58,15 +63,7 @@ module preprocess
    output logic                  Zero_b_SO,
    output logic                  NaN_a_SO,
    output logic                  NaN_b_SO
-//   output logic                  Special_case_SBO, 
-//   output logic                  Special_case_dly_SBO 
-
    );
-   
-
-
-   //Operand components
- 
 
    //Hidden Bits
    logic                       Hb_a_D;
@@ -99,7 +96,7 @@ module preprocess
 
 
    /////////////////////////////////////////////////////////////////////////////
-   // preliminary checks for infinite/zero/NaN operands
+   // preliminary checks for infinite/zero/NaN operands                       //
    /////////////////////////////////////////////////////////////////////////////
    
    logic               Mant_a_prenorm_zero_S;
@@ -132,7 +129,7 @@ module preprocess
    assign NaN_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&(~Mant_b_prenorm_zero_S)):NaN_b_SP;
 
     
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   // Quotient
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
           begin
@@ -143,7 +140,6 @@ module preprocess
             NaN_a_SP <='0;
             NaN_b_SP <='0;
           end
- 
         else 
          begin 
            Inf_a_SP <=Inf_a_SN;
@@ -153,65 +149,10 @@ module preprocess
            NaN_a_SP <=NaN_a_SN;
            NaN_b_SP <=NaN_b_SN;
          end
-
       end
-   /////////////////////////////////////////////////////////////////////////////
-   // Low power control
-   /////////////////////////////////////////////////////////////////////////////
-   logic               Special_case_SB;
-   logic               Special_case_dly_SB;
- 
-    
-//   assign Special_case_SB=~(Zero_a_SN | Zero_b_SN |  Inf_a_SN | Inf_b_SN | NaN_a_SN | NaN_b_SN);
-//   assign Special_case_dly_SB=~(Zero_a_SP | Zero_b_SP |  Inf_a_SP | Inf_b_SP | NaN_a_SP | NaN_b_SP);
 
    /////////////////////////////////////////////////////////////////////////////
-   // Delay operands for normalization and round
-   /////////////////////////////////////////////////////////////////////////////
-/*
-   logic [C_DIV_OP-1:0]             Operand_a_dly_DN;
-   logic [C_DIV_OP-1:0]             Operand_a_dly_DP;
-   logic [C_DIV_OP-1:0]             Operand_b_dly_DN;
-   logic [C_DIV_OP-1:0]             Operand_b_dly_DP;
-
-   always_comb   
-     begin
-       if(~Rst_RBI)
-         begin
-           Operand_a_dly_DN = '0;
-           Operand_b_dly_DN = '0;
-         end
-       else if(Start_S) 
-         begin
-           Operand_a_dly_DN = Operand_a_DI;
-           Operand_b_dly_DN = Operand_b_DI;
-         end
-       else 
-         begin
-           Operand_a_dly_DN = Operand_a_dly_DP;
-           Operand_b_dly_DN = Operand_b_dly_DP;
-         end
-    end 
-
-
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   
-     begin
-        if(~Rst_RBI)
-          begin
-            Operand_a_dly_DP <= '0;
-            Operand_b_dly_DP <= '0;
-          end
-        else 
-          begin
-            Operand_a_dly_DP <= Operand_a_dly_DN;
-            Operand_b_dly_DP <= Operand_b_dly_DN;
-          end
-    end 
-   
-*/
-
-   /////////////////////////////////////////////////////////////////////////////
-   // Delay sign for normalization and round
+   // Delay sign for normalization and round                                  //
    /////////////////////////////////////////////////////////////////////////////
 
    logic                   Sign_z_DN;
@@ -231,9 +172,7 @@ module preprocess
            Sign_z_DN = Sign_z_DP; 
     end 
 
-
- 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
        if(~Rst_RBI)
           begin
@@ -244,9 +183,6 @@ module preprocess
             Sign_z_DP <= Sign_z_DN;
          end 
     end  
-
-
-
 
    logic [C_DIV_RM-1:0]                  RM_DN;
    logic [C_DIV_RM-1:0]                  RM_DP;
@@ -260,12 +196,10 @@ module preprocess
        else if(Start_S)
            RM_DN = RM_SI;
        else
-           RM_DN = RM_DP; 
+           RM_DN = RM_DP;
     end 
 
-
- 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)   
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
        if(~Rst_RBI)
           begin
@@ -278,13 +212,9 @@ module preprocess
     end 
    assign RM_dly_SO = RM_DP;
 
-
-
-
- 
    logic [4:0]                  Mant_leadingOne_a, Mant_leadingOne_b;
    logic                        Mant_zero_S_a,Mant_zero_S_b;
-   //Detect leading one  
+
    fpu_ff
    #(
      .LEN(C_DIV_MANT+1))
@@ -300,18 +230,17 @@ module preprocess
    
    assign  Mant_a_norm_DN = (Start_S)?(Mant_a_D<<(Mant_leadingOne_a)):Mant_a_norm_DP;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)  
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
           begin
             Mant_a_norm_DP <= '0;
           end
-        else  
+        else
           begin
             Mant_a_norm_DP<=Mant_a_norm_DN;
           end
-     end 
-   
+     end
 
    logic [C_DIV_EXP:0]            Exp_a_norm_DN,Exp_a_norm_DP;
    assign  Exp_a_norm_DN = (Start_S)?(Exp_a_D-Mant_leadingOne_a+(|Mant_leadingOne_a)):Exp_a_norm_DP;
@@ -326,9 +255,7 @@ module preprocess
           begin
             Exp_a_norm_DP<=Exp_a_norm_DN;
           end
-     end 
-                                  
-   
+     end
 
    fpu_ff
    #(
@@ -340,62 +267,46 @@ module preprocess
      .no_ones_o   ( Mant_zero_S_b     )
    ); 
 
-
-
    logic [C_DIV_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;
    
    assign  Mant_b_norm_DN = (Start_S)?(Mant_b_D<<(Mant_leadingOne_b)):Mant_b_norm_DP;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)  
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
           begin
             Mant_b_norm_DP <= '0;
           end
-        else  
+        else
           begin
             Mant_b_norm_DP<=Mant_b_norm_DN;
           end
-     end 
-   
+     end
 
    logic [C_DIV_EXP:0]            Exp_b_norm_DN,Exp_b_norm_DP;
    assign  Exp_b_norm_DN = (Start_S)?(Exp_b_D-Mant_leadingOne_b+(|Mant_leadingOne_b)):Exp_b_norm_DP;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)  
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
           begin
             Exp_b_norm_DP <= '0;
           end
-        else  
+        else
           begin
             Exp_b_norm_DP<=Exp_b_norm_DN;
           end
-     end 
+     end
 
-
-
- 
-
-
-
-   
    /////////////////////////////////////////////////////////////////////////////
-   // Output assignments
+   // Output assignments                                                      //
    /////////////////////////////////////////////////////////////////////////////
 
    assign Start_SO=Start_S;
-
    assign Exp_a_DO_norm=Exp_a_norm_DP;
    assign Exp_b_DO_norm=Exp_b_norm_DP;
-
    assign Mant_a_DO_norm=Mant_a_norm_DP;
    assign Mant_b_DO_norm=Mant_b_norm_DP;
-
-//   assign Operand_a_dly_DO = Operand_a_dly_DP;
-//   assign Operand_b_dly_DO = Operand_b_dly_DP;
-
    assign Sign_z_DO=Sign_z_DP;
    assign Inf_a_SO=Inf_a_SP;
    assign Inf_b_SO=Inf_b_SP;
@@ -403,8 +314,5 @@ module preprocess
    assign Zero_b_SO=Zero_b_SP;
    assign NaN_a_SO=NaN_a_SP;
    assign NaN_b_SO=NaN_b_SP;
-//   assign Special_case_SBO=Special_case_SB;
-//   assign Special_case_dly_SBO=Special_case_dly_SB;
- 
-     
-endmodule // 
+
+endmodule

@@ -1,3 +1,17 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Copyright (C) 2017 ETH Zurich, University of Bologna                       //
 // All rights reserved.                                                       //
@@ -14,13 +28,16 @@
 // University of Bologna.                                                     //
 //                                                                            //
 // Engineer:       Michael Gautschi - gautschi@iis.ee.ethz.ch                 //
-//                                                                            //
+// Create Date:    20/06/2017                                                 //
 // Design Name:    fp_mac_wrapper                                             //
+// Module Name:    fpu_fma_wrapper.sv                                         //
 // Project Name:   Shared APU                                                 //
 // Language:       SystemVerilog                                              //
 //                                                                            //
 // Description:    Wraps the fp-mac unit                                      //
 //                                                                            //
+//                                                                            //
+// Revision:                                                                  //
 ////////////////////////////////////////////////////////////////////////////////
 
 `ifndef SYNTHESIS
@@ -64,12 +81,12 @@ module fp_fma_wrapper
    logic [31:0]          OpC_DP     [C_PRE_PIPE_REGS+1];
    logic                 En_SP      [C_PRE_PIPE_REGS+1];
    logic [RND_WIDTH-1:0] Rnd_DP     [C_PRE_PIPE_REGS+1];
-   
+
    // POST PIPE REG SIGNALS
    logic                  EnPost_SP      [C_POST_PIPE_REGS+1];
    logic [31:0]           Res_DP         [C_POST_PIPE_REGS+1];
    logic [STAT_WIDTH-1:0] Status_DP      [C_POST_PIPE_REGS+1];
-   
+
    // assign input. note: index [0] is not a register here!
    assign OpA_DP[0]    = En_i ? OpA_i :'0;
    assign OpB_DP[0]    = En_i ? {OpB_i[31] ^ Op_i[1],OpB_i[30:0]} :'0;
@@ -78,7 +95,7 @@ module fp_fma_wrapper
    assign Rnd_DP[0]    = Rnd_i;
 
    // propagate states
-   assign EnPost_SP[0]      = En_SP[C_PRE_PIPE_REGS]; 
+   assign EnPost_SP[0]      = En_SP[C_PRE_PIPE_REGS];
 
    // assign output
    assign Res_o             = Res_DP[C_POST_PIPE_REGS];
@@ -93,36 +110,19 @@ module fp_fma_wrapper
    assign a = $bitstoshortreal(OpA_DP[C_PRE_PIPE_REGS]);
    assign b = $bitstoshortreal(OpB_DP[C_PRE_PIPE_REGS]);
    assign c = $bitstoshortreal(OpC_DP[C_PRE_PIPE_REGS]);
-   
+
    // rounding mode is ignored here
    assign res = (a*b) + c;
-   
+
    // convert to logic again
    assign Res_DP[0] = $shortrealtobits(res);
-   
+
    // not used in simulation model
    assign Status_DP[0] = '0;
 `else
    logic [7:0]            status;
    assign Status_DP[0] = {status[2], 1'b0, status[4], status[3], 1'b0};
 
-/*
-   DW_fp_mac
-     #(
-       .sig_width(23),
-       .exp_width(8),
-       .ieee_compliance(1)
-       )
-   fp_fma_i
-     (
-      .a(OpA_DP[C_PRE_PIPE_REGS]),
-      .b(OpB_DP[C_PRE_PIPE_REGS]),
-      .c(OpC_DP[C_PRE_PIPE_REGS]),
-      .rnd(Rnd_DP[C_PRE_PIPE_REGS]),
-      .z(Res_DP[0]),
-      .status(status)
-      );
-*/
 
 fmac  fp_fma_i
   (
@@ -167,7 +167,7 @@ fmac  fp_fma_i
       end
    endgenerate
 
-   
+
    // POST_PIPE_REGS
    generate
     genvar j;
@@ -192,5 +192,5 @@ fmac  fp_fma_i
          end
       end
    endgenerate
-   
+
 endmodule

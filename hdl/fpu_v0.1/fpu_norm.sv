@@ -1,3 +1,17 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
@@ -18,13 +32,6 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,26 +57,26 @@ module fpu_norm
    );
 
    /////////////////////////////////////////////////////////////////////////////
-   // Normalization
+   // Normalization                                                           //
    /////////////////////////////////////////////////////////////////////////////
 
-   logic [C_MANT_PRENORM_IND-1:0]   Mant_leadingOne_D;
-   logic                            Mant_zero_S;
-   logic [C_MANT+4:0]               Mant_norm_D;
-   logic signed [C_EXP_PRENORM-1:0] Exp_norm_D;
+   logic [C_MANT_PRENORM_IND-1:0]         Mant_leadingOne_D;
+   logic                                  Mant_zero_S;
+   logic [C_MANT+4:0]                     Mant_norm_D;
+   logic signed [C_EXP_PRENORM-1:0]       Exp_norm_D;
 
    //trying out stuff for denormals
-   logic signed [C_EXP_PRENORM-1:0] Mant_shAmt_D;
-   logic signed [C_EXP_PRENORM:0]   Mant_shAmt2_D;
+   logic signed [C_EXP_PRENORM-1:0]       Mant_shAmt_D;
+   logic signed [C_EXP_PRENORM:0]         Mant_shAmt2_D;
    
-   logic [C_EXP-1:0]                Exp_final_D;
-   logic signed [C_EXP_PRENORM-1:0] Exp_rounded_D;
+   logic [C_EXP-1:0]                      Exp_final_D;
+   logic signed [C_EXP_PRENORM-1:0]       Exp_rounded_D;
    
    //sticky bit
-   logic                            Mant_sticky_D;
+   logic                                  Mant_sticky_D;
    
-   logic                            Denormal_S;
-   logic                            Mant_renorm_S;
+   logic                                  Denormal_S;
+   logic                                  Mant_renorm_S;
    
    //Detect leading one  
    fpu_ff
@@ -82,10 +89,9 @@ module fpu_norm
      .no_ones_o   ( Mant_zero_S       )
    );
 
-   
-   
-   logic Denormals_shift_add_D;  
-   logic Denormals_exp_add_D;    
+
+   logic                                 Denormals_shift_add_D;
+   logic                                 Denormals_exp_add_D;
    assign Denormals_shift_add_D = ~Mant_zero_S & (Exp_in_DI == C_EXP_ZERO) & ((OP_SI != C_FPU_MUL_CMD) | (~Mant_in_DI[C_MANT_PRENORM-1] & ~Mant_in_DI[C_MANT_PRENORM-2]));   
    assign Denormals_exp_add_D   =  Mant_in_DI[C_MANT_PRENORM-2] & (Exp_in_DI == C_EXP_ZERO) & ((OP_SI == C_FPU_ADD_CMD) | (OP_SI == C_FPU_SUB_CMD ));    
    
@@ -100,7 +106,6 @@ module fpu_norm
         temp = ((C_MANT_PRENORM+C_MANT+4+1)'(Mant_in_DI) << (Mant_shAmt2_D) );
         Mant_norm_D = temp[C_MANT_PRENORM+C_MANT+4:C_MANT_PRENORM];
      end
-           
 
    always_comb
      begin
@@ -110,8 +115,7 @@ module fpu_norm
         else if (Mant_shAmt2_D <= C_MANT_PRENORM)
           Mant_sticky_D = | (Mant_in_DI << (Mant_shAmt2_D));
      end
-                        
-   
+
    //adjust exponent
    assign Exp_norm_D = Exp_in_DI - (C_EXP_PRENORM)'(signed'(Mant_leadingOne_D)) + 1 + Denormals_exp_add_D; 
    //Explanation of the +1 since I'll probably forget:
@@ -136,10 +140,9 @@ module fpu_norm
              Exp_UF_SO = 1'b1;
           end
      end
-   
-   
+
    /////////////////////////////////////////////////////////////////////////////
-   // Rounding
+   // Rounding                                                                //
    /////////////////////////////////////////////////////////////////////////////
 
    logic [C_MANT:0]   Mant_upper_D;
@@ -176,12 +179,11 @@ module fpu_norm
    assign Mant_renorm_S       = Mant_upperRounded_D[C_MANT+1];
 
    /////////////////////////////////////////////////////////////////////////////
-   // Output Assignments
+   // Output Assignments                                                      //
    /////////////////////////////////////////////////////////////////////////////
 
    assign Mant_res_DO = Mant_upperRounded_D >> (Mant_renorm_S & ~Denormal_S);
    assign Exp_res_DO  = Exp_final_D;
    assign Rounded_SO  = Mant_rounded_S;
-   
-         
+
 endmodule // fpu_norm

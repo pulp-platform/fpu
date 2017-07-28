@@ -1,3 +1,17 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
@@ -9,7 +23,7 @@
 //                                                                            //
 // Create Date:    06/10/2014                                                 // 
 // Design Name:    FPU                                                        // 
-// Module Name:    fpadd.sv                                                   //
+// Module Name:    fpu_add.sv                                                 //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
@@ -18,14 +32,6 @@
 //                 for Normalizer/Rounding stage                              //
 //                                                                            //
 // Revision:                                                                  //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
@@ -77,7 +83,7 @@ module fpu_add
    
    assign Exp_agtb_S  = Exp_a_D > Exp_b_D;
    assign Exp_equal_S = Exp_diff_D == 0;
-   
+
    always_comb
      begin
         if (Exp_agtb_S)
@@ -115,7 +121,7 @@ module fpu_add
    logic        Mant_invB_S;
 
    logic        Subtract_S;
-   
+
    //Shift the number with the smaller exponent to the right
    assign Mant_agtb_S      = Mant_a_D > Mant_b_D;
    assign Mant_unshifted_D = {(Exp_agtb_S ? Mant_a_D : Mant_b_D), 3'b0};
@@ -151,7 +157,7 @@ module fpu_add
                Mant_invA_S = 1'b1;
           end // if (Subtract_S)
      end // always_comb begin
-   
+
    assign Mant_addCarryIn_D = Subtract_S;
    assign Mant_addInA_D     = (Mant_invA_S) ? ~Mant_shifted_D   : Mant_shifted_D;
    assign Mant_addInB_D     = (Mant_invB_S) ? ~Mant_unshifted_D : Mant_unshifted_D;
@@ -159,14 +165,13 @@ module fpu_add
    assign Mant_addOut_D     = Mant_addInA_D + Mant_addInB_D + Mant_addCarryIn_D;
 
    assign Mant_prenorm_D    = {(Mant_addOut_D[C_MANT_ADDOUT-1] & ~Subtract_S), Mant_addOut_D[C_MANT_ADDOUT-2:0], 20'b0};
-   
-   
+
    /////////////////////////////////////////////////////////////////////////////
    // Sign operations
    /////////////////////////////////////////////////////////////////////////////
 
    assign Subtract_S = Sign_a_D ^ Sign_b_D;
-   
+
    always_comb
      begin
         Sign_norm_D = 1'b0;
@@ -183,7 +188,6 @@ module fpu_add
           Sign_norm_D = Sign_b_D;
      end
 
-   
    /////////////////////////////////////////////////////////////////////////////
    // Output Assignments
    /////////////////////////////////////////////////////////////////////////////
@@ -191,6 +195,5 @@ module fpu_add
    assign Sign_prenorm_DO = Sign_norm_D;
    assign Exp_prenorm_DO  = signed'({2'b0,Exp_prenorm_D});
    assign Mant_prenorm_DO = Mant_prenorm_D;
-    
-   
+
 endmodule // fpadd

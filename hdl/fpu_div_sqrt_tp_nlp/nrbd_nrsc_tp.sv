@@ -1,72 +1,68 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
-// Engineers:      Lei Li                  //
+// Engineers:      Lei Li      lile@iis.ee.ethz.ch                            //
 //                                                                            //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
 //                                                                            //
 // Create Date:    01/12/2016                                                 // 
-// Design Name:    div_sqrt                                                        // 
+// Design Name:    div_sqrt                                                   // 
 // Module Name:    nrbd.sv                                                   //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //
-// Description:   non restroring binary  divisior/ square root                                       //
+// Description:   non restroring binary  divisior/ square root                //
 //                                                   t                        //
 //                                                                            //
-// Revision:       19/01/2017                                                           //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
+// Revision:       19/01/2017                                                 //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_div_sqrt_tp::*;
 
 module nrbd_nrsc_tp
 #(
-   parameter   Precision_ctl_Enable_S       =        1 
+   parameter   Precision_ctl_Enable_S = 1
 )
   (//Input
    input logic                                 Clk_CI,
    input logic                                 Rst_RBI,
-   input logic                                 Div_start_SI , 
+   input logic                                 Div_start_SI,
    input logic                                 Sqrt_start_SI,
    input logic                                 Start_SI,
-   input logic [C_DIV_PC-1:0]                  Precision_ctl_SI,            
+   input logic [C_DIV_PC-1:0]                  Precision_ctl_SI,
    input logic [C_DIV_MANT:0]                  Mant_a_DI,
    input logic [C_DIV_MANT:0]                  Mant_b_DI,
-
    input logic [C_DIV_EXP:0]                   Exp_a_DI,
    input logic [C_DIV_EXP:0]                   Exp_b_DI,
-//   input logic                                 Special_case_SBI, 
-//   input logic                                 Special_case_dly_SBI, 
-   
   //output
    output logic                                Div_enable_SO,
    output logic                                Sqrt_enable_SO, 
    output logic                                Ready_SO,
    output logic                                Done_SO,
    output logic  [C_DIV_MANT:0]                Mant_z_DO,
- //  output  logic sign_z,
    output logic [C_DIV_EXP+1:0]                Exp_z_DO
     );
-   
-
-
-
+  
     logic [C_DIV_MANT+1:0]                    First_iteration_cell_sum_D, Sec_iteration_cell_sum_D,Thi_iteration_cell_sum_D,Fou_iteration_cell_sum_D;
     logic                                     First_iteration_cell_carry_D,Sec_iteration_cell_carry_D,Thi_iteration_cell_carry_D,Fou_iteration_cell_carry_D;
-   
     logic [1:0]                               Sqrt_Da0,Sqrt_Da1,Sqrt_Da2,Sqrt_Da3;
     logic [1:0]                               Sqrt_D0,Sqrt_D1,Sqrt_D2,Sqrt_D3;
-
     logic [C_DIV_MANT+1:0]                    First_iteration_cell_a_D,First_iteration_cell_b_D;
     logic [C_DIV_MANT+1:0]                    Sec_iteration_cell_a_D,Sec_iteration_cell_b_D;
     logic [C_DIV_MANT+1:0]                    Thi_iteration_cell_a_D,Thi_iteration_cell_b_D;
@@ -82,11 +78,8 @@ control_tp #(Precision_ctl_Enable_S)         control_U0
    .Precision_ctl_SI                         (Precision_ctl_SI                ),
    .Numerator_DI                             (Mant_a_DI                       ),
    .Exp_num_DI                               (Exp_a_DI                        ),
-
    .Denominator_DI                           (Mant_b_DI                       ),
    .Exp_den_DI                               (Exp_b_DI                        ),
-//   .Special_case_SBI                         (Special_case_SBI                ),
-//   .Special_case_dly_SBI                     (Special_case_dly_SBI            ),
    .First_iteration_cell_sum_DI              (First_iteration_cell_sum_D      ),
    .First_iteration_cell_carry_DI            (First_iteration_cell_carry_D    ),
    .Sqrt_Da0                                 (Sqrt_Da0                        ),
@@ -99,17 +92,14 @@ control_tp #(Precision_ctl_Enable_S)         control_U0
    .Fou_iteration_cell_sum_DI                (Fou_iteration_cell_sum_D        ),
    .Fou_iteration_cell_carry_DI              (Fou_iteration_cell_carry_D      ),
    .Sqrt_Da3                                 (Sqrt_Da3                        ),
-
-
    .Div_start_dly_SO                         (Div_start_dly_S                 ),
    .Sqrt_start_dly_SO                        (Sqrt_start_dly_S                ),
-   .Div_enable_SO                            (Div_enable_SO                    ),
-   .Sqrt_enable_SO                           (Sqrt_enable_SO                   ),
+   .Div_enable_SO                            (Div_enable_SO                   ),
+   .Sqrt_enable_SO                           (Sqrt_enable_SO                  ),
    .Sqrt_D0                                  (Sqrt_D0                         ),
    .Sqrt_D1                                  (Sqrt_D1                         ),
    .Sqrt_D2                                  (Sqrt_D2                         ),
    .Sqrt_D3                                  (Sqrt_D3                         ),
-
    .First_iteration_cell_a_DO                (First_iteration_cell_a_D        ),
    .First_iteration_cell_b_DO                (First_iteration_cell_b_D        ),
    .Sec_iteration_cell_a_DO                  (Sec_iteration_cell_a_D          ),
@@ -118,69 +108,59 @@ control_tp #(Precision_ctl_Enable_S)         control_U0
    .Thi_iteration_cell_b_DO                  (Thi_iteration_cell_b_D          ),
    .Fou_iteration_cell_a_DO                  (Fou_iteration_cell_a_D          ),
    .Fou_iteration_cell_b_DO                  (Fou_iteration_cell_b_D          ),
-
    .Ready_SO                                 (Ready_SO                        ),
    .Done_SO                                  (Done_SO                         ),
    .Mant_result_prenorm_DO                   (Mant_z_DO                       ),
    .Exp_result_prenorm_DO                    (Exp_z_DO                        )
-
 );  
 
-
-
-iteration_div_sqrt_first  iteration_unit_U0    
+iteration_div_sqrt_first  iteration_unit_U0
 (
    .A_DI                                    (First_iteration_cell_a_D        ),
    .B_DI                                    (First_iteration_cell_b_D        ),
-   .Div_enable_SI                           (Div_enable_SO                    ),
+   .Div_enable_SI                           (Div_enable_SO                   ),
    .Div_start_dly_SI                        (Div_start_dly_S                 ),
-   .Sqrt_enable_SI                          (Sqrt_enable_SO                   ),
+   .Sqrt_enable_SI                          (Sqrt_enable_SO                  ),
    .D_DI                                    (Sqrt_D0                         ),
    .D_DO                                    (Sqrt_Da0                        ), 
    .Sum_DO                                  (First_iteration_cell_sum_D      ),
    .Carry_out_DO                            (First_iteration_cell_carry_D    )
 );
 
-
-iteration_div_sqrt  iteration_unit_U1    
+iteration_div_sqrt  iteration_unit_U1
 (
    .A_DI                                    (Sec_iteration_cell_a_D          ),
    .B_DI                                    (Sec_iteration_cell_b_D          ),
-   .Div_enable_SI                           (Div_enable_SO                    ),
-   .Sqrt_enable_SI                          (Sqrt_enable_SO                   ),
+   .Div_enable_SI                           (Div_enable_SO                   ),
+   .Sqrt_enable_SI                          (Sqrt_enable_SO                  ),
    .D_DI                                    (Sqrt_D1                         ),
    .D_DO                                    (Sqrt_Da1                        ), 
    .Sum_DO                                  (Sec_iteration_cell_sum_D        ),
    .Carry_out_DO                            (Sec_iteration_cell_carry_D      )
 );
 
-
-iteration_div_sqrt  iteration_unit_U2    
+iteration_div_sqrt  iteration_unit_U2
 (
    .A_DI                                    (Thi_iteration_cell_a_D         ),
    .B_DI                                    (Thi_iteration_cell_b_D         ),
-   .Div_enable_SI                           (Div_enable_SO                   ),
-   .Sqrt_enable_SI                          (Sqrt_enable_SO                  ),
+   .Div_enable_SI                           (Div_enable_SO                  ),
+   .Sqrt_enable_SI                          (Sqrt_enable_SO                 ),
    .D_DI                                    (Sqrt_D2                        ),
    .D_DO                                    (Sqrt_Da2                       ), 
    .Sum_DO                                  (Thi_iteration_cell_sum_D       ),
    .Carry_out_DO                            (Thi_iteration_cell_carry_D     )
 );
 
-
-iteration_div_sqrt  iteration_unit_U3    
+iteration_div_sqrt  iteration_unit_U3
 (
    .A_DI                                    (Fou_iteration_cell_a_D        ),
    .B_DI                                    (Fou_iteration_cell_b_D        ),
-   .Div_enable_SI                           (Div_enable_SO                  ),
-   .Sqrt_enable_SI                          (Sqrt_enable_SO                 ),
+   .Div_enable_SI                           (Div_enable_SO                 ),
+   .Sqrt_enable_SI                          (Sqrt_enable_SO                ),
    .D_DI                                    (Sqrt_D3                       ),
    .D_DO                                    (Sqrt_Da3                      ), 
    .Sum_DO                                  (Fou_iteration_cell_sum_D      ),
    .Carry_out_DO                            (Fou_iteration_cell_carry_D    )
-);   
+);
 
-
-
-
-endmodule // 
+endmodule

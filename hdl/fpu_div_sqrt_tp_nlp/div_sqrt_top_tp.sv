@@ -1,3 +1,17 @@
+/* Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ * Bug fixes and contributions will eventually be released under the
+ * SolderPad open hardware license in the context of the PULP platform
+ * (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+ * University of Bologna.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
@@ -14,31 +28,22 @@
 // Language:       SystemVerilog                                              //
 //                                                                            //
 // Description:    The top of div and sqrt                                    //
-//                                                                          //
+//                                                                            //
 //                                                                            //
 // Revision:       07/02/2017                                                 //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
-//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_div_sqrt_tp::*;
 
 module div_sqrt_top_tp
 #(
-   parameter   Precision_ctl_Enable_S       =        1 
+   parameter   Precision_ctl_Enable_S = 1
 )
   (//Input
    input logic                  Clk_CI,
    input logic                  Rst_RBI,
    input logic                  Div_start_SI,
    input logic                  Sqrt_start_SI,
-
 
    //Input Operands
    input logic [C_DIV_OP-1:0]   Operand_a_DI,
@@ -62,7 +67,7 @@ module div_sqrt_top_tp
   logic [C_DIV_EXP-1:0]         Exp_res_DO;
   logic                         Sign_res_DO;
 
-   assign Result_DO =   {Sign_res_DO,Exp_res_DO, Mant_res_DO};   
+   assign Result_DO =   {Sign_res_DO,Exp_res_DO, Mant_res_DO};
 
    //Operand components
    logic                       Sign_a_D;
@@ -86,13 +91,8 @@ module div_sqrt_top_tp
    logic                       Zero_b_S;
    logic                       NaN_a_S;
    logic                       NaN_b_S;
-   logic [31:0]                Operand_a_dly_D;
-   logic [31:0]                Operand_b_dly_D;
-   logic                       Special_case_SB;
-   logic                       Special_case_dly_SB;
-   
- //
-preprocess  precess_U0
+
+ preprocess  precess_U0
  (
    .Clk_CI                (Clk_CI             ),
    .Rst_RBI               (Rst_RBI            ),
@@ -100,18 +100,13 @@ preprocess  precess_U0
    .Sqrt_start_SI         (Sqrt_start_SI      ),
    .Operand_a_DI          (Operand_a_DI       ),
    .Operand_b_DI          (Operand_b_DI       ),
-   .RM_SI                 (RM_SI              ),    //Rounding Mode
-
+   .RM_SI                 (RM_SI              ),
    .Start_SO              (Start_S            ),
- 
    .Exp_a_DO_norm         (Exp_a_D            ),
    .Exp_b_DO_norm         (Exp_b_D            ),
    .Mant_a_DO_norm        (Mant_a_D           ),
-
    .Mant_b_DO_norm        (Mant_b_D           ),
    .RM_dly_SO             (RM_dly_S           ),  
-//   .Operand_a_dly_DO      (Operand_a_dly_D    ),
-//   .Operand_b_dly_DO      (Operand_b_dly_D    ),
    .Sign_z_DO             (Sign_z_D           ),
    .Inf_a_SO              (Inf_a_S            ),
    .Inf_b_SO              (Inf_b_S            ),
@@ -119,14 +114,12 @@ preprocess  precess_U0
    .Zero_b_SO             (Zero_b_S           ),
    .NaN_a_SO              (NaN_a_S            ),
    .NaN_b_SO              (NaN_b_S            )
-//   .Special_case_SBO      (Special_case_SB    ),
-//   .Special_case_dly_SBO  (Special_case_dly_SB )
+
    );
 
-
  nrbd_nrsc_tp #(Precision_ctl_Enable_S)  nrbd_nrsc_U0
-  (//Input
-   .Clk_CI                (Clk_CI            ),
+  (
+   .Clk_CI                (Clk_CI             ),
    .Rst_RBI               (Rst_RBI            ),
    .Div_start_SI          (Div_start_SI       ) ,
    .Sqrt_start_SI         (Sqrt_start_SI      ),
@@ -138,18 +131,13 @@ preprocess  precess_U0
    .Exp_b_DI              (Exp_b_D            ),
    .Mant_a_DI             (Mant_a_D           ),
    .Mant_b_DI             (Mant_b_D           ),
-//   .Special_case_SBI      (Special_case_SB    ),
-//   .Special_case_dly_SBI  (Special_case_dly_SB ),
-  //output
-   .Ready_SO              (Ready_SO            ),
-   .Done_SO               (Done_SO             ),
-  // the prenormalized data
+   .Ready_SO              (Ready_SO           ),
+   .Done_SO               (Done_SO            ),
    .Exp_z_DO              (Exp_z_D            ),
    .Mant_z_DO             (Mant_z_D           )
     );
 
 
-  
  fpu_norm_div_sqrt  fpu_norm_U0
   (
    .Mant_in_DI            (Mant_z_D           ),
@@ -157,28 +145,19 @@ preprocess  precess_U0
    .Sign_in_DI            (Sign_z_D           ),
    .Div_enable_SI         (Div_enable_S       ), 
    .Sqrt_enable_SI        (Sqrt_enable_S      ),
-//   .Operand_a_dly_DI      (Operand_a_dly_D    ),
-//   .Operand_b_dly_DI      (Operand_b_dly_D    ),
    .Inf_a_SI              (Inf_a_S            ),
    .Inf_b_SI              (Inf_b_S            ),
    .Zero_a_SI             (Zero_a_S           ),
    .Zero_b_SI             (Zero_b_S           ),
    .NaN_a_SI              (NaN_a_S            ),
    .NaN_b_SI              (NaN_b_S            ),
-   //Rounding Mode
-
-  
-   .RM_SI                 (RM_dly_S              ),    //Rounding Mode
-
+   .RM_SI                 (RM_dly_S           ),
    .Mant_res_DO           (Mant_res_DO        ),
    .Exp_res_DO            (Exp_res_DO         ),
    .Sign_res_DO           (Sign_res_DO        ),
    .Exp_OF_SO             (Exp_OF_SO          ),
    .Exp_UF_SO             (Exp_UF_SO          ),
-   .Div_zero_SO           (Div_zero_SO         ) 
+   .Div_zero_SO           (Div_zero_SO         )
    );
 
-
- 
- 
-endmodule // 
+endmodule
