@@ -63,12 +63,12 @@ module fpu_private
    logic                     divsqrt_enable;
    logic                     fpu_enable;
    logic                     fma_enable;
-   
+
    assign divsqrt_enable = fpu_en_i & ((fpu_op_i==C_FPU_DIV_CMD) | (fpu_op_i==C_FPU_SQRT_CMD));
    assign fpu_enable     = fpu_en_i & ((fpu_op_i==C_FPU_ADD_CMD) | (fpu_op_i==C_FPU_SUB_CMD) | (fpu_op_i==C_FPU_MUL_CMD) | (fpu_op_i==C_FPU_I2F_CMD) | (fpu_op_i==C_FPU_F2I_CMD));
    assign fma_enable     = fpu_en_i & ((fpu_op_i==C_FPU_FMADD_CMD) | (fpu_op_i==C_FPU_FMSUB_CMD) | (fpu_op_i==C_FPU_FNMADD_CMD)| (fpu_op_i==C_FPU_FNMSUB_CMD));
 
-   
+
    ///////////////////////////////////////////////
    // FPU_core for Add/Sub/Mul/Casts            //
    ///////////////////////////////////////////////
