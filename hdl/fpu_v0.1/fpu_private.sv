@@ -183,7 +183,7 @@ module fpu_private
    fp_fma_wrapper
      #(
        .C_MAC_PIPE_REGS(2),
-       .RND_WIDTH(3),
+       .RND_WIDTH(2),
        .STAT_WIDTH(5)
        )
    fp_fma_wrap_i
@@ -195,7 +195,7 @@ module fpu_private
       .OpB_i            ( operand_b_i   ),
       .OpC_i            ( operand_c_i   ),
       .Op_i             ( fma_op        ),
-      .Rnd_i            ( rm_i          ),
+      .Rnd_i            ( rm_i[1:0]     ),
       .Status_o         ( fma_flags     ),
       .Res_o            ( fma_result    ),
       .Valid_o          ( fma_valid     ),

@@ -36,14 +36,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 `ifndef SYNTHESIS
-`define FP_SIM_MODELS;
+//`define FP_SIM_MODELS;
 `endif
 
 module fp_fma_wrapper
 #(
-  parameter C_MAC_PIPE_REGS = 0,
-  parameter RND_WIDTH = 0,
-  parameter STAT_WIDTH = 0
+  parameter C_MAC_PIPE_REGS = 2,
+  parameter RND_WIDTH       = 2,
+  parameter STAT_WIDTH      = 5
 )
  (
   // Clock and Reset
@@ -82,6 +82,8 @@ module fp_fma_wrapper
    logic [31:0]           Res_DP         [C_POST_PIPE_REGS+1];
    logic [STAT_WIDTH-1:0] Status_DP      [C_POST_PIPE_REGS+1];
 
+   logic [7:0]            status;
+
    // assign input. note: index [0] is not a register here!
    assign OpA_DP[0]    = En_i ? OpA_i :'0;
    assign OpB_DP[0]    = En_i ? {OpB_i[31] ^ Op_i[1],OpB_i[30:0]} :'0;
@@ -115,20 +117,21 @@ module fp_fma_wrapper
    // not used in simulation model
    assign Status_DP[0] = '0;
 `else
-   logic [7:0]            status;
-   assign Status_DP[0] = {status[2], 1'b0, status[4], status[3], 1'b0};
 
+   assign Status_DP[0] = {1'b0, 1'b0, status[4], status[3], 1'b0};
 
-fmac  fp_fma_i
+fmac
+fp_fma_i
+  //fmac assumes a + b*c, the fpu core assumes a*b + c
   (
-   .Operand_a_DI         (OpA_DP[C_PRE_PIPE_REGS]       ),
-   .Operand_b_DI         (OpB_DP[C_PRE_PIPE_REGS]       ),
-   .Operand_c_DI         (OpC_DP[C_PRE_PIPE_REGS]       ),
-   .RM_SI                (Rnd_DP[C_PRE_PIPE_REGS]              ),
-//   .Precision_ctl_SI     (Precision_ctl_SI   ),
-   .Result_DO            (Res_DP[0]          ),
-   .Exp_OF_SO            (Status[4]          ),
-   .Exp_UF_SO            (Status[3]          )
+   .Operand_a_DI         ( OpC_DP[C_PRE_PIPE_REGS]       ),
+   .Operand_b_DI         ( OpB_DP[C_PRE_PIPE_REGS]       ),
+   .Operand_c_DI         ( OpA_DP[C_PRE_PIPE_REGS]       ),
+   .RM_SI                ( Rnd_DP[C_PRE_PIPE_REGS]       ),
+   .Result_DO            ( Res_DP[0]                     ),
+   .Exp_OF_SO            ( status[4]                     ),
+   .Exp_UF_SO            ( status[3]                     ),
+   .Exp_NX_SO            ( status[5]                     )
    );
 
 `endif
@@ -149,7 +152,6 @@ fmac  fp_fma_i
             else begin
                // this one has to be always enabled...
                En_SP[i]       <= En_SP[i-1];
-               
                // enabled regs
                if(En_SP[i-1]) begin
                   OpA_DP[i]       <= OpA_DP[i-1];

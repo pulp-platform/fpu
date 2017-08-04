@@ -36,26 +36,27 @@ module fpu_norm_fmac
    input logic [3*C_MANT+4:0]              Mant_in_DI,
    input logic signed [C_EXP+1:0]          Exp_in_DI,
    input logic                             Sign_in_DI,
-   input logic [C_LEADONE_WIDTH-1:0]       Leading_one_DI, 
+   input logic [C_LEADONE_WIDTH-1:0]       Leading_one_DI,
    input logic                             Sign_amt_DI,
    input logic [C_EXP-1:0]                 Exp_a_DI,
    input logic [C_MANT:0]                  Mant_a_DI,
    input logic                             Sign_a_DI,
    input logic                             DeN_a_SI,
    input logic [C_RM-1:0]                  RM_SI,
-   input logic                             Stick_one_SI, 
+   input logic                             Stick_one_SI,
    input logic                             Inf_a_SI,
    input logic                             Inf_b_SI,
    input logic                             Inf_c_SI,
    input logic                             NaN_a_SI,
-   input logic                             NaN_b_SI, 
-   input logic                             NaN_c_SI, 
+   input logic                             NaN_b_SI,
+   input logic                             NaN_c_SI,
    //Outputs
    output logic [C_MANT-1:0]               Mant_res_DO,
    output logic [C_EXP-1:0]                Exp_res_DO,
    output logic                            Sign_res_DO,
    output logic                            Exp_OF_SO,
-   output logic                            Exp_UF_SO 
+   output logic                            Exp_UF_SO,
+   output logic                            Flag_Inexact_SO
    );
 
    logic [C_MANT:0]                        Mant_res_norm_D;
@@ -271,21 +272,19 @@ module fpu_norm_fmac
         end
 
     end
-  
+
    /////////////////////////////////////////////////////////////////////////////
    // Rounding                                                                //
    /////////////////////////////////////////////////////////////////////////////
 
- 
    logic [C_MANT:0]                   Mant_upper_D;
    logic [C_MANT+1:0]                 Mant_upperRounded_D;
    logic                              Mant_roundUp_S;
    logic                              Mant_rounded_S;
 
-   assign Mant_upper_D = Mant_res_norm_D;
+   assign Mant_upper_D    = Mant_res_norm_D;
+   assign Flag_Inexact_SO = Mant_rounded_S;
 
-   
-   
    assign Mant_rounded_S = (|(Mant_lower_D))| Mant_sticky_D;
    
    always_comb //determine whether to round up or not

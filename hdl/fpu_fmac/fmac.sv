@@ -31,25 +31,25 @@
 import fpu_defs_fmac::*;
 
 module fmac
-#(
-   parameter   Precision_ctl_Enable_S = 0
-)
-  (//Inputs
+(
+   //Inputs
    input logic [C_OP-1:0]   Operand_a_DI,
    input logic [C_OP-1:0]   Operand_b_DI,
    input logic [C_OP-1:0]   Operand_c_DI,
    input logic [C_RM-1:0]   RM_SI,    //Rounding Mode
-   input logic [C_PC-1:0]   Precision_ctl_SI, // Precision Control
    //Output-result
    output logic [31:0]      Result_DO,
    //Output-Flags
    output logic             Exp_OF_SO,
-   output logic             Exp_UF_SO
+   output logic             Exp_UF_SO,
+   output logic             Exp_NX_SO
  );
 
   logic [C_MANT-1:0]        Mant_res_DO;
   logic [C_EXP-1:0]         Exp_res_DO;
   logic                     Sign_res_DO;
+  logic                     DeN_a_S, Sub_S, Sign_postalig_D, Sign_amt_D, Sft_stop_S, Sign_out_D;
+
 
   assign Result_DO =   {Sign_res_DO,Exp_res_DO, Mant_res_DO};
 
@@ -68,6 +68,7 @@ module fmac
    logic                   NaN_a_S;
    logic                   NaN_b_S;
    logic                   NaN_c_S;
+
 preprocess_fmac  precess_U0
  (
    .Operand_a_DI          (Operand_a_DI       ),
@@ -202,7 +203,8 @@ LZA #(3*C_MANT+5) LZA_U0
    .Exp_res_DO            (Exp_res_DO         ),
    .Sign_res_DO           (Sign_res_DO        ),
    .Exp_OF_SO             (Exp_OF_SO          ),
-   .Exp_UF_SO             (Exp_UF_SO          )
+   .Exp_UF_SO             (Exp_UF_SO          ),
+   .Flag_Inexact_SO       (Exp_NX_SO          )
    );
 
 endmodule
