@@ -11,7 +11,7 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                                        //
+//		                                                              //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
@@ -26,6 +26,8 @@
 //                                                                            //
 //                                                                            //
 // Revision:        28/06/2017                                                //
+// Revision:        04/09/2017                                                //
+//                  Fix a bug in normalization by Lei Li                      //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
@@ -37,6 +39,7 @@ module fpu_norm_fmac
    input logic signed [C_EXP+1:0]          Exp_in_DI,
    input logic                             Sign_in_DI,
    input logic [C_LEADONE_WIDTH-1:0]       Leading_one_DI,
+   input logic                             No_one_SI,
    input logic                             Sign_amt_DI,
    input logic [C_EXP-1:0]                 Exp_a_DI,
    input logic [C_MANT:0]                  Mant_a_DI,
@@ -67,13 +70,17 @@ module fpu_norm_fmac
    /////////////////////////////////////////////////////////////////////////////
    // Exponent correction using LZA                                           //
    /////////////////////////////////////////////////////////////////////////////
-  logic [3*C_MANT+4:0]                    Mant_postsft_D; 
-  logic [C_EXP+1:0]                       Exp_postsft_D;
-  logic [C_EXP+1:0]                       Exp_postsft_addone_D;
-  logic [C_LEADONE_WIDTH-1:0]             Leading_one_D;
+  logic [3*C_MANT+4:0]             Mant_postsft_D; 
+  logic [C_EXP+1:0]                Exp_postsft_D;
+  logic [C_EXP+1:0]                Exp_postsft_addone_D;
+  logic [C_LEADONE_WIDTH-1:0]      Leading_one_D;
+  logic [C_EXP:0]                  LSt_Mant_D;
+
   assign Leading_one_D =  (Sign_amt_DI | Mant_in_DI[3*C_MANT+4]) ? 0 :  (Leading_one_DI);
-  assign Mant_postsft_D = Mant_in_DI<<(Leading_one_D);
-  assign Exp_postsft_D  = Exp_in_DI-Leading_one_D;
+  assign Exp_lg_S = Exp_in_DI>Leading_one_D; 
+  assign LSt_Mant_D = Exp_in_DI[C_EXP+1]?0:((Exp_lg_S)?(Leading_one_D):(Exp_in_DI[C_EXP:0]-1));
+  assign Mant_postsft_D = Mant_in_DI<<(LSt_Mant_D);
+  assign Exp_postsft_D  = Exp_in_DI[C_EXP+1]?0:((Exp_lg_S)?(Exp_in_DI-Leading_one_D):(1)); //1 for denormal numbers
   assign Exp_postsft_addone_D  = Exp_in_DI-Leading_one_D-1;
 
    /////////////////////////////////////////////////////////////////////////////
@@ -132,7 +139,18 @@ module fpu_norm_fmac
           Mant_sticky_D=1'b0;
         end 
 
-      else if(Exp_postsft_D[C_EXP+1]) //minus 
+      else if(No_one_SI)  
+        begin 
+          Exp_OF_SO=1'b0;
+          Exp_UF_SO=1'b0;
+          Mant_res_norm_D= '0;
+          Exp_res_norm_D='0;
+          Mant_lower_D={1'b0,1'b0};  
+          Sign_res_DO=Sign_in_DI; 
+          Mant_sticky_D=1'b0;
+        end
+
+      else if(Exp_in_DI[C_EXP+1]) //minus 
         begin          
           if(~Exp_Max_RS_D[C_EXP+1])    //OF EXP<0 after RS
             begin   
@@ -147,12 +165,12 @@ module fpu_norm_fmac
           else                    //denormal
             begin 
               Exp_OF_SO=1'b0;
-              Exp_UF_SO=1'b1;
-              Mant_res_norm_D={1'b0,Mant_RS_D[3*C_MANT+6:2*C_MANT+6]};
+              Exp_UF_SO=1'b1;          
+              Mant_res_norm_D={1'b0,Mant_RS_D[3*C_MANT+6:2*C_MANT+6]}; 
               Exp_res_norm_D='0;
               Mant_lower_D=Mant_RS_D[2*C_MANT+5:2*C_MANT+4];
               Sign_res_DO=Sign_in_DI;
-              Mant_sticky_D=Stick_one_D;
+              Mant_sticky_D=Stick_one_D;   
             end    
         end 
 

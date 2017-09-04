@@ -26,6 +26,8 @@
 // function:       Result_DO=Operand_a_DI+Operand_b_DI*Operand_c_DI           //
 //                                                                            //
 // Revision:       07/07/2017                                                 //
+// Revision:       04/09/2017                                                 //
+//                 No_one_S was added  by Lei Li                              //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
@@ -172,12 +174,14 @@ adders adders_U0
  
 
  logic [C_LEADONE_WIDTH-1:0]                Leading_one_D;
+ logic                                      No_one_S;
 
 LZA #(3*C_MANT+5) LZA_U0
   (
-   .A_DI                   (A_LZA_D),
-   .B_DI                   (B_LZA_D), 
-   .Leading_one_DO         (Leading_one_D)
+   .A_DI                   (A_LZA_D       ),
+   .B_DI                   (B_LZA_D       ), 
+   .Leading_one_DO         (Leading_one_D ),
+   .No_one_SO              (No_one_S      ) 
    );
 
 
@@ -187,6 +191,7 @@ LZA #(3*C_MANT+5) LZA_U0
    .Exp_in_DI             (Exp_postalig_D     ),
    .Sign_in_DI            (Sign_out_D         ),
    .Leading_one_DI        (Leading_one_D      ), 
+   .No_one_SI             (No_one_S           ),
    .Sign_amt_DI           (Sign_amt_D         ), 
    .Exp_a_DI              (Operand_a_DI[C_OP-2:C_MANT]), //exponent
    .Mant_a_DI             (Mant_a_D           ),

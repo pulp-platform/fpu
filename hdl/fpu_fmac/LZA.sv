@@ -11,7 +11,7 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                                        //
+//		                                                              //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
@@ -26,6 +26,8 @@
 //                                                                            //
 //                                                                            //
 // Revision:        26/06/2017                                                //
+// Revision:        04/09/2017                                                //
+//                 Adding No_one_SI as an output                              //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
@@ -35,7 +37,8 @@ module LZA
   (
    input  logic [C_WIDTH-1:0]                A_DI,
    input  logic [C_WIDTH-1:0]                B_DI,
-   output logic [C_LEADONE_WIDTH-1:0]        Leading_one_DO
+   output logic [C_LEADONE_WIDTH-1:0]        Leading_one_DO,
+   output logic                              No_one_SO
    );
 
    logic [C_WIDTH-1:0]                       T_D;
@@ -73,15 +76,17 @@ module LZA
   assign F_S[0]= T_D[1]&Z_D[0] | (~T_D[1])&(T_D[0] | G_D[0]);
      
  logic [C_LEADONE_WIDTH-1:0]                Leading_one_D;
-
+ logic                                      No_one_S;
    fpu_ff
    #(
      .LEN(C_WIDTH))
    LOD_Ub
    (
-     .in_i        ( F_S         ),
-     .first_one_o ( Leading_one_D )
+     .in_i        ( F_S           ),
+     .first_one_o ( Leading_one_D ),
+     .no_ones_o   ( No_one_S      )
    );
 
- assign Leading_one_DO=Leading_one_D;
+ assign Leading_one_DO = Leading_one_D;
+ assign No_one_SO = No_one_S;
 endmodule
