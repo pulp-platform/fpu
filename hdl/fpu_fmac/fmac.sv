@@ -89,6 +89,9 @@ preprocess_fmac  precess_U0
    .Inf_a_SO              (Inf_a_S            ),
    .Inf_b_SO              (Inf_b_S            ),
    .Inf_c_SO              (Inf_c_S            ),
+   .Zero_a_SO             (Zero_a_S           ),
+   .Zero_b_SO             (Zero_b_S           ),
+   .Zero_c_SO             (Zero_c_S           ),
    .NaN_a_SO              (NaN_a_S            ),
    .NaN_b_SO              (NaN_b_S            ),
    .NaN_c_SO              (NaN_c_S            )
@@ -193,6 +196,7 @@ LZA #(3*C_MANT+5) LZA_U0
    .Leading_one_DI        (Leading_one_D      ), 
    .No_one_SI             (No_one_S           ),
    .Sign_amt_DI           (Sign_amt_D         ), 
+   .Sub_SI                (Sub_S              ),
    .Exp_a_DI              (Operand_a_DI[C_OP-2:C_MANT]), //exponent
    .Mant_a_DI             (Mant_a_D           ),
    .Sign_a_DI             (Sign_a_D           ),
@@ -201,6 +205,9 @@ LZA #(3*C_MANT+5) LZA_U0
    .Inf_a_SI              (Inf_a_S            ),
    .Inf_b_SI              (Inf_b_S            ),
    .Inf_c_SI              (Inf_c_S            ),
+   .Zero_a_SI             (Zero_a_S           ),
+   .Zero_b_SI             (Zero_b_S           ),
+   .Zero_c_SI             (Zero_c_S           ),
    .NaN_a_SI              (NaN_a_S            ),
    .NaN_b_SI              (NaN_b_S            ),
    .NaN_c_SI              (NaN_c_S            ),

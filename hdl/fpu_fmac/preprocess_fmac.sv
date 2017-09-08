@@ -51,6 +51,7 @@ module preprocess_fmac
    output logic                    Inf_c_SO,
    output logic                    Zero_a_SO,
    output logic                    Zero_b_SO,
+   output logic                    Zero_c_SO,
    output logic                    NaN_a_SO,
    output logic                    NaN_b_SO,
    output logic                    NaN_c_SO,
@@ -106,6 +107,7 @@ module preprocess_fmac
    assign Exp_c_Inf_NaN_S=(Exp_c_DO == C_EXP_INF);
    assign Zero_a_SO = Exp_a_zero_S&&Mant_a_zero_S;
    assign Zero_b_SO = Exp_b_zero_S&&Mant_b_zero_S;
+   assign Zero_c_SO = Exp_c_zero_S&&Mant_c_zero_S;
    assign Inf_a_SO = Exp_a_Inf_NaN_S&&Mant_a_zero_S;
    assign Inf_b_SO = Exp_b_Inf_NaN_S&&Mant_b_zero_S;
    assign Inf_c_SO = Exp_c_Inf_NaN_S&&Mant_c_zero_S;

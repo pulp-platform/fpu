@@ -41,6 +41,7 @@ module fpu_norm_fmac
    input logic [C_LEADONE_WIDTH-1:0]       Leading_one_DI,
    input logic                             No_one_SI,
    input logic                             Sign_amt_DI,
+   input  logic                            Sub_SI,
    input logic [C_EXP-1:0]                 Exp_a_DI,
    input logic [C_MANT:0]                  Mant_a_DI,
    input logic                             Sign_a_DI,
@@ -50,6 +51,9 @@ module fpu_norm_fmac
    input logic                             Inf_a_SI,
    input logic                             Inf_b_SI,
    input logic                             Inf_c_SI,
+   input logic                             Zero_a_SI,
+   input logic                             Zero_b_SI,
+   input logic                             Zero_c_SI, 
    input logic                             NaN_a_SI,
    input logic                             NaN_b_SI,
    input logic                             NaN_c_SI,
@@ -106,7 +110,7 @@ module fpu_norm_fmac
 
   always@(*)
     begin
-       if(NaN_a_SI | NaN_b_SI | NaN_c_SI)  //   NaN
+       if(NaN_a_SI | NaN_b_SI | NaN_c_SI | (Zero_b_SI&&Inf_c_SI) | (Zero_c_SI&&Inf_b_SI) | (Sub_SI && Inf_a_SI &&( Inf_b_SI | Inf_c_SI )))  //   NaN
          begin        
            Exp_OF_SO=1'b0;
            Exp_UF_SO=1'b0;
