@@ -12,9 +12,9 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
-//		                                                                        //
+//		                                                              //
 // Additional contributions by:                                               //
-//                                                                            //
+//                  lile  -- lile@iis.ee.ethz.ch                              //
 //                                                                            //
 //                                                                            //
 // Create Date:    26/10/2014                                                 //
@@ -28,6 +28,8 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
+//                12/09/2017                                                  //
+//                Updated the special cases                                   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
@@ -347,7 +349,7 @@ module fpu_core
      end
    assign Mant_res_D = Mant_toZero_S ? C_MANT_ZERO : Mant_norm_D;
 
-   assign Result_D = (OP_SP == C_FPU_F2I_CMD) ? Result_ftoi_D : {Sign_res_D, Exp_res_D, Mant_res_D[C_MANT-1:0]};
+   assign Result_D = IV_S ? F_QNAN : ((OP_SP == C_FPU_F2I_CMD) ? Result_ftoi_D : {Sign_res_D, Exp_res_D, Mant_res_D[C_MANT-1:0]});
 
    assign Result_DO = Result_D;
    assign UF_SO     = UF_S;

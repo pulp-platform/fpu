@@ -14,7 +14,7 @@
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
 //                                                                            //
 // Additional contributions by:                                               //
-//                                                                            //
+//                  Lei Li       --lile@iis.ee.ethz.ch                        //
 //                                                                            //
 //                                                                            //
 // Create Date:    06/10/2014                                                 // 
@@ -28,6 +28,8 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
+//                12/09/2012                                                  //
+//                Fixed some wrong flags by Lei Li                            //                
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
@@ -79,14 +81,19 @@ module fpexc
    logic        Inf_b_S;
    logic        Zero_a_S;
    logic        Zero_b_S;
+   logic        NaN_a_S;
+   logic        NaN_b_S;
      
    logic        Mant_zero_S;
   
-   assign Inf_a_S = (Exp_a_DI == C_EXP_INF);
-   assign Inf_b_S = (Exp_b_DI == C_EXP_INF);
+   assign Inf_a_S = (Exp_a_DI == C_EXP_INF) & (Mant_a_DI[C_MANT-1:0] == C_MANT_NoHB_ZERO);
+   assign Inf_b_S = (Exp_b_DI == C_EXP_INF) & (Mant_b_DI[C_MANT-1:0] == C_MANT_NoHB_ZERO);
 
    assign Zero_a_S = (Exp_a_DI == C_EXP_ZERO) & (Mant_a_DI == C_MANT_ZERO);
    assign Zero_b_S = (Exp_b_DI == C_EXP_ZERO) & (Mant_b_DI == C_MANT_ZERO);
+
+   assign NaN_a_S = (Exp_a_DI == C_EXP_INF) & (Mant_a_DI[C_MANT-1:0] != C_MANT_NoHB_ZERO);
+   assign NaN_b_S = (Exp_b_DI == C_EXP_INF) & (Mant_b_DI[C_MANT-1:0] != C_MANT_NoHB_ZERO);
 
    assign Mant_zero_S = Mant_norm_DI == C_MANT_ZERO;
    
@@ -106,12 +113,12 @@ module fpexc
         case (Op_SI)
           C_FPU_ADD_CMD, C_FPU_SUB_CMD : //input logic already adjusts operands 
             begin
-               if ((Inf_a_S & Inf_b_S) & (Sign_a_DI ^ Sign_b_DI))
+               if (((Inf_a_S & Inf_b_S) & (Sign_a_DI ^ Sign_b_DI)) | NaN_a_S | NaN_b_S)
                  IV_SO = 1'b1;
             end
           C_FPU_MUL_CMD :
             begin
-            if ((Inf_a_S & Zero_b_S) | (Inf_b_S & Zero_a_S))
+            if (((Inf_a_S & Zero_b_S) | (Inf_b_S & Zero_a_S)) | NaN_a_S | NaN_b_S)
               IV_SO = 1'b1;
             end
           C_FPU_F2I_CMD :
