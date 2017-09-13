@@ -11,7 +11,7 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                                        //
+//		                                                              //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
@@ -26,7 +26,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Revision:        20/06/2017                                                //
+// Revision:        13/09/2017                                                //
+//                  Added some signals for normalization by Lei Li            //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;

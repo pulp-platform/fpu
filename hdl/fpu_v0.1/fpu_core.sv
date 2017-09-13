@@ -29,7 +29,7 @@
 //                                                                            //
 // Revision:                                                                  //
 //                12/09/2017                                                  //
-//                Updated the special cases                                   //
+//                Updated the special cases   by Lei Li                       //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;

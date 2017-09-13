@@ -18,7 +18,7 @@
 //                                                                            //
 // Create Date:    06/10/2014                                                 // 
 // Design Name:    FPU                                                        // 
-// Module Name:    fpu_mult.sv                                                  //
+// Module Name:    fpu_mult.sv                                                //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
 //                                                                            //

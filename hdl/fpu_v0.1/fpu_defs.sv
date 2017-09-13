@@ -69,7 +69,7 @@ package fpu_defs;
    parameter C_EXP_ZERO     = 5'h00;
    parameter C_EXP_INF      = 5'hff;
    parameter C_MANT_ZERO    = 11'h0;
-   parameter C_MANT_NoHB_ZERO    = 10'h0;
+   parameter C_MANT_NoHB_ZERO   = 10'h0;
    parameter C_MANT_PRENORM_IND = 5;
    parameter F_QNAN         =16'h7E00;
 
@@ -95,7 +95,7 @@ package fpu_defs;
    parameter C_EXP_ZERO     = 8'h00;
    parameter C_EXP_INF      = 8'hff;
    parameter C_MANT_ZERO    = 24'h0;
-   parameter C_MANT_NoHB_ZERO    = 23'h0;
+   parameter C_MANT_NoHB_ZERO   = 23'h0;
    parameter C_MANT_PRENORM_IND = 6;
    parameter F_QNAN         =32'h7FC00000;
 `endif

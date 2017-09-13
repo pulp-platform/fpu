@@ -27,7 +27,7 @@
 //                                                                            //
 // Revision:        26/06/2017                                                //
 // Revision:        04/09/2017                                                //
-//                 Adding No_one_SI as an output                              //
+//                  Added No_one_SI as an output by Lei Li                    //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
