@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -17,8 +17,8 @@
 //                  Lei Li       --lile@iis.ee.ethz.ch                        //
 //                                                                            //
 //                                                                            //
-// Create Date:    06/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    06/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpexc.sv                                                   //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
@@ -29,12 +29,12 @@
 //                                                                            //
 // Revision:                                                                  //
 //                12/09/2012                                                  //
-//                Fixed some wrong flags by Lei Li                            //                
+//                Fixed some wrong flags by Lei Li                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
-module fpexc 
+module fpexc
   (//Input
    input logic [C_MANT:0]   Mant_a_DI,
    input logic [C_MANT:0]   Mant_b_DI,
@@ -58,7 +58,7 @@ module fpexc
    input logic IX_SI,
    input logic IV_SI,
    input logic Inf_SI,
-   
+
    //Output
    output logic Exp_toZero_SO,
    output logic Exp_toInf_SO,
@@ -72,20 +72,20 @@ module fpexc
    output logic Inf_SO
    ) ;
 
- 
+
    /////////////////////////////////////////////////////////////////////////////
    // preliminary checks for infinite/zero operands                           //
    /////////////////////////////////////////////////////////////////////////////
-   
+
    logic        Inf_a_S;
    logic        Inf_b_S;
    logic        Zero_a_S;
    logic        Zero_b_S;
    logic        NaN_a_S;
    logic        NaN_b_S;
-     
+
    logic        Mant_zero_S;
-  
+
    assign Inf_a_S = (Exp_a_DI == C_EXP_INF) & (Mant_a_DI[C_MANT-1:0] == C_MANT_NoHB_ZERO);
    assign Inf_b_S = (Exp_b_DI == C_EXP_INF) & (Mant_b_DI[C_MANT-1:0] == C_MANT_NoHB_ZERO);
 
@@ -96,22 +96,22 @@ module fpexc
    assign NaN_b_S = (Exp_b_DI == C_EXP_INF) & (Mant_b_DI[C_MANT-1:0] != C_MANT_NoHB_ZERO);
 
    assign Mant_zero_S = Mant_norm_DI == C_MANT_ZERO;
-   
-   
+
+
    /////////////////////////////////////////////////////////////////////////////
    // flag assignments                                                        //
    /////////////////////////////////////////////////////////////////////////////
-   
+
    assign OF_SO   = (Op_SI == C_FPU_F2I_CMD) ? OF_SI : (Exp_OF_SI & ~Mant_zero_S) | (~IV_SO & (Inf_a_S ^ Inf_b_S) & (Op_SI != C_FPU_I2F_CMD));
    assign UF_SO   = (Op_SI == C_FPU_F2I_CMD) ? UF_SI : Exp_UF_SI & Mant_rounded_SI;
-   assign Zero_SO = (Op_SI == C_FPU_F2I_CMD) ? Zero_SI : (Mant_zero_S & ~IV_SO); 
-   assign IX_SO   = (Op_SI == C_FPU_F2I_CMD) ? IX_SI : Mant_rounded_SI | OF_SO; 
+   assign Zero_SO = (Op_SI == C_FPU_F2I_CMD) ? Zero_SI : (Mant_zero_S & ~IV_SO);
+   assign IX_SO   = (Op_SI == C_FPU_F2I_CMD) ? IX_SI : Mant_rounded_SI | OF_SO;
 
    always_comb //check operation validity
      begin
         IV_SO = 1'b0;
         case (Op_SI)
-          C_FPU_ADD_CMD, C_FPU_SUB_CMD : //input logic already adjusts operands 
+          C_FPU_ADD_CMD, C_FPU_SUB_CMD : //input logic already adjusts operands
             begin
                if (((Inf_a_S & Inf_b_S) & (Sign_a_DI ^ Sign_b_DI)) | NaN_a_S | NaN_b_S)
                  IV_SO = 1'b1;

@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -16,8 +16,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    06/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    06/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpu_add.sv                                                 //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
@@ -45,7 +45,7 @@ module fpu_add
    output logic signed [C_EXP_PRENORM-1 :0]  Exp_prenorm_DO,
    output logic        [C_MANT_PRENORM-1:0]  Mant_prenorm_DO
    );
-   
+
    //Operand components
    logic              Sign_a_D;
    logic              Sign_b_D;
@@ -56,7 +56,7 @@ module fpu_add
 
    //Post-Normalizer result
    logic              Sign_norm_D;
-     
+
    /////////////////////////////////////////////////////////////////////////////
    // Assign Inputs
    /////////////////////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ module fpu_add
    logic             Exp_equal_S;
    logic [C_EXP-1:0] Exp_diff_D;
    logic [C_EXP-1:0] Exp_prenorm_D;
-   
+
    assign Exp_agtb_S  = Exp_a_D > Exp_b_D;
    assign Exp_equal_S = Exp_diff_D == 0;
 
@@ -92,7 +92,7 @@ module fpu_add
              Exp_prenorm_D = Exp_b_D;
           end
      end // always_comb
-   
+
    /////////////////////////////////////////////////////////////////////////////
    // Mantissa operations
    /////////////////////////////////////////////////////////////////////////////
@@ -103,13 +103,13 @@ module fpu_add
    logic                       Mant_sticky_D;
    logic [C_MANT_SHIFTED-1:0]  Mant_unshifted_D;
 
-   //Main Adder 
+   //Main Adder
    logic [C_MANT_ADDIN-1:0]   Mant_addInA_D;
    logic [C_MANT_ADDIN-1:0]   Mant_addInB_D;
    logic [C_MANT_ADDOUT-1:0]  Mant_addOut_D;
 
    logic [C_MANT_PRENORM-1:0] Mant_prenorm_D;
-   
+
    //Inversion and carry for Subtraction
    logic        Mant_addCarryIn_D;
    logic        Mant_invA_S;
@@ -122,7 +122,7 @@ module fpu_add
    assign Mant_unshifted_D = {(Exp_agtb_S ? Mant_a_D : Mant_b_D), 3'b0};
    assign Mant_shiftIn_D   = {(Exp_agtb_S ? Mant_b_D : Mant_a_D), 2'b0};
 
-   
+
    always_comb //sticky bit
      begin
         Mant_sticky_D = 1'b0;
@@ -186,7 +186,7 @@ module fpu_add
    /////////////////////////////////////////////////////////////////////////////
    // Output Assignments
    /////////////////////////////////////////////////////////////////////////////
-   
+
    assign Sign_prenorm_DO = Sign_norm_D;
    assign Exp_prenorm_DO  = signed'({2'b0,Exp_prenorm_D});
    assign Mant_prenorm_DO = Mant_prenorm_D;

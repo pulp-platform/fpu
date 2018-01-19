@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -12,7 +12,7 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
-//		                                                              //
+//		                                                                        //
 // Additional contributions by:                                               //
 //                  lile  -- lile@iis.ee.ethz.ch                              //
 //                                                                            //
@@ -49,7 +49,7 @@ module fpu_core
 
    output logic [C_OP-1:0] Result_DO,
    output logic            Valid_SO,
-   
+
    //Output-Flags
    output logic            OF_SO,    //Overflow
    output logic            UF_SO,    //Underflow
@@ -90,13 +90,13 @@ module fpu_core
    /////////////////////////////////////////////////////////////////////////////
    // Input FF
    /////////////////////////////////////////////////////////////////////////////
-   
+
    logic [C_RM-1:0]       RM_SP;
    logic [C_CMD-1:0]      OP_SP;
    logic [C_OP-1:0]       Operand_a_DP;
    logic [C_OP-1:0]       Operand_b_DP;
    logic                  Enable_SP;
-                           
+
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if (~Rst_RBI) begin
@@ -116,7 +116,7 @@ module fpu_core
      end
 
    assign Valid_SO = Enable_SP;
-   
+
    /////////////////////////////////////////////////////////////////////////////
    // Disassemble operands
    /////////////////////////////////////////////////////////////////////////////
@@ -235,7 +235,7 @@ module fpu_core
    logic Mant_rounded_S;
    logic Exp_OF_S;
    logic Exp_UF_S;
-                              
+
    always_comb
      begin
         Sign_norm_D = '0;
@@ -262,7 +262,7 @@ module fpu_core
             end
         endcase //case (OP_S)
      end //always_comb begin
-   
+
 
    fpu_norm normalizer
      (

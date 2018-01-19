@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -16,8 +16,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    08/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    08/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    defines.sv                                                 //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //

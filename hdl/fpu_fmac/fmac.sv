@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -44,7 +44,8 @@ module fmac
    //Output-Flags
    output logic             Exp_OF_SO,
    output logic             Exp_UF_SO,
-   output logic             Exp_NX_SO
+   output logic             Flag_NX_SO,
+   output logic             Flag_IV_SO
  );
 
   logic [C_MANT-1:0]        Mant_res_DO;
@@ -109,7 +110,7 @@ preprocess_fmac  precess_U0
    logic [2*C_MANT+2:0]                      Pp_carry_D;
    logic                                     MSB_cor_D;
  wallace   wallace_U0
- ( 
+ (
    .Pp_index_DI           (Pp_index_D        ),
    .Pp_sum_DO             (Pp_sum_D          ),
    .Pp_carry_DO           (Pp_carry_D        ),
@@ -146,15 +147,15 @@ preprocess_fmac  precess_U0
    logic [2*C_MANT+1:0]                      Csa_sum_D;
    logic [2*C_MANT+1:0]                      Csa_carry_D;
 CSA   #(2*C_MANT+2)  CSA_U0
- ( 
-   .A_DI                  (Mant_postalig_a_D[2*C_MANT+1:0]), 
+ (
+   .A_DI                  (Mant_postalig_a_D[2*C_MANT+1:0]),
    .B_DI                  ({Pp_sum_postcal_D[2*C_MANT+1:0]}       ),
-   .C_DI                  ({Pp_carry_postcal_D[2*C_MANT:0],1'b0}  ), 
-   .Sum_DO                (Csa_sum_D                      ), 
+   .C_DI                  ({Pp_carry_postcal_D[2*C_MANT:0],1'b0}  ),
+   .Sum_DO                (Csa_sum_D                      ),
    .Carry_DO              (Csa_carry_D                    )
  );
 
-// The correction based sign extension is included in adders.  
+// The correction based sign extension is included in adders.
  logic [73:0]                               Sum_pos_D;
  logic [3*C_MANT+4:0]                       A_LZA_D;
  logic [3*C_MANT+4:0]                       B_LZA_D;
@@ -165,7 +166,7 @@ adders adders_U0
   .BL_DI                   (Csa_carry_D      ),
   .Sub_SI                  (Sub_S            ),
   .Sign_cor_SI             ({MSB_cor_D, Pp_carry_postcal_D[2*C_MANT+2],{Pp_sum_postcal_D[2*C_MANT+2] && Pp_carry_postcal_D[2*C_MANT+1]}}),
-  .Sign_amt_DI             (Sign_amt_D       ), 
+  .Sign_amt_DI             (Sign_amt_D       ),
   .Sft_stop_SI             (Sft_stop_S       ),
   .BH_DI                   (Mant_postalig_a_D[3*C_MANT+5:2*C_MANT+2]),
   .Sign_postalig_DI        (Sign_postalig_D  ),
@@ -174,7 +175,7 @@ adders adders_U0
   .A_LZA_DO                (A_LZA_D          ),
   .B_LZA_DO                (B_LZA_D          )
  );
- 
+
 
  logic [C_LEADONE_WIDTH-1:0]                Leading_one_D;
  logic                                      No_one_S;
@@ -182,9 +183,9 @@ adders adders_U0
 LZA #(3*C_MANT+5) LZA_U0
   (
    .A_DI                   (A_LZA_D       ),
-   .B_DI                   (B_LZA_D       ), 
+   .B_DI                   (B_LZA_D       ),
    .Leading_one_DO         (Leading_one_D ),
-   .No_one_SO              (No_one_S      ) 
+   .No_one_SO              (No_one_S      )
    );
 
 
@@ -193,9 +194,9 @@ LZA #(3*C_MANT+5) LZA_U0
    .Mant_in_DI            (Sum_pos_D          ),
    .Exp_in_DI             (Exp_postalig_D     ),
    .Sign_in_DI            (Sign_out_D         ),
-   .Leading_one_DI        (Leading_one_D      ), 
+   .Leading_one_DI        (Leading_one_D      ),
    .No_one_SI             (No_one_S           ),
-   .Sign_amt_DI           (Sign_amt_D         ), 
+   .Sign_amt_DI           (Sign_amt_D         ),
    .Sub_SI                (Sub_S              ),
    .Exp_a_DI              (Operand_a_DI[C_OP-2:C_MANT]), //exponent
    .Mant_a_DI             (Mant_a_D           ),
@@ -216,7 +217,8 @@ LZA #(3*C_MANT+5) LZA_U0
    .Sign_res_DO           (Sign_res_DO        ),
    .Exp_OF_SO             (Exp_OF_SO          ),
    .Exp_UF_SO             (Exp_UF_SO          ),
-   .Flag_Inexact_SO       (Exp_NX_SO          )
+   .Flag_Inexact_SO       (Flag_NX_SO         ),
+   .Flag_Invalid_SO       (Flag_IV_SO         )
    );
 
 endmodule

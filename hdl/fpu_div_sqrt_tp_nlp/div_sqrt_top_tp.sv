@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -17,8 +17,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    01/12/2016                                                 // 
-// Design Name:    div_sqrt_top                                               // 
+// Create Date:    01/12/2016                                                 //
+// Design Name:    div_sqrt_top                                               //
 // Module Name:    div_sqrt_top.sv                                            //
 // Project Name:   The shared divisor and square root                         //
 // Language:       SystemVerilog                                              //
@@ -33,7 +33,8 @@ import fpu_defs_div_sqrt_tp::*;
 
 module div_sqrt_top_tp
 #(
-   parameter   Precision_ctl_Enable_S = 1
+   parameter   Precision_ctl_Enable_S = 0,
+   parameter   Accuracy_ctl_Enable_S  = 1
 )
   (//Input
    input logic                  Clk_CI,
@@ -48,15 +49,15 @@ module div_sqrt_top_tp
    input logic [C_DIV_PC-1:0]   Precision_ctl_SI, // Precision Control
 
    output logic [31:0]          Result_DO,
- 
+
    //Output-Flags
    output logic                 Exp_OF_SO,
    output logic                 Exp_UF_SO,
    output logic                 Div_zero_SO,
-   output logic                 Ready_SO, 
+   output logic                 Ready_SO,
    output logic                 Done_SO
  );
-   
+
 
 
   logic [C_DIV_MANT-1:0]        Mant_res_DO;
@@ -88,6 +89,8 @@ module div_sqrt_top_tp
    logic                       NaN_a_S;
    logic                       NaN_b_S;
 
+   logic [3:0]                 Round_bit_D;
+
  preprocess  precess_U0
  (
    .Clk_CI                (Clk_CI             ),
@@ -102,7 +105,7 @@ module div_sqrt_top_tp
    .Exp_b_DO_norm         (Exp_b_D            ),
    .Mant_a_DO_norm        (Mant_a_D           ),
    .Mant_b_DO_norm        (Mant_b_D           ),
-   .RM_dly_SO             (RM_dly_S           ),  
+   .RM_dly_SO             (RM_dly_S           ),
    .Sign_z_DO             (Sign_z_D           ),
    .Inf_a_SO              (Inf_a_S            ),
    .Inf_b_SO              (Inf_b_S            ),
@@ -113,7 +116,7 @@ module div_sqrt_top_tp
 
    );
 
- nrbd_nrsc_tp #(Precision_ctl_Enable_S)  nrbd_nrsc_U0
+ nrbd_nrsc_tp #(Precision_ctl_Enable_S, Accuracy_ctl_Enable_S)  nrbd_nrsc_U0
   (
    .Clk_CI                (Clk_CI             ),
    .Rst_RBI               (Rst_RBI            ),
@@ -130,16 +133,18 @@ module div_sqrt_top_tp
    .Ready_SO              (Ready_SO           ),
    .Done_SO               (Done_SO            ),
    .Exp_z_DO              (Exp_z_D            ),
-   .Mant_z_DO             (Mant_z_D           )
+   .Mant_z_DO             (Mant_z_D           ),
+   .Round_bit_DO          (Round_bit_D        )
     );
 
 
  fpu_norm_div_sqrt  fpu_norm_U0
   (
    .Mant_in_DI            (Mant_z_D           ),
+   .Round_bit_DI          (Round_bit_D        ),
    .Exp_in_DI             (Exp_z_D            ),
    .Sign_in_DI            (Sign_z_D           ),
-   .Div_enable_SI         (Div_enable_S       ), 
+   .Div_enable_SI         (Div_enable_S       ),
    .Sqrt_enable_SI        (Sqrt_enable_S      ),
    .Inf_a_SI              (Inf_a_S            ),
    .Inf_b_SI              (Inf_b_S            ),
