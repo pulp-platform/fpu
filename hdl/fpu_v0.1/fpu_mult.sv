@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -16,8 +16,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    06/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    06/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpu_mult.sv                                                //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
@@ -57,7 +57,7 @@ module fpu_mult
 
    //Exponent calculations
    logic signed [C_EXP_PRENORM-1:0]         Exp_prenorm_D;       //signed exponent for normalizer
-      
+
    //Multiplication
    logic [C_MANT_PRENORM-1:0]               Mant_prenorm_D;
 

@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -12,13 +12,13 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@sutdent.ethz.ch                //
-//		                                                              //
+//		                                                                        //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    26/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    26/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpu_shared.sv                                              //
 // Project Name:   FPU                                                        //
 // Language:       SystemVerilog                                              //
@@ -67,7 +67,7 @@ module fpu_shared
            assign  Operand_b_DN = Interface.argb_ds_d;
            assign  RM_SN        = Interface.flags_ds_d;
            assign  Op_SN        = Interface.op_ds_d;
-                    
+
            assign  Valid_SN     = Interface.valid_ds_s;
            assign  Tag_DN       = Interface.tag_ds_d;
 
@@ -86,7 +86,7 @@ module fpu_shared
                  Operand_b_D <= Operand_b_DN;
                  RM_S        <= RM_SN;
                  Op_S        <= Op_SN;
-                    
+
                  Valid_S     <= Valid_SN;
                  Tag_D       <= Tag_DN;
               end
@@ -98,7 +98,7 @@ module fpu_shared
            assign Operand_b_D  = Interface.argb_ds_d;
            assign RM_S         = Interface.flags_ds_d;
            assign Op_S         = Interface.op_ds_d;
-   
+
            assign Valid_S      = Interface.valid_ds_s;
            assign Tag_D        = Interface.tag_ds_d;
         end
@@ -109,7 +109,7 @@ module fpu_shared
    /////////////////////////////////////////////////////////////////////////////
 
    logic [C_OP-1:0]   Result_D;
-   
+
    logic [C_FLAG-1:0] Flags_S;
    logic              UF_S;
    logic              OF_S;
@@ -123,12 +123,12 @@ module fpu_shared
       .Clk_CI       ( Clk_CI        ),
       .Rst_RBI      ( Rst_RBI       ),
       .Enable_SI    ( Valid_S       ),
-      
+
       .Operand_a_DI ( Operand_a_D   ),
       .Operand_b_DI ( Operand_b_D   ),
       .RM_SI        ( RM_S          ),
       .OP_SI        ( Op_S          ),
-      
+
       .Result_DO    ( Result_D      ),
 
       .OF_SO        ( OF_S          ),
@@ -142,7 +142,7 @@ module fpu_shared
 
    /////////////////////////////////////////////////////////////////////////////
    // Shim register for tag and valid
-   /////////////////////////////////////////////////////////////////////////////   
+   /////////////////////////////////////////////////////////////////////////////
 
    logic              ValidDelayed_SP;
    logic              ValidDelayed_SN;
@@ -168,7 +168,7 @@ module fpu_shared
 
    /////////////////////////////////////////////////////////////////////////////
    // Output assignments
-   /////////////////////////////////////////////////////////////////////////////   
+   /////////////////////////////////////////////////////////////////////////////
 
    assign Interface.result_us_d = Result_D;
    assign Interface.flags_us_d  = {1'b0, Inf_S, IV_S, IX_S, Zero_S, 2'b0, UF_S, OF_S};

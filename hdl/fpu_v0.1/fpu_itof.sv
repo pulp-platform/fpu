@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -16,8 +16,8 @@
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    31/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    31/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpu_itof.sv                                                //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
@@ -48,8 +48,8 @@ module fpu_itof
    logic [C_MANT_INT-1:0]                   Mant_int_D;                 //Integer number w/o sign-bit
    logic [C_OP-1:0]                         Temp_twos_to_unsigned_D;
    logic [C_MANT_PRENORM-1:0]               Mant_prenorm_D;
-   
-   
+
+
    //Hidden Bits
    logic                                    Hb_a_D;
 

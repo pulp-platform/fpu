@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -11,12 +11,12 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                              //
+//		                                                                        //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
 //                                                                            //
-// Create Date:    01/12/2016                                                 // 
+// Create Date:    01/12/2016                                                 //
 // Design Name:    fmac                                                       //
 // Module Name:    preprocess_fmac.sv                                         //
 // Project Name:   Private FPU                                                //
@@ -56,15 +56,16 @@ module preprocess_fmac
    output logic                    NaN_a_SO,
    output logic                    NaN_b_SO,
    output logic                    NaN_c_SO,
-   output logic                    DeN_a_SO,
-   output logic                    DeN_b_SO,
-   output logic                    DeN_c_SO
+   output logic                    DeN_a_SO
    );
 
    //Hidden Bits
    logic                        Hb_a_D;
    logic                        Hb_b_D;
    logic                        Hb_c_D;
+
+   logic                        DeN_b_S;
+   logic                        DeN_c_S;
 
    /////////////////////////////////////////////////////////////////////////////
    // Disassemble operands                                                    //
@@ -74,8 +75,8 @@ module preprocess_fmac
    assign Sign_b_DO = Operand_b_DI[C_OP-1];
    assign Sign_c_DO = Operand_c_DI[C_OP-1];
    assign Exp_a_DO  = DeN_a_SO?C_EXP_ONE:Operand_a_DI[C_OP-2:C_MANT];
-   assign Exp_b_DO  = DeN_b_SO?C_EXP_ONE:Operand_b_DI[C_OP-2:C_MANT];
-   assign Exp_c_DO  = DeN_c_SO?C_EXP_ONE:Operand_c_DI[C_OP-2:C_MANT];
+   assign Exp_b_DO  = DeN_b_S ?C_EXP_ONE:Operand_b_DI[C_OP-2:C_MANT];
+   assign Exp_c_DO  = DeN_c_S ?C_EXP_ONE:Operand_c_DI[C_OP-2:C_MANT];
    assign Mant_a_DO = {Hb_a_D,Operand_a_DI[C_MANT-1:0]};
    assign Mant_b_DO = {Hb_b_D,Operand_b_DI[C_MANT-1:0]};
    assign Mant_c_DO = {Hb_c_D,Operand_c_DI[C_MANT-1:0]};
@@ -116,7 +117,6 @@ module preprocess_fmac
    assign NaN_b_SO = Exp_b_Inf_NaN_S&&(~Mant_b_zero_S);
    assign NaN_c_SO = Exp_c_Inf_NaN_S&&(~Mant_c_zero_S);
    assign DeN_a_SO = Exp_a_zero_S&&(~Mant_a_zero_S);
-   assign DeN_b_SO = Exp_b_zero_S&&(~Mant_b_zero_S);
-   assign DeN_c_SO = Exp_c_zero_S&&(~Mant_c_zero_S);
-
+   assign DeN_b_S  = Exp_b_zero_S&&(~Mant_b_zero_S);
+   assign DeN_c_S  = Exp_c_zero_S&&(~Mant_c_zero_S);
 endmodule

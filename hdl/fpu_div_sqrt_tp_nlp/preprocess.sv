@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -49,7 +49,7 @@ module preprocess
    output logic [C_DIV_MANT:0]   Mant_a_DO_norm,
    output logic [C_DIV_MANT:0]   Mant_b_DO_norm,
 
-   output logic [C_DIV_RM-1:0]   RM_dly_SO, 
+   output logic [C_DIV_RM-1:0]   RM_dly_SO,
 
    output logic                  Sign_z_DO,
    output logic                  Inf_a_SO,
@@ -81,10 +81,10 @@ module preprocess
    assign Exp_b_D  = Operand_b_DI[C_DIV_OP-2:C_DIV_MANT];
    assign Mant_a_D = {Hb_a_D,Operand_a_DI[C_DIV_MANT-1:0]};
    assign Mant_b_D = {Hb_b_D,Operand_b_DI[C_DIV_MANT-1:0]};
-   
+
    assign Hb_a_D = | Exp_a_D; // hidden bit
    assign Hb_b_D = | Exp_b_D; // hidden bit
-   
+
    assign Start_S= Div_start_SI | Sqrt_start_SI;
 
 
@@ -93,7 +93,7 @@ module preprocess
    /////////////////////////////////////////////////////////////////////////////
    // preliminary checks for infinite/zero/NaN operands                       //
    /////////////////////////////////////////////////////////////////////////////
-   
+
    logic               Mant_a_prenorm_zero_S;
    logic               Mant_b_prenorm_zero_S;
    assign Mant_a_prenorm_zero_S=(Operand_a_DI[C_DIV_MANT-1:0] == C_DIV_MANT_ZERO);
@@ -123,7 +123,7 @@ module preprocess
    assign NaN_a_SN = Start_S?(Exp_a_prenorm_Inf_NaN_S&&(~Mant_a_prenorm_zero_S)):NaN_a_SP;
    assign NaN_b_SN = Start_S?(Exp_b_prenorm_Inf_NaN_S&&(~Mant_b_prenorm_zero_S)):NaN_b_SP;
 
-    
+
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
@@ -135,8 +135,8 @@ module preprocess
             NaN_a_SP <='0;
             NaN_b_SP <='0;
           end
-        else 
-         begin 
+        else
+         begin
            Inf_a_SP <=Inf_a_SN;
            Inf_b_SP <=Inf_b_SN;
            Zero_a_SP <=Zero_a_SN;
@@ -153,7 +153,7 @@ module preprocess
    logic                   Sign_z_DN;
    logic                   Sign_z_DP;
 
-   always_comb   
+   always_comb
      begin
        if(~Rst_RBI)
          begin
@@ -164,8 +164,8 @@ module preprocess
        else if(Sqrt_start_SI)
            Sign_z_DN = Sign_a_D;
        else
-           Sign_z_DN = Sign_z_DP; 
-    end 
+           Sign_z_DN = Sign_z_DP;
+    end
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
@@ -174,15 +174,15 @@ module preprocess
             Sign_z_DP <= '0;
           end
        else
-         begin  
+         begin
             Sign_z_DP <= Sign_z_DN;
-         end 
-    end  
+         end
+    end
 
    logic [C_DIV_RM-1:0]                  RM_DN;
    logic [C_DIV_RM-1:0]                  RM_DP;
 
-   always_comb   
+   always_comb
      begin
        if(~Rst_RBI)
          begin
@@ -192,7 +192,7 @@ module preprocess
            RM_DN = RM_SI;
        else
            RM_DN = RM_DP;
-    end 
+    end
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
@@ -201,10 +201,10 @@ module preprocess
             RM_DP <= '0;
           end
        else
-         begin  
+         begin
             RM_DP <= RM_DN;
-         end 
-    end 
+         end
+    end
    assign RM_dly_SO = RM_DP;
 
    logic [4:0]                  Mant_leadingOne_a, Mant_leadingOne_b;
@@ -218,11 +218,11 @@ module preprocess
      .in_i        ( Mant_a_D          ),
      .first_one_o ( Mant_leadingOne_a ),
      .no_ones_o   ( Mant_zero_S_a     )
-   ); 
- 
+   );
+
 
    logic [C_DIV_MANT:0]            Mant_a_norm_DN,Mant_a_norm_DP;
-   
+
    assign  Mant_a_norm_DN = (Start_S)?(Mant_a_D<<(Mant_leadingOne_a)):Mant_a_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)
@@ -240,13 +240,13 @@ module preprocess
    logic [C_DIV_EXP:0]            Exp_a_norm_DN,Exp_a_norm_DP;
    assign  Exp_a_norm_DN = (Start_S)?(Exp_a_D-Mant_leadingOne_a+(|Mant_leadingOne_a)):Exp_a_norm_DP;
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI)  
+   always_ff @(posedge Clk_CI, negedge Rst_RBI)
      begin
         if(~Rst_RBI)
           begin
             Exp_a_norm_DP <= '0;
           end
-        else  
+        else
           begin
             Exp_a_norm_DP<=Exp_a_norm_DN;
           end
@@ -260,10 +260,10 @@ module preprocess
      .in_i        ( Mant_b_D          ),
      .first_one_o ( Mant_leadingOne_b ),
      .no_ones_o   ( Mant_zero_S_b     )
-   ); 
+   );
 
    logic [C_DIV_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;
-   
+
    assign  Mant_b_norm_DN = (Start_S)?(Mant_b_D<<(Mant_leadingOne_b)):Mant_b_norm_DP;
 
    always_ff @(posedge Clk_CI, negedge Rst_RBI)

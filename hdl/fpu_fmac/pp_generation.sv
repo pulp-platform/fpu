@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -11,7 +11,7 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                              //
+//		                                                                        //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
@@ -38,7 +38,7 @@ module pp_generation
    //Outputs
    output logic [12:0] [2*C_MANT+2:0]                Pp_index_DO
    );
-   
+
   logic                                              Sel_xnor_S;
 ////////////////////////////////////////////////////////////////////////////////
 //                        Booth Encoding (13)                                 //
@@ -50,10 +50,10 @@ module pp_generation
   logic  [12:0]                                      Sel_1x_S;
   logic  [12:0]                                      Sel_2x_S;
   logic  [12:0]                                      Sel_sign_S;
-  generate 
+  generate
     genvar i;
       for (i=1; i <=13 ; i++)
-        begin 
+        begin
           booth_encoder  booth_encoding (  .Booth_b_DI(Mant_b_D[2*i+1:2*i-1]), .Sel_1x_SO(Sel_1x_S[i-1]), .Sel_2x_SO(Sel_2x_S[i-1]), .Sel_sign_SO(Sel_sign_S[i-1]));
         end
   endgenerate
@@ -66,10 +66,10 @@ module pp_generation
   assign Mant_a_D = {Mant_a_DI,1'b0};
   logic [12:0] [C_MANT+1:0]                         Booth_pp_D;
 
-  generate 
+  generate
     genvar l,j;
       for (l=1; l <=13 ; l++)
-        begin 
+        begin
           for (j=1;j<=C_MANT+2;j++)
             begin
               booth_selector  booth_selection (  .Booth_a_DI(Mant_a_D[j:j-1]), .Sel_1x_SI(Sel_1x_S[l-1]), .Sel_2x_SI(Sel_2x_S[l-1]), .Sel_sign_SI(Sel_sign_S[l-1]),.Booth_pp_DO(Booth_pp_D[l-1][j-1]));
@@ -84,8 +84,8 @@ module pp_generation
 
   assign Pp_index_DO[0]={21'h00000,~Sel_sign_S[0],Sel_sign_S[0],Sel_sign_S[0],Booth_pp_D[0]};   //49-bit
   assign Pp_index_DO[1]={20'h00000,1'b1,~Sel_sign_S[1],Booth_pp_D[1],1'b0,Sel_sign_S[0]};       //49-bit
-  assign Pp_index_DO[2]={18'h00000,1'b1,~Sel_sign_S[2],Booth_pp_D[2],1'b0,Sel_sign_S[1],2'h0};  //49-bit 
-  assign Pp_index_DO[3]={16'h0000,1'b1,~Sel_sign_S[3],Booth_pp_D[3],1'b0,Sel_sign_S[2],4'h0};   //49-bit 
+  assign Pp_index_DO[2]={18'h00000,1'b1,~Sel_sign_S[2],Booth_pp_D[2],1'b0,Sel_sign_S[1],2'h0};  //49-bit
+  assign Pp_index_DO[3]={16'h0000,1'b1,~Sel_sign_S[3],Booth_pp_D[3],1'b0,Sel_sign_S[2],4'h0};   //49-bit
   assign Pp_index_DO[4]={14'h0000,1'b1,~Sel_sign_S[4],Booth_pp_D[4],1'b0,Sel_sign_S[3],6'h00};  //49-bit
   assign Pp_index_DO[5]={12'h000,1'b1,~Sel_sign_S[5],Booth_pp_D[5],1'b0,Sel_sign_S[4],8'h00};   //49-bit
   assign Pp_index_DO[6]={10'h000,1'b1,~Sel_sign_S[6],Booth_pp_D[6],1'b0,Sel_sign_S[5],10'h000}; //49-bit

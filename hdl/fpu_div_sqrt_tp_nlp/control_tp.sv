@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -35,7 +35,8 @@ import fpu_defs_div_sqrt_tp::*;
 
 module control_tp
 #(
-   parameter   Precision_ctl_Enable_S = 1
+   parameter   Precision_ctl_Enable_S = 0,
+   parameter   Accuracy_ctl_Enable_S  = 1
 )
   (//Input
    input logic                                       Clk_CI,
@@ -48,18 +49,18 @@ module control_tp
    input logic [C_DIV_EXP:0]                         Exp_num_DI,
    input logic [C_DIV_MANT:0]                        Denominator_DI,
    input logic [C_DIV_EXP:0]                         Exp_den_DI,
-   input logic [C_DIV_MANT+1:0]                      First_iteration_cell_sum_DI,
+   input logic [C_DIV_MANT+1+1:0]                    First_iteration_cell_sum_DI,
    input logic                                       First_iteration_cell_carry_DI,
-   input logic [1:0]                                 Sqrt_Da0,   
-   input logic [C_DIV_MANT+1:0]                      Sec_iteration_cell_sum_DI,
+   input logic [1:0]                                 Sqrt_Da0,
+   input logic [C_DIV_MANT+1+2:0]                    Sec_iteration_cell_sum_DI,
    input logic                                       Sec_iteration_cell_carry_DI,
-   input logic [1:0]                                 Sqrt_Da1,  
-   input logic [C_DIV_MANT+1:0]                      Thi_iteration_cell_sum_DI,
+   input logic [1:0]                                 Sqrt_Da1,
+   input logic [C_DIV_MANT+1+3:0]                    Thi_iteration_cell_sum_DI,
    input logic                                       Thi_iteration_cell_carry_DI,
-   input logic [1:0]                                 Sqrt_Da2,   
-   input logic [C_DIV_MANT+1:0]                      Fou_iteration_cell_sum_DI,
+   input logic [1:0]                                 Sqrt_Da2,
+   input logic [C_DIV_MANT+1+4:0]                    Fou_iteration_cell_sum_DI,
    input logic                                       Fou_iteration_cell_carry_DI,
-   input logic [1:0]                                 Sqrt_Da3,  
+   input logic [1:0]                                 Sqrt_Da3,
 
    output logic                                      Div_start_dly_SO ,
    output logic                                      Sqrt_start_dly_SO,
@@ -71,25 +72,25 @@ module control_tp
    output logic [1:0]                                Sqrt_D2,
    output logic [1:0]                                Sqrt_D3,
 
-   output logic [C_DIV_MANT+1:0]                     First_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                     First_iteration_cell_b_DO,
-   output logic [C_DIV_MANT+1:0]                     Sec_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                     Sec_iteration_cell_b_DO,
-   output logic [C_DIV_MANT+1:0]                     Thi_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                     Thi_iteration_cell_b_DO,
-   output logic [C_DIV_MANT+1:0]                     Fou_iteration_cell_a_DO,
-   output logic [C_DIV_MANT+1:0]                     Fou_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1+1:0]                   First_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1+1:0]                   First_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1+2:0]                   Sec_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1+2:0]                   Sec_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1+3:0]                   Thi_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1+3:0]                   Thi_iteration_cell_b_DO,
+   output logic [C_DIV_MANT+1+4:0]                   Fou_iteration_cell_a_DO,
+   output logic [C_DIV_MANT+1+4:0]                   Fou_iteration_cell_b_DO,
 
    //To next stage
    output logic                                      Ready_SO,
    output logic                                      Done_SO,
    output logic [C_DIV_MANT:0]                       Mant_result_prenorm_DO,
-
+   output logic [3:0]                                Round_bit_DO,
    output logic [C_DIV_EXP+1:0]                      Exp_result_prenorm_DO
  );
 
-   logic [C_DIV_MANT+1:0]                            Partial_remainder_DN,Partial_remainder_DP;
-   logic  [C_DIV_MANT:0]                             Quotient_DP;
+   logic  [C_DIV_MANT+1+4:0]                         Partial_remainder_DN,Partial_remainder_DP;
+   logic  [C_DIV_MANT+4:0]                           Quotient_DP;
    /////////////////////////////////////////////////////////////////////////////
    // Assign Inputs                                                          //
    /////////////////////////////////////////////////////////////////////////////
@@ -162,9 +163,13 @@ module control_tp
            default:
              begin
                State_ctl_S<=3'b101;
-             end      
+             end
            endcase
           end
+        else if(Accuracy_ctl_Enable_S==1)
+             begin
+               State_ctl_S<=3'b110;
+             end
         else
              begin
                State_ctl_S<=3'b101;
@@ -265,7 +270,7 @@ module control_tp
 
    logic  Final_state_S;
    assign     Final_state_S= (Crtl_cnt_S==State_ctl_S);
-   //4 iteration units per stage    
+   //4 iteration units per stage
    always_ff @(posedge Clk_CI, negedge Rst_RBI) //control_FSM
      begin
         if (~Rst_RBI)
@@ -273,7 +278,7 @@ module control_tp
              Crtl_cnt_S    <= '0;
           end
           else if (Final_state_S)
-            begin     
+            begin
               Crtl_cnt_S    <= '0;
             end
           else if(Fsm_enable_S) // one cycle Start_SI
@@ -311,7 +316,7 @@ module control_tp
 
 
 
-   always_ff @(posedge Clk_CI, negedge Rst_RBI) //Generate  Ready_SO  
+   always_ff @(posedge Clk_CI, negedge Rst_RBI) //Generate  Ready_SO
      begin
        if(~Rst_RBI)
          begin
@@ -321,7 +326,7 @@ module control_tp
        else if(Start_SI)
          begin
            Ready_SO<=1'b0;
-         end 
+         end
        else if(Final_state_S)
          begin
            Ready_SO<=1'b1;
@@ -332,18 +337,22 @@ module control_tp
          end
      end
 
-   logic [C_DIV_MANT+1:0]                                        Sqrt_R0,Sqrt_R1,Sqrt_R2,Sqrt_R3,Sqrt_R4;//partial remainder for each iteration
+   //logic [C_DIV_MANT+1:0]                                        Sqrt_R4;//partial remainder for each iteration
 
    logic [3:0]                                                   Qcnt0, Q_cnt_cmp_0;
-   logic [6:0]                                                   Qcnt1, Q_cnt_cmp_1;  
-   logic [10:0]                                                  Qcnt2, Q_cnt_cmp_2;  
+   logic [6:0]                                                   Qcnt1, Q_cnt_cmp_1;
+   logic [10:0]                                                  Qcnt2, Q_cnt_cmp_2;
    logic [14:0]                                                  Qcnt3, Q_cnt_cmp_3;
    logic [18:0]                                                  Qcnt4, Q_cnt_cmp_4;
    logic [22:0]                                                  Qcnt5, Q_cnt_cmp_5;
-   logic [C_DIV_MANT+1:0]                                        Sqrt_Q0,Sqrt_Q1,Sqrt_Q2,Sqrt_Q3,Sqrt_Q4;
+   logic [26:0]                                                  Qcnt6, Q_cnt_cmp_6;   //To improve the accuracy
+   logic [C_DIV_MANT+1+1:0]                                      Sqrt_R0,Sqrt_Q0,Q_sqrt0,Q_sqrt_com_0;
+   logic [C_DIV_MANT+1+2:0]                                      Sqrt_R1,Sqrt_Q1,Q_sqrt1,Q_sqrt_com_1;
+   logic [C_DIV_MANT+1+3:0]                                      Sqrt_R2,Sqrt_Q2,Q_sqrt2,Q_sqrt_com_2;
+   logic [C_DIV_MANT+1+4:0]                                      Sqrt_R3,Sqrt_Q3,Q_sqrt3,Q_sqrt_com_3,Sqrt_R4; //Sqrt_Q4;
 
-   logic [C_DIV_MANT+1:0]                                        Q_sqrt0,Q_sqrt1,Q_sqrt2,Q_sqrt3,Q_sqrt4;
-   logic [C_DIV_MANT+1:0]                                        Q_sqrt_com_0,Q_sqrt_com_1,Q_sqrt_com_2,Q_sqrt_com_3,Q_sqrt_com_4;
+   //logic [C_DIV_MANT+1:0]                                        Q_sqrt0,Q_sqrt1,Q_sqrt2,Q_sqrt3,Q_sqrt4;
+   //logic [C_DIV_MANT+1:0]                                        Q_sqrt_com_0,Q_sqrt_com_1,Q_sqrt_com_2,Q_sqrt_com_3,Q_sqrt_com_4;
 
    assign Qcnt0=    {1'b0,            ~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};  //qk for each feedback
    assign Qcnt1=    {Quotient_DP[3:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};
@@ -351,6 +360,9 @@ module control_tp
    assign Qcnt3=    {Quotient_DP[11:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};
    assign Qcnt4=    {Quotient_DP[15:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};
    assign Qcnt5=    {Quotient_DP[19:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24]};  //just 24 iteration
+   assign Qcnt6=    {Quotient_DP[23:0],~First_iteration_cell_sum_DI[25],~Sec_iteration_cell_sum_DI[26],~Thi_iteration_cell_sum_DI[27]};  //To improve the accuracy
+
+
 
    assign Q_cnt_cmp_0=~Qcnt0;
    assign Q_cnt_cmp_1=~Qcnt1;
@@ -358,6 +370,11 @@ module control_tp
    assign Q_cnt_cmp_3=~Qcnt3;
    assign Q_cnt_cmp_4=~Qcnt4;
    assign Q_cnt_cmp_5=~Qcnt5;
+   assign Q_cnt_cmp_6=~Qcnt6;   //To improve the accuracy
+
+
+
+
 
   always_comb begin  // the intermediate operands for sqrt
   case(Crtl_cnt_S)
@@ -411,7 +428,7 @@ module control_tp
     end
 
     3'b010: begin
-       Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT-15:C_DIV_MANT-16]; 
+       Sqrt_D0=Mant_D_sqrt_Norm[C_DIV_MANT-15:C_DIV_MANT-16];
        Sqrt_D1=Mant_D_sqrt_Norm[C_DIV_MANT-17:C_DIV_MANT-18];
        Sqrt_D2=Mant_D_sqrt_Norm[C_DIV_MANT-19:C_DIV_MANT-20];
        Sqrt_D3=Mant_D_sqrt_Norm[C_DIV_MANT-21:C_DIV_MANT-22];
@@ -479,11 +496,11 @@ module control_tp
 
     end
 
-       3'b101: begin
+    3'b101: begin
        Sqrt_D0='0;
        Sqrt_D1='0;
        Sqrt_D2='0;
-       Sqrt_D3='0; 
+       Sqrt_D3='0;
 
        Q_sqrt0={5'h00,Qcnt5[22:3]};
        Q_sqrt1={4'h0,Qcnt5[22:2]};
@@ -502,6 +519,30 @@ module control_tp
 
      end
 
+//  To improve the accuracy
+    3'b110: begin
+       Sqrt_D0='0;
+       Sqrt_D1='0;
+       Sqrt_D2='0;
+       Sqrt_D3='0;
+
+       Q_sqrt0={2'h0,Qcnt6[26:3]};                  //26bits
+       Q_sqrt1={2'h0,Qcnt6[26:2]};                  //27bits
+       Q_sqrt2={2'h0,Qcnt6[26:1]};                  //28bits
+       Q_sqrt3={2'h0,Qcnt6[26:0]};                  //29bits
+
+       Q_sqrt_com_0={2'h3,Q_cnt_cmp_6[26:3]};       //26bits
+       Q_sqrt_com_1={2'h3,Q_cnt_cmp_6[26:2]};       //27bits
+       Q_sqrt_com_2={2'h3,Q_cnt_cmp_6[26:1]};       //28bits
+       Q_sqrt_com_3={2'h3,Q_cnt_cmp_6[26:0]};       //29bits
+
+       Sqrt_Q0=Quotient_DP[0]?Q_sqrt_com_0:Q_sqrt0;
+       Sqrt_Q1=First_iteration_cell_sum_DI[25]?Q_sqrt1:Q_sqrt_com_1;
+       Sqrt_Q2=Sec_iteration_cell_sum_DI[26]?Q_sqrt2:Q_sqrt_com_2;
+       Sqrt_Q3=Thi_iteration_cell_sum_DI[27]?Q_sqrt3:Q_sqrt_com_3;
+
+     end
+
    default: begin
        Sqrt_D0='0;
        Sqrt_D1='0;
@@ -512,13 +553,13 @@ module control_tp
        Q_sqrt1='0;
        Q_sqrt2='0;
        Q_sqrt3='0;
-       Q_sqrt4='0; 
+ //      Q_sqrt4='0;
 
        Q_sqrt_com_0='0;
        Q_sqrt_com_1='0;
        Q_sqrt_com_2='0;
        Q_sqrt_com_3='0;
-       Q_sqrt_com_4='0;
+//       Q_sqrt_com_4='0;
 
        Sqrt_Q0='0;
        Sqrt_Q1='0;
@@ -529,59 +570,63 @@ module control_tp
   endcase
  end
 
+  logic                                            Extra_Final_State_S;
+  assign Extra_Final_State_S = (Crtl_cnt_S==3'b110)&&Sqrt_enable_SO;
+  logic                                            Extra_Near_Final_State_S;
+  assign Extra_Near_Final_State_S = (Crtl_cnt_S==3'b101)&&Sqrt_enable_SO&&Accuracy_ctl_Enable_S;
 
-  assign Sqrt_R0=(Sqrt_start_dly_S)?'0:Partial_remainder_DP; 
-  assign Sqrt_R1={First_iteration_cell_sum_DI[24],First_iteration_cell_sum_DI[21:0],Sqrt_Da0};
-  assign Sqrt_R2={Sec_iteration_cell_sum_DI[24],Sec_iteration_cell_sum_DI[21:0],Sqrt_Da1};
-  assign Sqrt_R3={Thi_iteration_cell_sum_DI[24],Thi_iteration_cell_sum_DI[21:0],Sqrt_Da2};
-  assign Sqrt_R4={Fou_iteration_cell_sum_DI[24],Fou_iteration_cell_sum_DI[21:0],Sqrt_Da3};
+  assign Sqrt_R0=Extra_Final_State_S ? {Partial_remainder_DP[C_DIV_MANT+1],Partial_remainder_DP[C_DIV_MANT+1:0]} : ((Sqrt_start_dly_S)?'0:{1'b0,Partial_remainder_DP[C_DIV_MANT+1:0]});
+  assign Sqrt_R1=Extra_Final_State_S ? {First_iteration_cell_sum_DI[25],First_iteration_cell_sum_DI[23:0],Sqrt_Da0} : {2'b00,First_iteration_cell_sum_DI[24],First_iteration_cell_sum_DI[21:0],Sqrt_Da0} ;
+  assign Sqrt_R2=Extra_Final_State_S ? {Sec_iteration_cell_sum_DI[26],Sec_iteration_cell_sum_DI[24:0],Sqrt_Da1} : {3'b000,Sec_iteration_cell_sum_DI[24],Sec_iteration_cell_sum_DI[21:0],Sqrt_Da1};
+  assign Sqrt_R3=Extra_Final_State_S ? {Thi_iteration_cell_sum_DI[27],Thi_iteration_cell_sum_DI[25:0],Sqrt_Da2} : {4'b0000,Thi_iteration_cell_sum_DI[24],Thi_iteration_cell_sum_DI[21:0],Sqrt_Da2};
+  assign Sqrt_R4=Extra_Final_State_S ? {Fou_iteration_cell_sum_DI[28],Fou_iteration_cell_sum_DI[25:0],Sqrt_Da3} : { Extra_Near_Final_State_S ? {3'b000,Fou_iteration_cell_sum_DI[24],Fou_iteration_cell_sum_DI[22:0],Sqrt_Da3} : {4'b0000,Fou_iteration_cell_sum_DI[24],Fou_iteration_cell_sum_DI[21:0],Sqrt_Da3} };
 
   //                   for           iteration cell_U0
   logic [C_DIV_MANT+1:0]                           First_iteration_cell_div_a_D,First_iteration_cell_div_b_D;
   logic                                            Sel_b_for_first_S;
 
 
-  assign First_iteration_cell_div_a_D=(Div_start_dly_S)?Numerator_se_D:{Partial_remainder_DP[C_DIV_MANT:0],Quotient_DP[0]};
+  assign First_iteration_cell_div_a_D=(Div_start_dly_S)?{1'b0,Numerator_se_D}:{1'b0,Partial_remainder_DP[C_DIV_MANT:0],Quotient_DP[0]};
   assign Sel_b_for_first_S=(Div_start_dly_S)?1:Quotient_DP[0];
-  assign First_iteration_cell_div_b_D=Sel_b_for_first_S?Denominator_se_DB:Denominator_se_D;
-  assign First_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R0:(First_iteration_cell_div_a_D);
-  assign First_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q0:(First_iteration_cell_div_b_D);
+  assign First_iteration_cell_div_b_D=Sel_b_for_first_S?{1'b0,Denominator_se_DB}:{1'b0,Denominator_se_D};
+  assign First_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R0:{1'b0,First_iteration_cell_div_a_D};
+  assign First_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q0:{1'b0,First_iteration_cell_div_b_D};
 
 
   //                   for           iteration cell_U1
   logic [C_DIV_MANT+1:0]                          Sec_iteration_cell_div_a_D,Sec_iteration_cell_div_b_D;
   logic                                           Sel_b_for_sec_S;
 
-  assign Sec_iteration_cell_div_a_D={First_iteration_cell_sum_DI[C_DIV_MANT:0],First_iteration_cell_carry_DI};
-  assign Sel_b_for_sec_S=First_iteration_cell_carry_DI;
-  assign Sec_iteration_cell_div_b_D=Sel_b_for_sec_S?Denominator_se_DB:Denominator_se_D;
+  assign Sec_iteration_cell_div_a_D={2'b00,First_iteration_cell_sum_DI[C_DIV_MANT:0],~First_iteration_cell_sum_DI[24]};
+  assign Sel_b_for_sec_S=~First_iteration_cell_sum_DI[24];
+  assign Sec_iteration_cell_div_b_D=Sel_b_for_sec_S?{2'b00,Denominator_se_DB}:{2'b00,Denominator_se_D};
 
-  assign Sec_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R1:(Sec_iteration_cell_div_a_D);
-  assign Sec_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q1:(Sec_iteration_cell_div_b_D);
+  assign Sec_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R1:{2'b00,Sec_iteration_cell_div_a_D};
+  assign Sec_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q1:{2'b00,Sec_iteration_cell_div_b_D};
 
 
   //                   for           iteration cell_U2
   logic [C_DIV_MANT+1:0]                          Thi_iteration_cell_div_a_D,Thi_iteration_cell_div_b_D;
   logic                                           Sel_b_for_thi_S;
 
-  assign Thi_iteration_cell_div_a_D={Sec_iteration_cell_sum_DI[C_DIV_MANT:0],Sec_iteration_cell_carry_DI};
-  assign Sel_b_for_thi_S=Sec_iteration_cell_carry_DI;
-  assign Thi_iteration_cell_div_b_D=Sel_b_for_thi_S?Denominator_se_DB:Denominator_se_D;
-  assign Thi_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R2:(Thi_iteration_cell_div_a_D);
-  assign Thi_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q2:(Thi_iteration_cell_div_b_D);
+  assign Thi_iteration_cell_div_a_D={3'b000,Sec_iteration_cell_sum_DI[C_DIV_MANT:0],~Sec_iteration_cell_sum_DI[24]};
+  assign Sel_b_for_thi_S=~Sec_iteration_cell_sum_DI[24];
+  assign Thi_iteration_cell_div_b_D=Sel_b_for_thi_S?{3'b000,Denominator_se_DB}:{3'b000,Denominator_se_D};
+  assign Thi_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R2:{3'b000,Thi_iteration_cell_div_a_D};
+  assign Thi_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q2:{3'b000,Thi_iteration_cell_div_b_D};
 
 
   //                   for           iteration cell_U3
   logic [C_DIV_MANT+1:0]                          Fou_iteration_cell_div_a_D,Fou_iteration_cell_div_b_D;
   logic                                           Sel_b_for_fou_S;
 
-  assign Fou_iteration_cell_div_a_D={Thi_iteration_cell_sum_DI[C_DIV_MANT:0],Thi_iteration_cell_carry_DI};
-  assign Sel_b_for_fou_S=Thi_iteration_cell_carry_DI;
-  assign Fou_iteration_cell_div_b_D=Sel_b_for_fou_S?Denominator_se_DB:Denominator_se_D;
-  assign Fou_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R3:(Fou_iteration_cell_div_a_D);
-  assign Fou_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q3:(Fou_iteration_cell_div_b_D);
+  assign Fou_iteration_cell_div_a_D={4'b0000,Thi_iteration_cell_sum_DI[C_DIV_MANT:0],~Thi_iteration_cell_sum_DI[24]};
+  assign Sel_b_for_fou_S=~Thi_iteration_cell_sum_DI[24];
+  assign Fou_iteration_cell_div_b_D=Sel_b_for_fou_S?{4'b0000,Denominator_se_DB}:{4'b0000,Denominator_se_D};
+  assign Fou_iteration_cell_a_DO=Sqrt_enable_SO?Sqrt_R3:{4'b0000,Fou_iteration_cell_div_a_D};
+  assign Fou_iteration_cell_b_DO=Sqrt_enable_SO?Sqrt_Q3:{4'b0000,Fou_iteration_cell_div_b_D};
 
-  always_comb 
+  always_comb
     begin  //
      if (Fsm_enable_S)
        Partial_remainder_DN = Sqrt_enable_SO?Sqrt_R4:Fou_iteration_cell_sum_DI;
@@ -601,12 +646,12 @@ module control_tp
           end
     end
 
-   logic [C_DIV_MANT:0] Quotient_DN;
+   logic [C_DIV_MANT+4:0] Quotient_DN;
 
   always_comb
     begin
       if(Fsm_enable_S)
-         Quotient_DN={Quotient_DP[C_DIV_MANT-4:0],First_iteration_cell_carry_DI,Sec_iteration_cell_carry_DI,Thi_iteration_cell_carry_DI,Fou_iteration_cell_carry_DI};
+         Quotient_DN=Extra_Final_State_S ? {Quotient_DP[C_DIV_MANT:0],First_iteration_cell_carry_DI,Sec_iteration_cell_carry_DI,Thi_iteration_cell_carry_DI,Fou_iteration_cell_carry_DI} : {Quotient_DP[C_DIV_MANT:0],~First_iteration_cell_sum_DI[24],~Sec_iteration_cell_sum_DI[24],~Thi_iteration_cell_sum_DI[24],~Fou_iteration_cell_sum_DI[24]};
       else
          Quotient_DN=Quotient_DP;
      end
@@ -624,7 +669,7 @@ module control_tp
    logic                                               Msc_D;
    logic    [C_DIV_MANT+1:0]                           Sum_msc_D;
 
-   assign {Msc_D,Sum_msc_D}=First_iteration_cell_div_a_D+First_iteration_cell_div_b_D;  //last iteration for division
+   assign {Msc_D,Sum_msc_D}=First_iteration_cell_div_a_D[C_DIV_MANT+1:0]+First_iteration_cell_div_b_D[C_DIV_MANT+1:0];  //last iteration for division
    logic [C_DIV_MANT:0]                                Mant_result_prenorm_noncorrect_D; //no correction with MSC
    logic [C_DIV_MANT:0]                                Msc_forcorrect_D;
    logic [C_DIV_MANT+1:0]                              Mant_result_prenorm_correct_D; // correction with MSC
@@ -634,7 +679,7 @@ module control_tp
    /////////////////////////////////////////////////////////////////////////////
 
 
-     always_comb    
+     always_comb
        begin
          if(Precision_ctl_Enable_S==1)
          begin
@@ -643,12 +688,12 @@ module control_tp
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-12:3],15'b0};
                Msc_forcorrect_D={8'b0,Quotient_DP[2],15'b0};
-             end 
+             end
            5'b01001:
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-12:2],14'b0};
                Msc_forcorrect_D={9'b0,Quotient_DP[1],14'b0};
-             end     
+             end
            5'b01010:
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-12:1],13'b0};
@@ -664,12 +709,12 @@ module control_tp
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-8:3],11'b0};
                Msc_forcorrect_D={12'b0,Quotient_DP[2],11'b0};
-             end 
+             end
            5'b01101:
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-8:2],10'b0};
                Msc_forcorrect_D={13'b0,Quotient_DP[1],10'b0};
-             end     
+             end
            5'b01110:
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-8:1],9'b0};
@@ -685,12 +730,12 @@ module control_tp
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-4:3],7'b0};
                Msc_forcorrect_D={16'b0,Quotient_DP[2],7'b0};
-             end 
+             end
            5'b10001:
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-4:2],6'b0};
                Msc_forcorrect_D={17'b0,Quotient_DP[1],6'b0};
-             end     
+             end
            5'b10010:
              begin
                Mant_result_prenorm_noncorrect_D={Quotient_DP[C_DIV_MANT-4:1],5'b0};
@@ -726,27 +771,32 @@ module control_tp
              begin
                Mant_result_prenorm_noncorrect_D=Quotient_DP[C_DIV_MANT:0];
                Msc_forcorrect_D={23'b0,Msc_D};
-             end      
-           endcase 
+             end
+           endcase
            end
            else
              begin
                Mant_result_prenorm_noncorrect_D=Quotient_DP[C_DIV_MANT:0];
                Msc_forcorrect_D={23'b0,Msc_D};
-             end 
-               
-       end 
+             end
+
+       end
 
 
    assign Mant_result_prenorm_correct_D= Mant_result_prenorm_noncorrect_D + {Div_enable_SO?Msc_forcorrect_D:24'b0};
-   assign Mant_result_prenorm_DO = Mant_result_prenorm_correct_D[C_DIV_MANT+1]?Mant_result_prenorm_noncorrect_D:Mant_result_prenorm_correct_D[C_DIV_MANT:0];
+   assign Mant_result_prenorm_DO = Accuracy_ctl_Enable_S ? Quotient_DP[C_DIV_MANT+4:4] : {Mant_result_prenorm_correct_D[C_DIV_MANT+1]?Mant_result_prenorm_noncorrect_D:Mant_result_prenorm_correct_D[C_DIV_MANT:0]};
+
+   //logic  [3:0] Sticky_bit_D;
+   //assign Round_bit_DO = Accuracy_ctl_Enable_S ? {Div_enable_SO ? {Quotient_DP[3:1],1'b1} : Quotient_DP[3:0]}: 3'b000;
+   assign Round_bit_DO = Accuracy_ctl_Enable_S ? {Quotient_DP[3:1],1'b1}: 3'b000;
+
 // resultant exponent
    logic   [C_DIV_EXP+1:0]    Exp_result_prenorm_DN,Exp_result_prenorm_DP;
 
    logic   [C_DIV_EXP+1:0]                                Exp_add_a_D;
    logic   [C_DIV_EXP+1:0]                                Exp_add_b_D;
    logic   [C_DIV_EXP+1:0]                                Exp_add_c_D;
- 
+
      assign Exp_add_a_D = {Sqrt_start_dly_S?{Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP:1]}:{Exp_num_DI[C_DIV_EXP],Exp_num_DI[C_DIV_EXP],Exp_num_DI}};
      assign Exp_add_b_D = {Sqrt_start_dly_S?{1'b0,{C_DIV_EXP_ZERO},Exp_num_DI[0]}:{~Exp_den_DI[C_DIV_EXP],~Exp_den_DI[C_DIV_EXP],~Exp_den_DI}};
      assign Exp_add_c_D = {Div_start_dly_S?{2'b00,{C_DIV_BIAS_AONE}}:{2'b00,{C_DIV_HALF_BIAS}}};
@@ -764,6 +814,6 @@ module control_tp
           end
      end
 
-    assign Exp_result_prenorm_DO = Exp_result_prenorm_DP; 
+    assign Exp_result_prenorm_DO = Exp_result_prenorm_DP;
 
 endmodule

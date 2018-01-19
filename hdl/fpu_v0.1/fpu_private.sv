@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -12,13 +12,13 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
-//		                                                              //
+//		                                                                        //
 // Additional contributions by:                                               //
 //                 Michael Gautschi -- gautschi@iis.ee.ethz.ch                //
 //                                                                            //
 //                                                                            //
-// Create Date:    26/10/2014                                                 // 
-// Design Name:    FPU                                                        // 
+// Create Date:    26/10/2014                                                 //
+// Design Name:    FPU                                                        //
 // Module Name:    fpu_private.sv                                             //
 // Project Name:   Private FPU                                                //
 // Language:       SystemVerilog                                              //
@@ -47,7 +47,7 @@ module fpu_private
    input logic [C_RM-1:0]     rm_i,
    input logic [C_CMD-1:0]    fpu_op_i,
    input logic [C_PC-1:0]     prec_i,
-  
+
    // outputs
    output logic [C_OP-1:0]    result_o,
    output logic               valid_o,
@@ -73,7 +73,7 @@ module fpu_private
    logic [31:0]                 fpu_result;
    logic [C_FFLAG-1:0]          fpu_flags;
    logic                        fpu_of, fpu_uf, fpu_zero, fpu_ix, fpu_iv, fpu_inf;
-   
+
    assign fpu_operand_a = (fpu_enable) ? operand_a_i : '0;
    assign fpu_operand_b = (fpu_enable) ? operand_b_i : '0;
 
@@ -92,7 +92,7 @@ module fpu_private
       // outputs
       .Result_DO     ( fpu_result        ),
       .Valid_SO      ( fpu_valid         ),
-      
+
       .OF_SO         ( fpu_of            ),
       .UF_SO         ( fpu_uf            ),
       .Zero_SO       ( fpu_zero          ),
@@ -106,7 +106,7 @@ module fpu_private
 
    ///////////////////////////////////////////////
    // Iterative DIV-Sqrt Unit                   //
-   ///////////////////////////////////////////////   
+   ///////////////////////////////////////////////
 
    // generate inputs for div/sqrt unit
    logic                       div_start, sqrt_start;
@@ -116,14 +116,14 @@ module fpu_private
    logic [C_FFLAG-1:0]         divsqrt_flags;
    logic                       divsqrt_nv;
    logic                       divsqrt_ix;
-   
+
    assign sqrt_start = divsqrt_enable & (fpu_op_i == C_FPU_SQRT_CMD);
    assign div_start  = divsqrt_enable & (fpu_op_i == C_FPU_DIV_CMD);
 
    assign divsqrt_operand_a = (div_start | sqrt_start) ? operand_a_i : '0;
    assign divsqrt_operand_b = (div_start)              ? operand_b_i : '0;
-   
-   
+
+
    div_sqrt_top_tp fpu_divsqrt_tp
      (
       .Clk_CI           ( clk_i             ),
@@ -141,7 +141,7 @@ module fpu_private
       .Ready_SO         ( divsqrt_busy_o    ),
       .Done_SO          ( divsqrt_valid     )
       );
-   
+
    assign divsqrt_nv = 1'b0;
    assign divsqrt_ix = 1'b0;
    assign divsqrt_flags = {divsqrt_nv, divsqrt_zero, divsqrt_of, divsqrt_uf, divsqrt_ix};
@@ -149,20 +149,20 @@ module fpu_private
    ///////////////////////////////////////////////
    // temporary place holder for FMA            //
    ///////////////////////////////////////////////
-   
+
    logic [31:0]                 fma_operand_a;
    logic [31:0]                 fma_operand_b;
    logic [31:0]                 fma_operand_c;
 
    logic [31:0]                 fma_result;
-      
+
    logic [1:0]                  fma_op;
    logic                        fma_valid;
    logic [C_FFLAG-1:0]          fma_flags;
-      
+
    always_comb begin
       fma_op = 2'b00;
-      
+
       unique case (fpu_op_i)
         C_FPU_FMADD_CMD:
           fma_op = 2'b00;
@@ -204,7 +204,7 @@ module fpu_private
       );
 `else
    logic [2:0] tuser;
-   
+
    assign fma_operand_a = (fma_enable) ? operand_a_i                                      : '0;
    assign fma_operand_b = (fma_enable) ? {operand_b_i[31] ^ fma_op[1], operand_b_i[30:0]} : '0;
    assign fma_operand_c = (fma_enable) ? {operand_c_i[31] ^ fma_op[0], operand_c_i[30:0]} : '0;
@@ -226,12 +226,12 @@ module fpu_private
     .m_axis_result_tdata     ( fma_result    ),
     .m_axis_result_tuser     ( tuser         )
     );
-   
+
    assign fma_flags = {tuser[2], 1'b0, tuser[1], tuser[0], 1'b0};
 `endif
 
    // output assignment
-   
+
    assign valid_o  = divsqrt_valid | fpu_valid | fma_valid;
    assign result_o = divsqrt_valid ? divsqrt_result : fpu_valid ? fpu_result : fma_valid ? fma_result : '0;
    assign flags_o  = divsqrt_valid ? divsqrt_flags  : fpu_valid ? fpu_flags  : fma_valid ? fma_flags  : '0;

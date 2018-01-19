@@ -1,4 +1,4 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -11,7 +11,7 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                              //
+//		                                                                        //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
@@ -49,7 +49,7 @@ module aligner
    output logic                                    Sign_amt_DO,
    output logic                                    Sft_stop_SO,
    output logic [2*C_MANT+2:0]                     Pp_sum_postcal_DO,
-   output logic [2*C_MANT+2:0]                     Pp_carry_postcal_DO 
+   output logic [2*C_MANT+2:0]                     Pp_carry_postcal_DO
    );
 
  logic [C_EXP+1:0]                                Exp_dif_D;
