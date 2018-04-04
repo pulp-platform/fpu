@@ -98,16 +98,12 @@ module adders
 //                  Sticky_bit                                                    //
 ////////////////////////////////////////////////////////////////////////////////////
 // for Sign_amt_DI=1'b1, if is difficult to compute combined with other cases.  When addition,   | (b*c) ; when substruction, | (b*c) for rounding excption trunction. 
- // Minus_sticky_bit_SO = Sign_amt_DI?( | Sum_uninv_LD ) : 1'b0; //
+
    assign Minus_sticky_bit_SO = Sign_amt_DI ? (Minus_or_Mant_bc_S&&Sub_SI) : Minus_or_Mant_bc_S;
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                  to LZA                                                         //
 /////////////////////////////////////////////////////////////////////////////////////
-
-
-//   assign A_LZA_DO = Sign_amt_DI? { Sub_SI ? Sub_Minus_D : {BH_DI[C_MANT+2:0], {48'b0} } }: {BH_DI[C_MANT+2:0] , AL_DI} ;
-//  assign B_LZA_DO = Sign_amt_DI? {Sub_SI ? { {(27){Minus_or_Mant_bc_S}} , {47'b0} } :{74'h0} } : {{25'h0},{Carry_uninv_LS,BL_DI[2*C_MANT:0],Sub_SI}};
 
    assign A_LZA_DO = Sum_pos_DO ;
    assign B_LZA_DO = {74'h0} ;
