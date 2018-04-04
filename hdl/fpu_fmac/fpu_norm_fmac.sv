@@ -1,17 +1,17 @@
-// Copyright 2017, 2018 ETH Zurich and University of Bologna.
+// Copyright 2017 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the "License"); you may not use this file except in
+// License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
 // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 // or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                                        //
+//		                                                              //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
@@ -52,10 +52,12 @@ module fpu_norm_fmac
    input logic                             Inf_c_SI,
    input logic                             Zero_a_SI,
    input logic                             Zero_b_SI,
-   input logic                             Zero_c_SI,
+   input logic                             Zero_c_SI, 
    input logic                             NaN_a_SI,
    input logic                             NaN_b_SI,
    input logic                             NaN_c_SI,
+   input logic                             Mant_sticky_sft_out_SI,
+   input logic                             Minus_sticky_bit_SI,
    //Outputs
    output logic [C_MANT-1:0]               Mant_res_DO,
    output logic [C_EXP-1:0]                Exp_res_DO,
@@ -63,7 +65,7 @@ module fpu_norm_fmac
    output logic                            Exp_OF_SO,
    output logic                            Exp_UF_SO,
    output logic                            Flag_Inexact_SO,
-   output logic                            Flag_Invalid_SO
+   output logic                            Flag_Invalid_SO   
    );
 
    logic [C_MANT:0]                        Mant_res_norm_D;
@@ -74,14 +76,14 @@ module fpu_norm_fmac
    /////////////////////////////////////////////////////////////////////////////
    // Exponent correction using LZA                                           //
    /////////////////////////////////////////////////////////////////////////////
-  logic [3*C_MANT+4:0]             Mant_postsft_D;
+  logic [3*C_MANT+4:0]             Mant_postsft_D; 
   logic [C_EXP+1:0]                Exp_postsft_D;
   logic [C_EXP+1:0]                Exp_postsft_addone_D;
   logic [C_LEADONE_WIDTH-1:0]      Leading_one_D;
   logic [C_EXP:0]                  LSt_Mant_D;
 
   assign Leading_one_D =  (Sign_amt_DI | Mant_in_DI[3*C_MANT+4]) ? 0 :  (Leading_one_DI);
-  assign Exp_lg_S = Exp_in_DI>Leading_one_D;
+  assign Exp_lg_S = Exp_in_DI>Leading_one_D; 
   assign LSt_Mant_D = Exp_in_DI[C_EXP+1]?0:((Exp_lg_S)?(Leading_one_D):(Exp_in_DI[C_EXP:0]-1));
   assign Mant_postsft_D = Mant_in_DI<<(LSt_Mant_D);
   assign Exp_postsft_D  = Exp_in_DI[C_EXP+1]?0:((Exp_lg_S)?(Exp_in_DI-Leading_one_D):(1)); //1 for denormal numbers
@@ -101,10 +103,10 @@ module fpu_norm_fmac
    // Sticky bit                                                              //
    /////////////////////////////////////////////////////////////////////////////
 
-  logic [2*C_MANT+1:0]                   Mant_StickCh_D;
+  logic [2*C_MANT+1:0]                   Mant_StickCh_D; 
   assign Mant_StickCh_D = Exp_postsft_D[C_EXP+1]?Mant_RS_D[2*C_MANT+3:2] :(Exp_postsft_D[C_EXP+1:0]=='0) ? Mant_postsft_D[2*C_MANT+2:1]:((Mant_postsft_D[3*C_MANT+4] | (Exp_postsft_D==0))?Mant_postsft_D[2*C_MANT+1:0]:{Mant_postsft_D[2*C_MANT:0],1'b0});
   assign Stick_one_HD = | Mant_StickCh_D;
-  assign Stick_one_D = Stick_one_HD;
+  assign Stick_one_D = Stick_one_HD | Mant_sticky_sft_out_SI | Minus_sticky_bit_SI;
 
   logic  Mant_sticky_D;
 
@@ -113,7 +115,7 @@ module fpu_norm_fmac
   always@(*)
     begin
        if(Flag_Invalid_SO)  //   NaN
-         begin
+         begin        
            Exp_OF_SO=1'b0;
            Exp_UF_SO=1'b0;
            Mant_res_norm_D={1'b0,C_MANT_NAN};
@@ -124,7 +126,7 @@ module fpu_norm_fmac
          end
 
       else if(Inf_a_SI | Inf_b_SI | Inf_c_SI)  // Inf
-        begin
+        begin 
           Exp_OF_SO=1'b1;
           Exp_UF_SO=1'b0;
           Mant_res_norm_D= '0;
@@ -135,7 +137,7 @@ module fpu_norm_fmac
         end
 
       else if(Sign_amt_DI)  // Operand_a_DI
-        begin
+        begin 
           Exp_OF_SO=1'b0;
           Exp_UF_SO=DeN_a_SI;
           Mant_res_norm_D= Mant_a_DI;
@@ -143,23 +145,23 @@ module fpu_norm_fmac
           Mant_lower_D={1'b0,1'b0};
           Sign_res_DO=Sign_a_DI;
           Mant_sticky_D=1'b0;
-        end
+        end 
 
-      else if(No_one_SI)
-        begin
+      else if(No_one_SI)  
+        begin 
           Exp_OF_SO=1'b0;
           Exp_UF_SO=1'b0;
           Mant_res_norm_D= '0;
           Exp_res_norm_D='0;
-          Mant_lower_D={1'b0,1'b0};
-          Sign_res_DO=Sign_in_DI;
+          Mant_lower_D={1'b0,1'b0};  
+          Sign_res_DO=Sign_in_DI; 
           Mant_sticky_D=1'b0;
         end
 
-      else if(Exp_in_DI[C_EXP+1]) //minus
-        begin
+      else if(Exp_in_DI[C_EXP+1]) //minus 
+        begin          
           if(~Exp_Max_RS_D[C_EXP+1])    //OF EXP<0 after RS
-            begin
+            begin   
               Exp_OF_SO=1'b1;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D='0;
@@ -169,19 +171,19 @@ module fpu_norm_fmac
               Mant_sticky_D=1'b0;
             end
           else                    //denormal
-            begin
+            begin 
               Exp_OF_SO=1'b0;
-              Exp_UF_SO=1'b1;
-              Mant_res_norm_D={1'b0,Mant_RS_D[3*C_MANT+6:2*C_MANT+6]};
+              Exp_UF_SO=1'b1;          
+              Mant_res_norm_D={1'b0,Mant_RS_D[3*C_MANT+6:2*C_MANT+6]}; 
               Exp_res_norm_D='0;
               Mant_lower_D=Mant_RS_D[2*C_MANT+5:2*C_MANT+4];
               Sign_res_DO=Sign_in_DI;
-              Mant_sticky_D=Stick_one_D;
-            end
-        end
+              Mant_sticky_D=Stick_one_D;   
+            end    
+        end 
 
       else if((Exp_postsft_D[C_EXP:0]==256)&&(~Mant_postsft_D[3*C_MANT+4])&&(Mant_postsft_D[3*C_MANT+3:2*C_MANT+3]!='0))         //NaN
-         begin
+         begin        
            Exp_OF_SO=1'b0;
            Exp_UF_SO=1'b0;
            Mant_res_norm_D={1'b0,C_MANT_NAN};
@@ -194,7 +196,7 @@ module fpu_norm_fmac
       else if(Exp_postsft_D[C_EXP-1:0]=='1)         //255
         begin
           if(Mant_postsft_D[3*C_MANT+4]) // NaN
-            begin
+            begin         
               Exp_OF_SO=1'b1;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D= {1'b0,C_MANT_NAN};
@@ -204,7 +206,7 @@ module fpu_norm_fmac
               Mant_sticky_D=1'b0;
             end
           else if (Mant_postsft_D[3*C_MANT+4:2*C_MANT+4]=='0)                      // Inf
-            begin
+            begin 
               Exp_OF_SO=1'b1;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D= '0;
@@ -212,21 +214,21 @@ module fpu_norm_fmac
               Mant_lower_D={1'b0,1'b0};
               Sign_res_DO=Sign_in_DI;
               Mant_sticky_D=1'b0;
-            end
+            end 
           else                                    //normal numbers
             begin
               Exp_OF_SO=1'b0;
               Exp_UF_SO=1'b0;
               Mant_res_norm_D=Mant_postsft_D[3*C_MANT+3:2*C_MANT+3] ;
               Exp_res_norm_D=254;
-              Mant_lower_D=Mant_postsft_D[2*C_MANT+2:2*C_MANT+1];
-              Sign_res_DO=Sign_in_DI;
-              Mant_sticky_D=Stick_one_D;
-            end
-        end
+              Mant_lower_D=Mant_postsft_D[2*C_MANT+2:2*C_MANT+1];  
+              Sign_res_DO=Sign_in_DI; 
+              Mant_sticky_D=Stick_one_D; 
+            end 
+        end 
 
       else if(Exp_postsft_D[C_EXP])                                       //Inf
-        begin
+        begin 
           Exp_OF_SO=1'b1;
           Exp_UF_SO=1'b0;
           Mant_res_norm_D= '0;
@@ -234,7 +236,7 @@ module fpu_norm_fmac
           Mant_lower_D={1'b0,1'b0};
           Sign_res_DO=Sign_in_DI;
           Mant_sticky_D=1'b0;
-        end
+        end  
 
       else if(Exp_postsft_D[C_EXP+1:0]=='0)         //0
         begin                                   //denormal
@@ -250,21 +252,21 @@ module fpu_norm_fmac
         end
 
       else if(Exp_postsft_D[C_EXP+1:0]==1)         //0
-        begin
+        begin 
           if(Mant_postsft_D[3*C_MANT+4])                                   //normal number
             begin
               Exp_OF_SO=1'b0;
-              Exp_UF_SO=1'b0;
+              Exp_UF_SO=1'b0; 
               Mant_res_norm_D= {Mant_postsft_D[3*C_MANT+4:2*C_MANT+4]};
               Exp_res_norm_D=1;
               Mant_lower_D=Mant_postsft_D[2*C_MANT+3:2*C_MANT+2];
               Sign_res_DO=Sign_in_DI;
               Mant_sticky_D=Stick_one_D;
             end
-          else
+          else 
             begin                                                        //denormal number
               Exp_OF_SO=1'b0;
-              Exp_UF_SO=1'b1;
+              Exp_UF_SO=1'b1; 
               Mant_res_norm_D= {Mant_postsft_D[3*C_MANT+4:2*C_MANT+4]};
               Exp_res_norm_D='0;
               Mant_lower_D=Mant_postsft_D[2*C_MANT+3:2*C_MANT+2];
@@ -276,7 +278,7 @@ module fpu_norm_fmac
       else if (~Mant_postsft_D[3*C_MANT+4])                        // normal number with 0X.XX
         begin
           Exp_OF_SO=1'b0;
-          Exp_UF_SO=1'b0;
+          Exp_UF_SO=1'b0; 
           Mant_res_norm_D= Mant_postsft_D[3*C_MANT+3:2*C_MANT+3];
           Exp_res_norm_D=Exp_postsft_addone_D[C_EXP-1:0];
           Mant_lower_D=Mant_postsft_D[2*C_MANT+2:2*C_MANT+1];
@@ -285,9 +287,9 @@ module fpu_norm_fmac
         end
 
       else                                                       // normal number with 1X.XX
-        begin
+        begin   
           Exp_OF_SO=1'b0;
-          Exp_UF_SO=1'b0;
+          Exp_UF_SO=1'b0; 
           Mant_res_norm_D= Mant_postsft_D[3*C_MANT+4:2*C_MANT+4];
           Exp_res_norm_D=Exp_postsft_D[C_EXP-1:0];
           Mant_lower_D=Mant_postsft_D[2*C_MANT+3:2*C_MANT+2];
@@ -308,18 +310,18 @@ module fpu_norm_fmac
 
    assign Mant_upper_D    = Mant_res_norm_D;
    assign Flag_Inexact_SO = Mant_rounded_S;
-
+   
    assign Mant_rounded_S = (|(Mant_lower_D))| Mant_sticky_D;
-
+   
    always_comb //determine whether to round up or not
      begin
         Mant_roundUp_S = 1'b0;
         case (RM_SI)
-          C_RM_NEAREST :
+          C_RM_NEAREST : 
             Mant_roundUp_S = Mant_lower_D[1] && ((Mant_lower_D[0]| Mant_sticky_D ) || Mant_upper_D[0]);
-          C_RM_TRUNC   :
+          C_RM_TRUNC   : 
             Mant_roundUp_S = 0;
-          C_RM_PLUSINF :
+          C_RM_PLUSINF : 
             Mant_roundUp_S = Mant_rounded_S & ~Sign_in_DI;
           C_RM_MINUSINF:
             Mant_roundUp_S = Mant_rounded_S & Sign_in_DI;
