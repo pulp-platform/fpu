@@ -72,7 +72,8 @@ module adders
 
    logic  Carry_inv_LS;
    logic [2*C_MANT+2:0] Sum_inv_LD;
-   assign {Carry_inv_LS, Sum_inv_LD} = {1'b1,~AL_DI,1'b1}+{~Carry_postcor_D,~BL_DI[2*C_MANT:0],2'b11} + 2;  //adding 2                  Sub_SI=0, donot choose this one   
+  
+   assign {Carry_inv_LS, Sum_inv_LD} = {1'b1,~AL_DI,1'b1}+{~Carry_postcor_D,~BL_DI[2*C_MANT:0],~Sub_SI,1'b1}+2;  //adding 2                  Sub_SI=0, donot choose this one 
 
 ////////////////////////////////////////////////////////////////////////////////////
 //                  MSBs                                                          //
@@ -99,7 +100,7 @@ module adders
 ////////////////////////////////////////////////////////////////////////////////////
 // for Sign_amt_DI=1'b1, if is difficult to compute combined with other cases.  When addition,   | (b*c) ; when substruction, | (b*c) for rounding excption trunction. 
 
-   assign Minus_sticky_bit_SO = Sign_amt_DI ? (Minus_or_Mant_bc_S&&Sub_SI) : Minus_or_Mant_bc_S;
+   assign Minus_sticky_bit_SO = Sign_amt_DI && (Minus_or_Mant_bc_S);
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                  to LZA                                                         //

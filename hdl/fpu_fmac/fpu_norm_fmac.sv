@@ -104,7 +104,9 @@ module fpu_norm_fmac
    /////////////////////////////////////////////////////////////////////////////
 
   logic [2*C_MANT+1:0]                   Mant_StickCh_D; 
-  assign Mant_StickCh_D = Exp_postsft_D[C_EXP+1]?Mant_RS_D[2*C_MANT+3:2] :(Exp_postsft_D[C_EXP+1:0]=='0) ? Mant_postsft_D[2*C_MANT+2:1]:((Mant_postsft_D[3*C_MANT+4] | (Exp_postsft_D==0))?Mant_postsft_D[2*C_MANT+1:0]:{Mant_postsft_D[2*C_MANT:0],1'b0});
+  assign Mant_StickCh_D = Exp_postsft_D[C_EXP+1]? Mant_RS_D[2*C_MANT+3:2] :
+                         ((Exp_postsft_D[C_EXP+1:0]=='0) ? Mant_postsft_D[2*C_MANT+2:1]:
+                         (((Mant_postsft_D[3*C_MANT+4] | (Exp_postsft_D==0))?Mant_postsft_D[2*C_MANT+1:0]:{Mant_postsft_D[2*C_MANT:0],1'b0})));
   assign Stick_one_HD = | Mant_StickCh_D;
   assign Stick_one_D = Stick_one_HD | Mant_sticky_sft_out_SI | Minus_sticky_bit_SI;
 
