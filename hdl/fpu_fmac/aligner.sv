@@ -27,6 +27,8 @@
 //                                                                            //
 // Revision:       03/04/2018                                                 //
 //                 Fixed Torbjørn Viem Ness bugs  and Sticky bit              //
+// Revision:       19/04/2018                                                 //
+//                 Sticky bit for substraction                                //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
@@ -75,7 +77,11 @@ module aligner
  logic [C_MANT :0]                                Bit_sftout_D;
  assign  {Mant_postalig_a_D, Bit_sftout_D} = {Mant_a_DI,74'h0}>>{Sft_stop_S?0 : Sft_amt_D};     //Alignment
 
- assign  Mant_sticky_sft_out_SO =(Sub_SO&&(~Sign_change_SI)) ? {Sft_stop_S ? (| (~Mant_a_DI)): (| (~Bit_sftout_D)) } : {Sft_stop_S ? (| Mant_a_DI) : (| Bit_sftout_D)};
+ logic [C_MANT:0]                                 Mant_a_com_DI;
+ assign Mant_a_com_DI=~Mant_a_DI+1;
+ logic [C_MANT :0]                                Bit_sftout_com_D;
+ assign Bit_sftout_com_D=~Bit_sftout_D+1;
+ assign  Mant_sticky_sft_out_SO =(Sub_SO&&(~Sign_change_SI)) ? {Sft_stop_S ? (| (Mant_a_com_DI)): (| (Bit_sftout_com_D)) } : {Sft_stop_S ? (| Mant_a_DI) : (| Bit_sftout_D)};
 // another case for b*c>>a
  assign   Mant_postalig_a_DO =Sft_amt_D[C_EXP+1] ? {1'b0, Mant_a_DI, 50'h0}:                //Sft_amt_D==1'b1
                              { Sft_stop_S? 75'h0 :{ Sub_SO ? {1'b1,~Mant_postalig_a_D}:{1'b0,Mant_postalig_a_D} } };

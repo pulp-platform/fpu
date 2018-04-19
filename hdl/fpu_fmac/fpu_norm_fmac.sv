@@ -146,7 +146,7 @@ module fpu_norm_fmac
           Exp_res_norm_D=Exp_a_DI;
           Mant_lower_D={1'b0,1'b0};
           Sign_res_DO=Sign_a_DI;
-          Mant_sticky_D=1'b0;
+          Mant_sticky_D=Stick_one_D; //when Sign_amt_DI, there is some Mant_sticky_bit
         end 
 
       else if(No_one_SI)  
