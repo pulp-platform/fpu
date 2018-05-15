@@ -12,7 +12,7 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
-//		                                                                        //
+//                                                                            //
 // Additional contributions by:                                               //
 //                                                                            //
 //                                                                            //
@@ -33,6 +33,11 @@
 import fpu_defs::*;
 
 module fpu
+#(
+   parameter C_CMD = fpu_defs::C_CMD,
+   parameter C_RM  = fpu_defs::C_RM,
+   parameter C_OP  = fpu_defs::C_OP
+)
   (
    //Clock and reset
    input logic 	           Clk_CI,
@@ -76,7 +81,7 @@ module fpu
              Operand_a_D <= '0;
              Operand_b_D <= '0;
              RM_S        <= '0;
-	           OP_S        <= '0;
+             OP_S        <= '0;
           end
         else
           begin
@@ -85,7 +90,7 @@ module fpu
                   Operand_a_D <= Operand_a_DI;
                   Operand_b_D <= Operand_b_DI;
                   RM_S        <= RM_SI;
-	                OP_S        <= OP_SI;
+                  OP_S        <= OP_SI;
                end
           end
      end

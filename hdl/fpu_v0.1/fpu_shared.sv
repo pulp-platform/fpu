@@ -32,7 +32,13 @@ import fpu_defs::*;
 
 module fpu_shared
   #(
-    parameter ADD_REGISTER = 1
+    parameter ADD_REGISTER = 1,
+
+    parameter C_OP         = fpu_defs::C_OP,
+    parameter C_CMD        = fpu_defs::C_CMD,
+    parameter C_RM         = fpu_defs::C_RM,
+    parameter C_TAG        = fpu_defs::C_TAG,
+    parameter C_FLAG       = fpu_defs::C_FLAG
     )
   (
    input logic     Clk_CI,

@@ -35,6 +35,13 @@
 import fpu_defs_fmac::*;
 
 module fmac
+#(
+   parameter C_EXP           = fpu_defs_fmac::C_EXP,
+   parameter C_MANT          = fpu_defs_fmac::C_MANT,
+   parameter C_OP            = fpu_defs_fmac::C_OP,
+   parameter C_RM            = fpu_defs_fmac::C_RM,
+   parameter C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH
+)
 (
    //Inputs
    input logic [C_OP-1:0]   Operand_a_DI,

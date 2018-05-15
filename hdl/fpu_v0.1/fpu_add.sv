@@ -32,6 +32,16 @@
 import fpu_defs::*;
 
 module fpu_add
+#(
+   parameter C_EXP_PRENORM  = fpu_defs::C_EXP_PRENORM,
+   parameter C_MANT_PRENORM = fpu_defs::C_MANT_PRENORM,
+   parameter C_MANT_SHIFTED = fpu_defs::C_MANT_SHIFTED,
+   parameter C_MANT_SHIFTIN = fpu_defs::C_MANT_SHIFTIN,
+   parameter C_MANT_ADDOUT  = fpu_defs::C_MANT_ADDOUT,
+   parameter C_MANT_ADDIN   = fpu_defs::C_MANT_ADDIN,
+   parameter C_EXP          = fpu_defs::C_EXP,
+   parameter C_MANT         = fpu_defs::C_MANT
+)
   (//Input
    input logic               Sign_a_DI,
    input logic               Sign_b_DI,

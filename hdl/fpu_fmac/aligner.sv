@@ -34,6 +34,11 @@
 import fpu_defs_fmac::*;
 
 module aligner
+#(
+   parameter C_EXP  = fpu_defs_fmac::C_EXP,
+   parameter C_MANT = fpu_defs_fmac::C_MANT,
+   parameter C_BIAS = fpu_defs_fmac::C_BIAS
+)
   (//Inputs
    input logic [C_EXP-1:0]                         Exp_a_DI,
    input logic [C_EXP-1:0]                         Exp_b_DI,

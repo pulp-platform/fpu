@@ -32,6 +32,9 @@
 import fpu_defs_fmac::*;
 
 module wallace
+#(
+   parameter C_MANT = fpu_defs_fmac::C_MANT
+)
   (
    input logic [12:0] [2*C_MANT+2:0]                Pp_index_DI,
    output logic [2*C_MANT+2:0]                      Pp_sum_DO,

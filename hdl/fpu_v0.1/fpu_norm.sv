@@ -33,6 +33,27 @@
 import fpu_defs::*;
 
 module fpu_norm
+#(
+   parameter C_MANT_PRENORM     = fpu_defs::C_MANT_PRENORM,
+   parameter C_EXP_PRENORM      = fpu_defs::C_EXP_PRENORM,
+   parameter C_MANT_PRENORM_IND = fpu_defs::C_MANT_PRENORM_IND,
+   parameter C_EXP_ZERO         = fpu_defs::C_EXP_ZERO,
+   parameter C_EXP_INF          = fpu_defs::C_EXP_INF,
+
+   parameter C_RM               = fpu_defs::C_RM,
+   parameter C_CMD              = fpu_defs::C_CMD,
+   parameter C_MANT             = fpu_defs::C_MANT,
+   parameter C_EXP              = fpu_defs::C_EXP,
+
+   parameter C_FPU_ADD_CMD      = fpu_defs::C_FPU_ADD_CMD,
+   parameter C_FPU_SUB_CMD      = fpu_defs::C_FPU_SUB_CMD,
+   parameter C_FPU_MUL_CMD      = fpu_defs::C_FPU_MUL_CMD,
+
+   parameter C_RM_NEAREST       = fpu_defs::C_RM_NEAREST,
+   parameter C_RM_TRUNC         = fpu_defs::C_RM_TRUNC,
+   parameter C_RM_PLUSINF       = fpu_defs::C_RM_PLUSINF,
+   parameter C_RM_MINUSINF      = fpu_defs::C_RM_MINUSINF
+)
   (
    //Input Operands
    input logic        [C_MANT_PRENORM-1:0] Mant_in_DI,

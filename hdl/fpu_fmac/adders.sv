@@ -33,6 +33,10 @@
 import fpu_defs_fmac::*;
 
 module adders
+#(
+   parameter C_MANT = fpu_defs_fmac::C_MANT,
+   parameter C_EXP  = fpu_defs_fmac::C_EXP
+)
   (
 
    input  logic [2*C_MANT+1:0]             AL_DI,  // The sum of the former unit  

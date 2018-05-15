@@ -32,6 +32,14 @@
 import fpu_defs::*;
 
 module fpu_itof
+#(
+   parameter C_EXP_PRENORM  = fpu_defs::C_EXP_PRENORM,
+   parameter C_MANT_PRENORM = fpu_defs::C_MANT_PRENORM,
+   parameter C_MANT_INT     = fpu_defs::C_MANT_INT,
+   parameter C_PADMANT      = fpu_defs::C_PADMANT,
+   parameter C_UNKNOWN      = fpu_defs::C_UNKNOWN,
+   parameter C_OP           = fpu_defs::C_OP
+)
   (//Input
    input logic [C_OP-1:0]                   Operand_a_DI,
 

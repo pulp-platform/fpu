@@ -32,6 +32,9 @@
 import fpu_defs_fmac::*;
 
 module pp_generation
+#(
+   parameter C_MANT = fpu_defs_fmac::C_MANT
+)
   (//Inputs
    input logic [C_MANT:0]                            Mant_a_DI,
    input logic [C_MANT:0]                            Mant_b_DI,

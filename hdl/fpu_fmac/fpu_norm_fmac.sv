@@ -33,7 +33,17 @@
 import fpu_defs_fmac::*;
 
 module fpu_norm_fmac
-
+#(
+   parameter C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH,
+   parameter C_EXP           = fpu_defs_fmac::C_EXP,
+   parameter C_MANT          = fpu_defs_fmac::C_MANT,
+   parameter C_RM            = fpu_defs_fmac::C_RM,
+   parameter C_RM_NEAREST    = fpu_defs_fmac::C_RM_NEAREST,
+   parameter C_RM_TRUNC      = fpu_defs_fmac::C_RM_TRUNC,
+   parameter C_RM_PLUSINF    = fpu_defs_fmac::C_RM_PLUSINF,
+   parameter C_RM_MINUSINF   = fpu_defs_fmac::C_RM_MINUSINF,
+   parameter C_MANT_NAN      = fpu_defs_fmac::C_MANT_NAN
+)
   (//Inputs
    input logic [3*C_MANT+4:0]              Mant_in_DI,
    input logic signed [C_EXP+1:0]          Exp_in_DI,

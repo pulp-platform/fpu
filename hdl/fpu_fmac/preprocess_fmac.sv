@@ -33,6 +33,14 @@
 import fpu_defs_fmac::*;
 
 module preprocess_fmac
+#(
+   parameter C_EXP_ONE   = fpu_defs_fmac::C_EXP_ONE,
+   parameter C_EXP_INF   = fpu_defs_fmac::C_EXP_INF,
+   parameter C_MANT_ZERO = fpu_defs_fmac::C_MANT_ZERO,
+   parameter C_MANT      = fpu_defs_fmac::C_MANT,
+   parameter C_EXP       = fpu_defs_fmac::C_EXP,
+   parameter C_OP        = fpu_defs_fmac::C_OP
+)
   (//Inputs
    input logic [C_OP-1:0]          Operand_a_DI,
    input logic [C_OP-1:0]          Operand_b_DI,

@@ -32,6 +32,13 @@
 import fpu_defs::*;
 
 module fpu_mult
+#(
+   parameter C_MANT_PRENORM = fpu_defs::C_MANT_PRENORM,
+   parameter C_EXP_PRENORM  = fpu_defs::C_EXP_PRENORM,
+   parameter C_EXP          = fpu_defs::C_EXP,
+   parameter C_MANT         = fpu_defs::C_MANT,
+   parameter C_BIAS         = fpu_defs::C_BIAS
+)
   (//Input
    input logic                              Sign_a_DI,
    input logic                              Sign_b_DI,

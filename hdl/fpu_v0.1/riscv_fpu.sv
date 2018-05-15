@@ -33,6 +33,11 @@
 import fpu_defs::*;
 
 module riscv_fpu
+#(
+   parameter C_OP  = fpu_defs::C_OP,
+   parameter C_RM  = fpu_defs::C_RM,
+   parameter C_CMD = fpu_defs::C_CMD
+)
   (
    //Clock and reset
    input logic             clk,

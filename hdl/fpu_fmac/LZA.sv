@@ -33,7 +33,10 @@
 import fpu_defs_fmac::*;
 
 module LZA
-#( parameter  C_WIDTH = 74)
+#(
+   parameter  C_WIDTH         = 74,
+   parameter  C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH
+)
   (
    input  logic [C_WIDTH-1:0]                A_DI,
    input  logic [C_WIDTH-1:0]                B_DI,

@@ -32,6 +32,15 @@
 import fpu_defs::*;
 
 module fpu_ftoi
+#(
+   parameter C_EXP_SHIFT  = fpu_defs::C_EXP_SHIFT,
+   parameter C_SHIFT_BIAS = fpu_defs::C_SHIFT_BIAS,
+   parameter C_OP         = fpu_defs::C_OP,
+   parameter C_EXP        = fpu_defs::C_EXP,
+   parameter C_MANT       = fpu_defs::C_MANT,
+   parameter C_INF        = fpu_defs::C_INF,
+   parameter C_MINF       = fpu_defs::C_MINF
+)
   (//Input
    input logic             Sign_a_DI,
    input logic [C_EXP-1:0] Exp_a_DI,
