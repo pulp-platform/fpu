@@ -13,7 +13,7 @@
 // Engineers:      Thomas Gautschi -- gauthoma@student.ethz.ch                //
 //                                                                            //
 // Additional contributions by:                                               //
-//                                                                            //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    06/10/2014                                                 //

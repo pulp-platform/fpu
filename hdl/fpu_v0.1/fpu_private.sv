@@ -12,9 +12,10 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
-//		                                                                        //
+//                                                                            //
 // Additional contributions by:                                               //
 //                 Michael Gautschi -- gautschi@iis.ee.ethz.ch                //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    26/10/2014                                                 //

@@ -13,6 +13,7 @@
 // Engineers:      Lei Li -- lile@iis.ee.ethz.ch                              //
 //                                                                            //
 // Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 //                                                                            //

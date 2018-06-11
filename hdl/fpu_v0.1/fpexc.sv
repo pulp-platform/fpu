@@ -15,6 +15,7 @@
 //                                                                            //
 // Additional contributions by:                                               //
 //                  Lei Li       --lile@iis.ee.ethz.ch                        //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    06/10/2014                                                 //
