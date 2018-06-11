@@ -28,6 +28,10 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
@@ -122,7 +126,6 @@ module riscv_fpu
       .Operand_b_DI  ( operand_b_i      ),
       .RM_SI         ( rounding_mode_i  ),
       .OP_SI         ( operator_i       ),
-      .Stall_SI      ( stall_i          ),
 
       .Result_DO     ( result_o         ),
 

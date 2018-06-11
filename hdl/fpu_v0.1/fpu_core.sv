@@ -34,6 +34,11 @@
 //                15/05/2018                                                  //
 //                Fixed bug with the sign being ignored in multiplications    //
 //                where the result is zero (GitHub #5) - Torbjørn Viem Ness   //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;

@@ -28,6 +28,11 @@
 // Revision:       03/04/2018                                                 //
 //                 Fixed Torbjørn Viem Ness bugs  and Sticky bit              //
 //                                                                            //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
