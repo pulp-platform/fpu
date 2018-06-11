@@ -73,7 +73,6 @@ module fpu
    logic [C_RM-1:0]        RM_S;
    logic [C_CMD-1:0]       OP_S;
 
-   logic                   Stall_S;
 
 
    //Input register
@@ -123,7 +122,6 @@ module fpu
       .Operand_b_DI  ( Operand_b_D  ),
       .RM_SI         ( RM_S         ),
       .OP_SI         ( OP_S         ),
-      .Stall_SI      ( Stall_SI     ),
 
       .Result_DO     ( Result_D     ),
 
