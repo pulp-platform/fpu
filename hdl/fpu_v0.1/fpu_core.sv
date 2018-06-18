@@ -12,10 +12,10 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
-//		                                                                        //
+//                                                                            //
 // Additional contributions by:                                               //
 //                  lile  -- lile@iis.ee.ethz.ch                              //
-//                                                                            //
+//                  Torbjørn Viem Ness -- torbjovn@stud.ntnu.no               //
 //                                                                            //
 // Create Date:    26/10/2014                                                 //
 // Design Name:    FPU                                                        //
@@ -30,6 +30,10 @@
 // Revision:                                                                  //
 //                12/09/2017                                                  //
 //                Updated the special cases   by Lei Li                       //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Fixed bug with the sign being ignored in multiplications    //
+//                where the result is zero (GitHub #5) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
@@ -338,7 +342,7 @@ module fpu_core
    // Output Assignments
    /////////////////////////////////////////////////////////////////////////////
 
-   assign Sign_res_D = Zero_S ? 1'b0 : Sign_norm_D;
+   assign Sign_res_D = (Zero_S && (OP_SP != C_FPU_MUL_CMD)) ? 1'b0 : Sign_norm_D;
    always_comb
      begin
         Exp_res_D = Exp_norm_D;
