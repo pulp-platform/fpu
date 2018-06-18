@@ -11,9 +11,9 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                              //
-// Additional contributions by:                                               //
 //                                                                            //
+// Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    01/12/2016                                                 //
@@ -29,11 +29,21 @@
 //                 Fixed Torbjørn Viem Ness bugs  and Sticky bit              //
 // Revision:       19/04/2018                                                 //
 //                 Sticky bit for substraction                                //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module aligner
+#(
+   parameter C_EXP  = fpu_defs_fmac::C_EXP,
+   parameter C_MANT = fpu_defs_fmac::C_MANT,
+   parameter C_BIAS = fpu_defs_fmac::C_BIAS
+)
   (//Inputs
    input logic [C_EXP-1:0]                         Exp_a_DI,
    input logic [C_EXP-1:0]                         Exp_b_DI,

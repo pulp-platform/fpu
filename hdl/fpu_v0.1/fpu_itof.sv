@@ -13,7 +13,7 @@
 // Engineers:      Thomas Gautschi -- gauthoma@student.ethz.ch                //
 //                                                                            //
 // Additional contributions by:                                               //
-//                                                                            //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    31/10/2014                                                 //
@@ -27,11 +27,23 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
 module fpu_itof
+#(
+   parameter C_EXP_PRENORM  = fpu_defs::C_EXP_PRENORM,
+   parameter C_MANT_PRENORM = fpu_defs::C_MANT_PRENORM,
+   parameter C_MANT_INT     = fpu_defs::C_MANT_INT,
+   parameter C_PADMANT      = fpu_defs::C_PADMANT,
+   parameter C_UNKNOWN      = fpu_defs::C_UNKNOWN,
+   parameter C_OP           = fpu_defs::C_OP
+)
   (//Input
    input logic [C_OP-1:0]                   Operand_a_DI,
 

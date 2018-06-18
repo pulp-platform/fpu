@@ -11,9 +11,9 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                                        //
-// Additional contributions by:                                               //
 //                                                                            //
+// Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    01/12/2016                                                 // 
@@ -28,11 +28,20 @@
 // Revision:       03/04/2018                                                 //
 //                 Fixed Torbjørn Viem Ness bugs  and Sticky bit              //
 //                                                                            //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module adders
+#(
+   parameter C_MANT = fpu_defs_fmac::C_MANT,
+   parameter C_EXP  = fpu_defs_fmac::C_EXP
+)
   (
 
    input  logic [2*C_MANT+1:0]             AL_DI,  // The sum of the former unit  

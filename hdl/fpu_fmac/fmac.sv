@@ -13,6 +13,7 @@
 // Engineers:      Lei Li -- lile@iis.ee.ethz.ch                              //
 //                                                                            //
 // Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -30,11 +31,23 @@
 //                 No_one_S was added  by Lei Li                              //
 // Revision:       03/04/2018                                                 //
 //                 Fixed Torbjørn Viem Ness bugs  and Sticky bit              //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module fmac
+#(
+   parameter C_EXP           = fpu_defs_fmac::C_EXP,
+   parameter C_MANT          = fpu_defs_fmac::C_MANT,
+   parameter C_OP            = fpu_defs_fmac::C_OP,
+   parameter C_RM            = fpu_defs_fmac::C_RM,
+   parameter C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH
+)
 (
    //Inputs
    input logic [C_OP-1:0]   Operand_a_DI,

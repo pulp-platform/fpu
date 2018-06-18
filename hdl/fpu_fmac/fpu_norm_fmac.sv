@@ -11,9 +11,9 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                              //
-// Additional contributions by:                                               //
 //                                                                            //
+// Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    01/12/2016                                                 //
@@ -28,12 +28,27 @@
 // Revision:        28/06/2017                                                //
 // Revision:        04/09/2017                                                //
 //                  Fix a bug in normalization by Lei Li                      //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module fpu_norm_fmac
-
+#(
+   parameter C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH,
+   parameter C_EXP           = fpu_defs_fmac::C_EXP,
+   parameter C_MANT          = fpu_defs_fmac::C_MANT,
+   parameter C_RM            = fpu_defs_fmac::C_RM,
+   parameter C_RM_NEAREST    = fpu_defs_fmac::C_RM_NEAREST,
+   parameter C_RM_TRUNC      = fpu_defs_fmac::C_RM_TRUNC,
+   parameter C_RM_PLUSINF    = fpu_defs_fmac::C_RM_PLUSINF,
+   parameter C_RM_MINUSINF   = fpu_defs_fmac::C_RM_MINUSINF,
+   parameter C_MANT_NAN      = fpu_defs_fmac::C_MANT_NAN
+)
   (//Inputs
    input logic [3*C_MANT+4:0]              Mant_in_DI,
    input logic signed [C_EXP+1:0]          Exp_in_DI,

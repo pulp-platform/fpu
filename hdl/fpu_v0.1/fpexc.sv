@@ -15,6 +15,7 @@
 //                                                                            //
 // Additional contributions by:                                               //
 //                  Lei Li       --lile@iis.ee.ethz.ch                        //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    06/10/2014                                                 //
@@ -30,11 +31,32 @@
 // Revision:                                                                  //
 //                12/09/2012                                                  //
 //                Fixed some wrong flags by Lei Li                            //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
 module fpexc
+#(
+   parameter C_MANT_ZERO   = fpu_defs::C_MANT_ZERO,
+   parameter C_EXP_ZERO    = fpu_defs::C_EXP_ZERO,
+   parameter C_EXP_INF     = fpu_defs::C_EXP_INF,
+
+   parameter C_EXP         = fpu_defs::C_EXP,
+   parameter C_MANT        = fpu_defs::C_MANT,
+
+   parameter C_CMD         = fpu_defs::C_CMD,
+
+   parameter C_FPU_ADD_CMD = fpu_defs::C_FPU_ADD_CMD,
+   parameter C_FPU_SUB_CMD = fpu_defs::C_FPU_SUB_CMD,
+   parameter C_FPU_MUL_CMD = fpu_defs::C_FPU_MUL_CMD,
+   parameter C_FPU_I2F_CMD = fpu_defs::C_FPU_I2F_CMD,
+   parameter C_FPU_F2I_CMD = fpu_defs::C_FPU_F2I_CMD
+)
   (//Input
    input logic [C_MANT:0]   Mant_a_DI,
    input logic [C_MANT:0]   Mant_b_DI,

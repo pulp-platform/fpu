@@ -12,8 +12,9 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@sutdent.ethz.ch                //
-//		                                                                        //
+//                                                                            //
 // Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -26,13 +27,23 @@
 // Description:    Wrapper for connecting the FPU to the shared interconnect  //
 //                                                                            //
 // Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
 module fpu_shared
   #(
-    parameter ADD_REGISTER = 1
+    parameter ADD_REGISTER = 1,
+
+    parameter C_OP         = fpu_defs::C_OP,
+    parameter C_CMD        = fpu_defs::C_CMD,
+    parameter C_RM         = fpu_defs::C_RM,
+    parameter C_TAG        = fpu_defs::C_TAG,
+    parameter C_FLAG       = fpu_defs::C_FLAG
     )
   (
    input logic     Clk_CI,

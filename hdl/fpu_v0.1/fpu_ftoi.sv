@@ -13,7 +13,7 @@
 // Engineers:      Thomas Gautschi -- gauthoma@student.ethz.ch                //
 //                                                                            //
 // Additional contributions by:                                               //
-//                                                                            //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    29/10/2014                                                 //
@@ -27,11 +27,24 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
 module fpu_ftoi
+#(
+   parameter C_EXP_SHIFT  = fpu_defs::C_EXP_SHIFT,
+   parameter C_SHIFT_BIAS = fpu_defs::C_SHIFT_BIAS,
+   parameter C_OP         = fpu_defs::C_OP,
+   parameter C_EXP        = fpu_defs::C_EXP,
+   parameter C_MANT       = fpu_defs::C_MANT,
+   parameter C_INF        = fpu_defs::C_INF,
+   parameter C_MINF       = fpu_defs::C_MINF
+)
   (//Input
    input logic             Sign_a_DI,
    input logic [C_EXP-1:0] Exp_a_DI,

@@ -11,9 +11,9 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                              //
-// Additional contributions by:                                               //
 //                                                                            //
+// Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    01/12/2016                                                 // 
@@ -28,11 +28,24 @@
 //                                                                            //
 // Revision:        13/09/2017                                                //
 //                  Added some signals for normalization by Lei Li            //
+// Revision:                                                                  //
+//                  15/05/2018                                                //
+//                  Pass package parameters as default args instead of using  //
+//                  them directly, improves compatibility with tools like     //  
+//                  Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module preprocess_fmac
+#(
+   parameter C_EXP_ONE   = fpu_defs_fmac::C_EXP_ONE,
+   parameter C_EXP_INF   = fpu_defs_fmac::C_EXP_INF,
+   parameter C_MANT_ZERO = fpu_defs_fmac::C_MANT_ZERO,
+   parameter C_MANT      = fpu_defs_fmac::C_MANT,
+   parameter C_EXP       = fpu_defs_fmac::C_EXP,
+   parameter C_OP        = fpu_defs_fmac::C_OP
+)
   (//Inputs
    input logic [C_OP-1:0]          Operand_a_DI,
    input logic [C_OP-1:0]          Operand_b_DI,
