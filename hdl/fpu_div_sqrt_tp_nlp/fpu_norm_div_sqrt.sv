@@ -380,10 +380,8 @@ module fpu_norm_div_sqrt
    /////////////////////////////////////////////////////////////////////////////
    // Renormalization and Output Assignments                                  //
    /////////////////////////////////////////////////////////////////////////////
-   logic                                   Rounded_SO;
 
    assign Mant_res_DO = (Mant_renorm_S)?Mant_upperRounded_D[C_DIV_MANT:1]:Mant_upperRounded_D[C_DIV_MANT-1:0];
    assign Exp_res_DO  = Exp_res_norm_D+Mant_renorm_S;
-   assign Rounded_SO  = Mant_rounded_S;
 
 endmodule // fpu_norm_div_sqrt

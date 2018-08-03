@@ -180,11 +180,7 @@ module preprocess
 
    always_comb
      begin
-       if(~Rst_RBI)
-         begin
-           RM_DN = '0;
-         end
-       else if(Start_S)
+       if(Start_S)
            RM_DN = RM_SI;
        else
            RM_DN = RM_DP;
@@ -204,7 +200,6 @@ module preprocess
    assign RM_dly_SO = RM_DP;
 
    logic [4:0]                  Mant_leadingOne_a, Mant_leadingOne_b;
-   logic                        Mant_zero_S_a,Mant_zero_S_b;
 
    fpu_ff
    #(
@@ -213,7 +208,7 @@ module preprocess
    (
      .in_i        ( Mant_a_D          ),
      .first_one_o ( Mant_leadingOne_a ),
-     .no_ones_o   ( Mant_zero_S_a     )
+     .no_ones_o   (                   )
    );
 
 
@@ -255,7 +250,7 @@ module preprocess
    (
      .in_i        ( Mant_b_D          ),
      .first_one_o ( Mant_leadingOne_b ),
-     .no_ones_o   ( Mant_zero_S_b     )
+     .no_ones_o   (                   )
    );
 
    logic [C_DIV_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;
