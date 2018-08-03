@@ -155,11 +155,7 @@ module preprocess
 
    always_comb
      begin
-       if(~Rst_RBI)
-         begin
-           Sign_z_DN = '0;
-         end
-       else if(Div_start_SI)
+       if(Div_start_SI)
            Sign_z_DN = Sign_a_D ^ Sign_b_D;
        else if(Sqrt_start_SI)
            Sign_z_DN = Sign_a_D;
