@@ -65,7 +65,7 @@ module LZA
                     Z_D[i]=~(A_DI[i] | B_DI[i]);
                  end
               end
-      endgenerate;
+      endgenerate
 
 
   assign F_S[C_WIDTH-1]=(~T_D[C_WIDTH-1])&T_D[C_WIDTH-2];
@@ -79,8 +79,8 @@ module LZA
                     F_S[j]=  (T_D[j+1]& ((G_D[j]&(~Z_D[j-1])) | (Z_D[j]&(~G_D[j-1])) ) ) | ( (~T_D[j+1])&((Z_D[j]&&(~Z_D[j-1])) | ( G_D[j]&(~G_D[j-1]))) );
                   end
               end
-      endgenerate;
-   
+      endgenerate
+
   assign F_S[0]= T_D[1]&Z_D[0] | (~T_D[1])&(T_D[0] | G_D[0]);
      
  logic [C_LEADONE_WIDTH-1:0]                Leading_one_D;
