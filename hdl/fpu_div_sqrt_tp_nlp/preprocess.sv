@@ -1,10 +1,10 @@
 // Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the “License”); you may not use this file except in
+// License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
 // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 // or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,11 +155,7 @@ module preprocess
 
    always_comb
      begin
-       if(~Rst_RBI)
-         begin
-           Sign_z_DN = '0;
-         end
-       else if(Div_start_SI)
+       if(Div_start_SI)
            Sign_z_DN = Sign_a_D ^ Sign_b_D;
        else if(Sqrt_start_SI)
            Sign_z_DN = Sign_a_D;
@@ -184,11 +180,7 @@ module preprocess
 
    always_comb
      begin
-       if(~Rst_RBI)
-         begin
-           RM_DN = '0;
-         end
-       else if(Start_S)
+       if(Start_S)
            RM_DN = RM_SI;
        else
            RM_DN = RM_DP;
@@ -208,7 +200,6 @@ module preprocess
    assign RM_dly_SO = RM_DP;
 
    logic [4:0]                  Mant_leadingOne_a, Mant_leadingOne_b;
-   logic                        Mant_zero_S_a,Mant_zero_S_b;
 
    fpu_ff
    #(
@@ -217,7 +208,7 @@ module preprocess
    (
      .in_i        ( Mant_a_D          ),
      .first_one_o ( Mant_leadingOne_a ),
-     .no_ones_o   ( Mant_zero_S_a     )
+     .no_ones_o   (                   )
    );
 
 
@@ -259,7 +250,7 @@ module preprocess
    (
      .in_i        ( Mant_b_D          ),
      .first_one_o ( Mant_leadingOne_b ),
-     .no_ones_o   ( Mant_zero_S_b     )
+     .no_ones_o   (                   )
    );
 
    logic [C_DIV_MANT:0]            Mant_b_norm_DN,Mant_b_norm_DP;

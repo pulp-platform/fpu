@@ -1,10 +1,10 @@
 // Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the “License”); you may not use this file except in
+// License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
 // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 // or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
 //                                                                            //
 // Additional contributions by:                                               //
-//                                                                            //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    26/10/2014                                                 //
@@ -28,11 +28,20 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
 module riscv_fpu
+#(
+   parameter C_OP  = fpu_defs::C_OP,
+   parameter C_RM  = fpu_defs::C_RM,
+   parameter C_CMD = fpu_defs::C_CMD
+)
   (
    //Clock and reset
    input logic             clk,
@@ -117,7 +126,6 @@ module riscv_fpu
       .Operand_b_DI  ( operand_b_i      ),
       .RM_SI         ( rounding_mode_i  ),
       .OP_SI         ( operator_i       ),
-      .Stall_SI      ( stall_i          ),
 
       .Result_DO     ( result_o         ),
 

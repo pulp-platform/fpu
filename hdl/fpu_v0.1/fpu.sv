@@ -1,10 +1,10 @@
 // Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the “License”); you may not use this file except in
+// License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
 // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 // or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////
@@ -12,9 +12,9 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@student.ethz.ch                //
-//		                                                                        //
-// Additional contributions by:                                               //
 //                                                                            //
+// Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    26/10/2014                                                 //
@@ -28,11 +28,20 @@
 //                                                                            //
 //                                                                            //
 // Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
 module fpu
+#(
+   parameter C_CMD = fpu_defs::C_CMD,
+   parameter C_RM  = fpu_defs::C_RM,
+   parameter C_OP  = fpu_defs::C_OP
+)
   (
    //Clock and reset
    input logic 	           Clk_CI,
@@ -64,7 +73,6 @@ module fpu
    logic [C_RM-1:0]        RM_S;
    logic [C_CMD-1:0]       OP_S;
 
-   logic                   Stall_S;
 
 
    //Input register
@@ -76,7 +84,7 @@ module fpu
              Operand_a_D <= '0;
              Operand_b_D <= '0;
              RM_S        <= '0;
-	           OP_S        <= '0;
+             OP_S        <= '0;
           end
         else
           begin
@@ -85,7 +93,7 @@ module fpu
                   Operand_a_D <= Operand_a_DI;
                   Operand_b_D <= Operand_b_DI;
                   RM_S        <= RM_SI;
-	                OP_S        <= OP_SI;
+                  OP_S        <= OP_SI;
                end
           end
      end
@@ -114,7 +122,6 @@ module fpu
       .Operand_b_DI  ( Operand_b_D  ),
       .RM_SI         ( RM_S         ),
       .OP_SI         ( OP_S         ),
-      .Stall_SI      ( Stall_SI     ),
 
       .Result_DO     ( Result_D     ),
 

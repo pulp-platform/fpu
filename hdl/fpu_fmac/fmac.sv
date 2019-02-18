@@ -1,4 +1,4 @@
-// Copyright 2017, 2018 ETH Zurich and University of Bologna.
+// Copyright 2017 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -13,6 +13,7 @@
 // Engineers:      Lei Li -- lile@iis.ee.ethz.ch                              //
 //                                                                            //
 // Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -28,11 +29,25 @@
 // Revision:       07/07/2017                                                 //
 // Revision:       04/09/2017                                                 //
 //                 No_one_S was added  by Lei Li                              //
+// Revision:       03/04/2018                                                 //
+//                 Fixed Torbjørn Viem Ness bugs  and Sticky bit              //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module fmac
+#(
+   parameter C_EXP           = fpu_defs_fmac::C_EXP,
+   parameter C_MANT          = fpu_defs_fmac::C_MANT,
+   parameter C_OP            = fpu_defs_fmac::C_OP,
+   parameter C_RM            = fpu_defs_fmac::C_RM,
+   parameter C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH
+)
 (
    //Inputs
    input logic [C_OP-1:0]   Operand_a_DI,
@@ -110,7 +125,7 @@ preprocess_fmac  precess_U0
    logic [2*C_MANT+2:0]                      Pp_carry_D;
    logic                                     MSB_cor_D;
  wallace   wallace_U0
- (
+ ( 
    .Pp_index_DI           (Pp_index_D        ),
    .Pp_sum_DO             (Pp_sum_D          ),
    .Pp_carry_DO           (Pp_carry_D        ),
@@ -121,6 +136,9 @@ preprocess_fmac  precess_U0
  logic signed [C_EXP+1:0]                   Exp_postalig_D;
  logic [2*C_MANT+2:0]                       Pp_sum_postcal_D;
  logic [2*C_MANT+2:0]                       Pp_carry_postcal_D;
+ logic [C_EXP+1:0]                          Minus_sft_amt_D; 
+ logic                                      Mant_sticky_sft_out_S;
+ logic                                      Sign_change_S;
  aligner  aligner_U0
  (
    .Exp_a_DI              (Exp_a_D          ),
@@ -133,6 +151,7 @@ preprocess_fmac  precess_U0
    .Sign_c_DI             (Sign_c_D         ),
    .Pp_sum_DI             (Pp_sum_D         ),
    .Pp_carry_DI           (Pp_carry_D       ),
+   .Sign_change_SI        (Sign_change_S    ),
    .Sub_SO                (Sub_S            ),
    .Mant_postalig_a_DO    (Mant_postalig_a_D),
    .Exp_postalig_DO       (Exp_postalig_D   ),
@@ -140,42 +159,53 @@ preprocess_fmac  precess_U0
    .Sign_amt_DO           (Sign_amt_D       ),
    .Sft_stop_SO           (Sft_stop_S       ),
    .Pp_sum_postcal_DO     (Pp_sum_postcal_D ),
-   .Pp_carry_postcal_DO   (Pp_carry_postcal_D)
+   .Pp_carry_postcal_DO   (Pp_carry_postcal_D),
+   .Minus_sft_amt_DO      (Minus_sft_amt_D   ),
+   .Mant_sticky_sft_out_SO (Mant_sticky_sft_out_S)
  );
 
 // 48-bit CSA. In fact the bit width is 49 bits including sign bit. After this CSA, EDCA is used to produce the correct sum and the carry out bit.
    logic [2*C_MANT+1:0]                      Csa_sum_D;
    logic [2*C_MANT+1:0]                      Csa_carry_D;
 CSA   #(2*C_MANT+2)  CSA_U0
- (
-   .A_DI                  (Mant_postalig_a_D[2*C_MANT+1:0]),
+ ( 
+   .A_DI                  (Mant_postalig_a_D[2*C_MANT+1:0]), 
    .B_DI                  ({Pp_sum_postcal_D[2*C_MANT+1:0]}       ),
-   .C_DI                  ({Pp_carry_postcal_D[2*C_MANT:0],1'b0}  ),
-   .Sum_DO                (Csa_sum_D                      ),
+   .C_DI                  ({Pp_carry_postcal_D[2*C_MANT:0],1'b0}  ), 
+   .Sum_DO                (Csa_sum_D                      ), 
    .Carry_DO              (Csa_carry_D                    )
  );
 
-// The correction based sign extension is included in adders.
+// The correction based sign extension is included in adders.  
  logic [73:0]                               Sum_pos_D;
  logic [3*C_MANT+4:0]                       A_LZA_D;
  logic [3*C_MANT+4:0]                       B_LZA_D;
-
+ logic                                      Minus_sticky_bit_S;
 adders adders_U0
  (
   .AL_DI                   (Csa_sum_D        ),
   .BL_DI                   (Csa_carry_D      ),
   .Sub_SI                  (Sub_S            ),
   .Sign_cor_SI             ({MSB_cor_D, Pp_carry_postcal_D[2*C_MANT+2],{Pp_sum_postcal_D[2*C_MANT+2] && Pp_carry_postcal_D[2*C_MANT+1]}}),
-  .Sign_amt_DI             (Sign_amt_D       ),
+  .Sign_amt_DI             (Sign_amt_D       ), 
   .Sft_stop_SI             (Sft_stop_S       ),
   .BH_DI                   (Mant_postalig_a_D[3*C_MANT+5:2*C_MANT+2]),
   .Sign_postalig_DI        (Sign_postalig_D  ),
+  .Inf_b_SI                (Inf_b_S          ),
+  .Inf_c_SI                (Inf_c_S          ),
+  .Zero_b_SI               (Zero_b_S         ),
+  .Zero_c_SI               (Zero_c_S         ),
+  .NaN_b_SI                (NaN_b_S          ),
+  .NaN_c_SI                (NaN_c_S          ),
+  .Minus_sft_amt_DI        (Minus_sft_amt_D  ),
   .Sum_pos_DO              (Sum_pos_D        ),
   .Sign_out_DO             (Sign_out_D       ),
   .A_LZA_DO                (A_LZA_D          ),
-  .B_LZA_DO                (B_LZA_D          )
+  .B_LZA_DO                (B_LZA_D          ),
+  .Minus_sticky_bit_SO     (Minus_sticky_bit_S),
+  .Sign_change_SO          (Sign_change_S    )
  );
-
+ 
 
  logic [C_LEADONE_WIDTH-1:0]                Leading_one_D;
  logic                                      No_one_S;
@@ -183,9 +213,9 @@ adders adders_U0
 LZA #(3*C_MANT+5) LZA_U0
   (
    .A_DI                   (A_LZA_D       ),
-   .B_DI                   (B_LZA_D       ),
+   .B_DI                   (B_LZA_D       ), 
    .Leading_one_DO         (Leading_one_D ),
-   .No_one_SO              (No_one_S      )
+   .No_one_SO              (No_one_S      ) 
    );
 
 
@@ -194,9 +224,9 @@ LZA #(3*C_MANT+5) LZA_U0
    .Mant_in_DI            (Sum_pos_D          ),
    .Exp_in_DI             (Exp_postalig_D     ),
    .Sign_in_DI            (Sign_out_D         ),
-   .Leading_one_DI        (Leading_one_D      ),
+   .Leading_one_DI        (Leading_one_D      ), 
    .No_one_SI             (No_one_S           ),
-   .Sign_amt_DI           (Sign_amt_D         ),
+   .Sign_amt_DI           (Sign_amt_D         ), 
    .Sub_SI                (Sub_S              ),
    .Exp_a_DI              (Operand_a_DI[C_OP-2:C_MANT]), //exponent
    .Mant_a_DI             (Mant_a_D           ),
@@ -212,6 +242,8 @@ LZA #(3*C_MANT+5) LZA_U0
    .NaN_a_SI              (NaN_a_S            ),
    .NaN_b_SI              (NaN_b_S            ),
    .NaN_c_SI              (NaN_c_S            ),
+   .Mant_sticky_sft_out_SI (Mant_sticky_sft_out_S),
+   .Minus_sticky_bit_SI   (Minus_sticky_bit_S ),
    .Mant_res_DO           (Mant_res_DO        ),
    .Exp_res_DO            (Exp_res_DO         ),
    .Sign_res_DO           (Sign_res_DO        ),

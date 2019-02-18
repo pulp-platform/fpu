@@ -1,10 +1,10 @@
 // Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the “License”); you may not use this file except in
+// License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
 // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 // or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////
@@ -12,8 +12,9 @@
 //                                                                            //
 // Engineers:      Lukas Mueller -- lukasmue@student.ethz.ch                  //
 //                 Thomas Gautschi -- gauthoma@sutdent.ethz.ch                //
-//		                                                                        //
+//                                                                            //
 // Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 //                                                                            //
@@ -26,13 +27,23 @@
 // Description:    Wrapper for connecting the FPU to the shared interconnect  //
 //                                                                            //
 // Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs::*;
 
 module fpu_shared
   #(
-    parameter ADD_REGISTER = 1
+    parameter ADD_REGISTER = 1,
+
+    parameter C_OP         = fpu_defs::C_OP,
+    parameter C_CMD        = fpu_defs::C_CMD,
+    parameter C_RM         = fpu_defs::C_RM,
+    parameter C_TAG        = fpu_defs::C_TAG,
+    parameter C_FLAG       = fpu_defs::C_FLAG
     )
   (
    input logic     Clk_CI,

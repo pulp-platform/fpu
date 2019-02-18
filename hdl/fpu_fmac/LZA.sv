@@ -1,4 +1,4 @@
-// Copyright 2017, 2018 ETH Zurich and University of Bologna.
+// Copyright 2017 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the “License”); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -11,9 +11,9 @@
 // Company:        IIS @ ETHZ - Federal Institute of Technology               //
 //                                                                            //
 // Engineers:      Lei Li  lile@iis.ee.ethz.ch                                //
-//		                                                                        //
-// Additional contributions by:                                               //
 //                                                                            //
+// Additional contributions by:                                               //
+//                 Torbjørn Viem Ness -- torbjovn@stud.ntnu.no                //
 //                                                                            //
 //                                                                            //
 // Create Date:    01/12/2016                                                 //
@@ -28,12 +28,20 @@
 // Revision:        26/06/2017                                                //
 // Revision:        04/09/2017                                                //
 //                  Added No_one_SI as an output by Lei Li                    //
+// Revision:                                                                  //
+//                15/05/2018                                                  //
+//                Pass package parameters as default args instead of using    //
+//                them directly, improves compatibility with tools like       //  
+//                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
 import fpu_defs_fmac::*;
 
 module LZA
-#( parameter  C_WIDTH = 74)
+#(
+   parameter  C_WIDTH         = 74,
+   parameter  C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH
+)
   (
    input  logic [C_WIDTH-1:0]                A_DI,
    input  logic [C_WIDTH-1:0]                B_DI,
@@ -72,9 +80,9 @@ module LZA
                   end
               end
       endgenerate;
-
+   
   assign F_S[0]= T_D[1]&Z_D[0] | (~T_D[1])&(T_D[0] | G_D[0]);
-
+     
  logic [C_LEADONE_WIDTH-1:0]                Leading_one_D;
  logic                                      No_one_S;
    fpu_ff

@@ -1,10 +1,10 @@
 // Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the “License”); you may not use this file except in
+// License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
 // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 // or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ module nrbd_nrsc_tp
     logic [C_DIV_MANT+1+2:0]                  Sec_iteration_cell_a_D,Sec_iteration_cell_b_D;
     logic [C_DIV_MANT+1+3:0]                  Thi_iteration_cell_a_D,Thi_iteration_cell_b_D;
     logic [C_DIV_MANT+1+4:0]                  Fou_iteration_cell_a_D,Fou_iteration_cell_b_D;
-    logic                                     Div_start_dly_S,Sqrt_start_dly_S;
+    logic                                     Div_start_dly_S;
 
 
 control_tp #(Precision_ctl_Enable_S,Accuracy_ctl_Enable_S)         control_U0
@@ -94,7 +94,7 @@ control_tp #(Precision_ctl_Enable_S,Accuracy_ctl_Enable_S)         control_U0
    .Fou_iteration_cell_carry_DI              (Fou_iteration_cell_carry_D      ),
    .Sqrt_Da3                                 (Sqrt_Da3                        ),
    .Div_start_dly_SO                         (Div_start_dly_S                 ),
-   .Sqrt_start_dly_SO                        (Sqrt_start_dly_S                ),
+   .Sqrt_start_dly_SO                        (                                ),
    .Div_enable_SO                            (Div_enable_SO                   ),
    .Sqrt_enable_SO                           (Sqrt_enable_SO                  ),
    .Sqrt_D0                                  (Sqrt_D0                         ),

@@ -1,10 +1,10 @@
 // Copyright 2017, 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the “License”); you may not use this file except in
+// License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
 // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 // or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
@@ -380,10 +380,8 @@ module fpu_norm_div_sqrt
    /////////////////////////////////////////////////////////////////////////////
    // Renormalization and Output Assignments                                  //
    /////////////////////////////////////////////////////////////////////////////
-   logic                                   Rounded_SO;
 
    assign Mant_res_DO = (Mant_renorm_S)?Mant_upperRounded_D[C_DIV_MANT:1]:Mant_upperRounded_D[C_DIV_MANT-1:0];
    assign Exp_res_DO  = Exp_res_norm_D+Mant_renorm_S;
-   assign Rounded_SO  = Mant_rounded_S;
 
 endmodule // fpu_norm_div_sqrt
