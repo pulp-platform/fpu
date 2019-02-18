@@ -29,9 +29,10 @@
 // Revision:        20/06/2017                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs_fmac::*;
+
 
 module booth_encoder
+  import fpu_defs_fmac::*;
   (//Inputs
    input logic [2:0]               Booth_b_DI,
    //Outputs

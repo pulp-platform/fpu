@@ -34,9 +34,10 @@
 //                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs_fmac::*;
+
 
 module wallace
+  import fpu_defs_fmac::*;
 #(
    parameter C_MANT = fpu_defs_fmac::C_MANT
 )

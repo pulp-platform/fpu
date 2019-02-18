@@ -41,9 +41,10 @@
 //                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+
 
 module fpu_core
+  import fpu_defs::*;
 #(
    parameter C_EXP_PRENORM  = fpu_defs::C_EXP_PRENORM,
    parameter C_MANT_PRENORM = fpu_defs::C_MANT_PRENORM,

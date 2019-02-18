@@ -29,9 +29,10 @@
 // Revision:        20/06/2017                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs_fmac::*;
+
 
 module booth_selector
+  import fpu_defs_fmac::*;
   (//Inputs
    input logic [1:0]               Booth_a_DI,
    input  logic                    Sel_1x_SI,

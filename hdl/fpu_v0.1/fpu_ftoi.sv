@@ -33,9 +33,10 @@
 //                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+
 
 module fpu_ftoi
+  import fpu_defs::*;
 #(
    parameter C_EXP_SHIFT  = fpu_defs::C_EXP_SHIFT,
    parameter C_SHIFT_BIAS = fpu_defs::C_SHIFT_BIAS,

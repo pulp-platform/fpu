@@ -35,9 +35,10 @@
 //                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs_fmac::*;
+
 
 module LZA
+  import fpu_defs_fmac::*;
 #(
    parameter  C_WIDTH         = 74,
    parameter  C_LEADONE_WIDTH = fpu_defs_fmac::C_LEADONE_WIDTH

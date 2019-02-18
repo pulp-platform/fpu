@@ -38,9 +38,10 @@
 //                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+
 
 module fpexc
+  import fpu_defs::*;
 #(
    parameter C_MANT_ZERO   = fpu_defs::C_MANT_ZERO,
    parameter C_EXP_ZERO    = fpu_defs::C_EXP_ZERO,

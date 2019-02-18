@@ -31,9 +31,10 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs_div_sqrt_tp::*;
+
 
 module control_tp
+  import fpu_defs_div_sqrt_tp::*;
 #(
    parameter   Precision_ctl_Enable_S = 0,
    parameter   Accuracy_ctl_Enable_S  = 1

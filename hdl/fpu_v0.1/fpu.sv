@@ -34,9 +34,10 @@
 //                Synopsys Spyglass and DC (GitHub #7) - Torbjørn Viem Ness   //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+
 
 module fpu
+  import fpu_defs::*;
 #(
    parameter C_CMD = fpu_defs::C_CMD,
    parameter C_RM  = fpu_defs::C_RM,

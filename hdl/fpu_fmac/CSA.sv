@@ -29,9 +29,10 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs_fmac::*;
+
 
 module CSA
+  import fpu_defs_fmac::*;
 #( parameter n=49 )
  (
    input logic [n-1:0]           A_DI,

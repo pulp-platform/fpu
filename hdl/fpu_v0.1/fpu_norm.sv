@@ -34,9 +34,10 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-import fpu_defs::*;
+
 
 module fpu_norm
+  import fpu_defs::*;
 #(
    parameter C_MANT_PRENORM     = fpu_defs::C_MANT_PRENORM,
    parameter C_EXP_PRENORM      = fpu_defs::C_EXP_PRENORM,
